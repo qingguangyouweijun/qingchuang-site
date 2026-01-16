@@ -24,6 +24,7 @@ export default function ProfilePage() {
   const [showRechargeModal, setShowRechargeModal] = React.useState(false)
   const [rechargeAmount, setRechargeAmount] = React.useState("")
   const [isRecharging, setIsRecharging] = React.useState(false)
+  const [showQRCode, setShowQRCode] = React.useState(false)
 
   React.useEffect(() => {
     loadData()
@@ -48,10 +49,15 @@ export default function ProfilePage() {
   const handleRecharge = async () => {
     const amount = parseFloat(rechargeAmount)
     if (isNaN(amount) || amount <= 0) {
-      alert("请输入有效金额")
+      alert("请选择充值金额")
       return
     }
+    // 显示对应金额的收款码
+    setShowQRCode(true)
+  }
 
+  const handleConfirmPayment = async () => {
+    const amount = parseFloat(rechargeAmount)
     setIsRecharging(true)
     const result = await recharge(amount)
     
@@ -60,9 +66,19 @@ export default function ProfilePage() {
     } else {
       setProfile(prev => prev ? { ...prev, balance: result.newBalance! } : null)
       setShowRechargeModal(false)
+      setShowQRCode(false)
       setRechargeAmount("")
+      alert("充值成功！")
     }
     setIsRecharging(false)
+  }
+
+  const getQRCodeImage = () => {
+    const amount = parseFloat(rechargeAmount)
+    if (amount === 0.66) return "/qr-066.jpg"
+    if (amount === 1.66) return "/qr-166.jpg"
+    if (amount === 2.66) return "/qr-266.jpg"
+    return ""
   }
 
   const handleLogout = async () => {
@@ -267,37 +283,68 @@ export default function ProfilePage() {
       </div>
 
       {/* Recharge Modal */}
-      <Modal isOpen={showRechargeModal} onClose={() => setShowRechargeModal(false)} title="充值">
+      <Modal isOpen={showRechargeModal} onClose={() => { setShowRechargeModal(false); setShowQRCode(false); setRechargeAmount(""); }} title="充值">
         <div className="space-y-6">
-          <div className="grid grid-cols-3 gap-3">
-            {[0.66, 1.66, 2.66].map((amount) => (
-              <button
-                key={amount}
-                className={`p-4 rounded-xl border-2 font-bold transition-all ${
-                  rechargeAmount === String(amount) 
-                    ? 'border-rose-500 bg-rose-50 text-rose-600' 
-                    : 'border-gray-200 hover:border-rose-300'
-                }`}
-                onClick={() => setRechargeAmount(String(amount))}
+          {!showQRCode ? (
+            <>
+              <div className="grid grid-cols-3 gap-3">
+                {[0.66, 1.66, 2.66].map((amount) => (
+                  <button
+                    key={amount}
+                    className={`p-4 rounded-xl border-2 font-bold transition-all ${
+                      rechargeAmount === String(amount) 
+                        ? 'border-rose-500 bg-rose-50 text-rose-600' 
+                        : 'border-gray-200 hover:border-rose-300'
+                    }`}
+                    onClick={() => setRechargeAmount(String(amount))}
+                  >
+                    ¥{amount}
+                  </button>
+                ))}
+              </div>
+              
+              <Button 
+                className="w-full" 
+                size="lg"
+                onClick={handleRecharge}
+                disabled={!rechargeAmount || parseFloat(rechargeAmount) <= 0}
               >
-                ¥{amount}
-              </button>
-            ))}
-          </div>
-          
-          <Button 
-            className="w-full" 
-            size="lg"
-            onClick={handleRecharge}
-            isLoading={isRecharging}
-            disabled={!rechargeAmount || parseFloat(rechargeAmount) <= 0}
-          >
-            立即充值 ¥{rechargeAmount || 0}
-          </Button>
-          
-          <p className="text-xs text-gray-400 text-center">
-            模拟充值，无需真实支付
-          </p>
+                立即充值 ¥{rechargeAmount || 0}
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="text-center">
+                <p className="text-lg font-bold text-green-600 mb-2">推荐使用微信支付</p>
+                <p className="text-2xl font-bold text-gray-800 mb-4">¥{rechargeAmount}</p>
+                <div className="flex justify-center">
+                  <img 
+                    src={getQRCodeImage()} 
+                    alt="收款码" 
+                    className="w-64 h-64 object-contain rounded-lg border"
+                  />
+                </div>
+                <p className="text-sm text-gray-500 mt-4">请使用微信扫码支付</p>
+              </div>
+              
+              <div className="space-y-3">
+                <Button 
+                  className="w-full" 
+                  size="lg"
+                  onClick={handleConfirmPayment}
+                  isLoading={isRecharging}
+                >
+                  我已支付完成
+                </Button>
+                <button 
+                  className="w-full text-gray-500 text-sm hover:text-gray-700"
+                  onClick={() => setShowQRCode(false)}
+                >
+                  返回选择金额
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
     </MainLayout>
