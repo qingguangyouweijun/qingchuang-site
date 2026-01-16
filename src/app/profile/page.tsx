@@ -285,16 +285,6 @@ export default function ProfilePage() {
             ))}
           </div>
           
-          <div className="space-y-2">
-            <label className="text-sm text-gray-600">自定义金额</label>
-            <Input 
-              type="number"
-              placeholder="请输入充值金额"
-              value={rechargeAmount}
-              onChange={(e) => setRechargeAmount(e.target.value)}
-            />
-          </div>
-
           <Button 
             className="w-full" 
             size="lg"
