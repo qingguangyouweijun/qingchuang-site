@@ -15,6 +15,61 @@ interface ProfileData {
   contact_visibility_limit: number
 }
 
+export async function uploadAvatar(formData: FormData) {
+  const supabase = await createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: '请先登录' }
+  }
+
+  const file = formData.get('avatar') as File
+  if (!file) {
+    return { error: '请选择图片' }
+  }
+
+  // 检查文件大小 (最大 2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    return { error: '图片大小不能超过 2MB' }
+  }
+
+  // 检查文件类型
+  if (!file.type.startsWith('image/')) {
+    return { error: '请上传图片文件' }
+  }
+
+  const fileExt = file.name.split('.').pop()
+  const fileName = `${user.id}-${Date.now()}.${fileExt}`
+
+  // 上传到 Supabase Storage
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(fileName, file, { upsert: true })
+
+  if (uploadError) {
+    console.error('Upload error:', uploadError)
+    return { error: '上传失败' }
+  }
+
+  // 获取公开 URL
+  const { data: { publicUrl } } = supabase.storage
+    .from('avatars')
+    .getPublicUrl(fileName)
+
+  // 更新用户头像
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+    .eq('id', user.id)
+
+  if (updateError) {
+    console.error('Update avatar error:', updateError)
+    return { error: '更新头像失败' }
+  }
+
+  return { success: true, avatarUrl: publicUrl }
+}
+
 export async function updateProfile(data: ProfileData) {
   const supabase = await createClient()
   

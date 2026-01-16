@@ -7,10 +7,10 @@ import { Card, CardContent } from "@/components/UI/Card"
 import { Badge } from "@/components/UI/Badge"
 import { Modal } from "@/components/UI/Modal"
 import { Input } from "@/components/UI/Input"
-import { Settings, CreditCard, Heart, Shield, LogOut, ChevronRight, Edit2 } from "lucide-react"
+import { Settings, CreditCard, Heart, Shield, LogOut, ChevronRight, Edit2, Camera } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { getProfile, getProfileStats } from "@/lib/actions/profile"
+import { getProfile, getProfileStats, uploadAvatar } from "@/lib/actions/profile"
 import { getBalance, recharge } from "@/lib/actions/wallet"
 import { signOut } from "@/lib/actions/auth"
 import { GENDER_LABELS, APPEARANCE_LABELS, IDENTITY_LABELS } from "@/lib/types"
@@ -25,6 +25,8 @@ export default function ProfilePage() {
   const [rechargeAmount, setRechargeAmount] = React.useState("")
   const [isRecharging, setIsRecharging] = React.useState(false)
   const [showQRCode, setShowQRCode] = React.useState(false)
+  const [isUploadingAvatar, setIsUploadingAvatar] = React.useState(false)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {
     loadData()
@@ -87,6 +89,28 @@ export default function ProfilePage() {
     }
   }
 
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploadingAvatar(true)
+    const formData = new FormData()
+    formData.append('avatar', file)
+
+    const result = await uploadAvatar(formData)
+    
+    if (result.error) {
+      alert(result.error)
+    } else if (result.avatarUrl) {
+      setProfile(prev => prev ? { ...prev, avatar_url: result.avatarUrl } : null)
+    }
+    setIsUploadingAvatar(false)
+  }
+
   if (isLoading) {
     return (
       <MainLayout>
@@ -124,11 +148,33 @@ export default function ProfilePage() {
               {/* Avatar - positioned to overlap top of card */}
               <div className="absolute -top-12 left-1/2 md:left-8 transform -translate-x-1/2 md:translate-x-0">
                 <div className="relative">
-                  <div className="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white bg-white shadow-lg overflow-hidden">
-                    <div className="w-full h-full bg-gray-100 flex items-center justify-center text-5xl">
-                      {profile.gender === 'female' ? '👩' : '👨'}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleAvatarChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <button
+                    onClick={handleAvatarClick}
+                    disabled={isUploadingAvatar}
+                    className="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white bg-white shadow-lg overflow-hidden group relative"
+                  >
+                    {profile.avatar_url ? (
+                      <img src={profile.avatar_url} alt="头像" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gray-100 flex items-center justify-center text-5xl">
+                        {profile.gender === 'female' ? '👩' : '👨'}
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      {isUploadingAvatar ? (
+                        <div className="animate-spin w-6 h-6 border-2 border-white border-t-transparent rounded-full" />
+                      ) : (
+                        <Camera className="w-6 h-6 text-white" />
+                      )}
                     </div>
-                  </div>
+                  </button>
                   <div className="absolute bottom-1 right-1 bg-green-500 w-5 h-5 rounded-full border-3 border-white" />
                 </div>
               </div>

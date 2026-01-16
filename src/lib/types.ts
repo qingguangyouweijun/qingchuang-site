@@ -15,6 +15,7 @@ export interface Profile {
   location: string | null
   grade: string | null
   bio: string | null
+  avatar_url: string | null
   contact_visibility_limit: number
   balance: number
   is_verified: boolean
