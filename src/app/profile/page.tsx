@@ -270,7 +270,7 @@ export default function ProfilePage() {
       <Modal isOpen={showRechargeModal} onClose={() => setShowRechargeModal(false)} title="充值">
         <div className="space-y-6">
           <div className="grid grid-cols-3 gap-3">
-            {[10, 20, 50, 100, 200, 500].map((amount) => (
+            {[0.66, 1.66, 2.66].map((amount) => (
               <button
                 key={amount}
                 className={`p-4 rounded-xl border-2 font-bold transition-all ${
