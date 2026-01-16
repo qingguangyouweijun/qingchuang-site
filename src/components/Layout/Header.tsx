@@ -72,29 +72,37 @@ export function Header() {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="md:hidden absolute top-16 left-0 right-0 glass border-t border-white/20 p-4 animate-slide-up">
-          <nav className="flex flex-col space-y-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-white/40 text-gray-700"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <item.icon className="w-5 h-5 text-rose-500" />
-                <span className="font-medium">{item.name}</span>
-              </Link>
-            ))}
-            <div className="pt-4 border-t border-gray-200/50 flex flex-col space-y-3">
-              <Link href="/auth/login" onClick={() => setIsMenuOpen(false)}>
-                <Button variant="ghost" className="w-full">登录</Button>
-              </Link>
-              <Link href="/auth/register" onClick={() => setIsMenuOpen(false)}>
-                <Button variant="primary" className="w-full">注册</Button>
-              </Link>
-            </div>
-          </nav>
-        </div>
+        <>
+          {/* Backdrop */}
+          <div 
+            className="md:hidden fixed inset-0 top-16 bg-black/50 z-40"
+            onClick={() => setIsMenuOpen(false)}
+          />
+          {/* Menu */}
+          <div className="md:hidden fixed top-16 left-0 right-0 bg-white z-50 shadow-xl animate-slide-up">
+            <nav className="flex flex-col p-4">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-rose-50 text-gray-700"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <item.icon className="w-5 h-5 text-rose-500" />
+                  <span className="font-medium">{item.name}</span>
+                </Link>
+              ))}
+              <div className="pt-4 mt-4 border-t border-gray-200 flex flex-col space-y-3">
+                <Link href="/auth/login" onClick={() => setIsMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full">登录</Button>
+                </Link>
+                <Link href="/auth/register" onClick={() => setIsMenuOpen(false)}>
+                  <Button variant="primary" className="w-full">注册</Button>
+                </Link>
+              </div>
+            </nav>
+          </div>
+        </>
       )}
     </header>
   )
