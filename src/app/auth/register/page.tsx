@@ -6,8 +6,33 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/UI/Button"
 import { Input } from "@/components/UI/Input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/UI/Card"
-import { Smartphone, Lock, ArrowLeft, ShieldCheck } from "lucide-react"
+import { Smartphone, Lock, ArrowLeft, ShieldCheck, Calculator } from "lucide-react"
 import { signUp } from "@/lib/actions/auth"
+
+// 生成随机数学题
+function generateMathQuestion() {
+  const num1 = Math.floor(Math.random() * 10) + 1
+  const num2 = Math.floor(Math.random() * 10) + 1
+  const operators = ['+', '-', '×']
+  const operator = operators[Math.floor(Math.random() * operators.length)]
+  
+  let answer: number
+  switch (operator) {
+    case '+':
+      answer = num1 + num2
+      break
+    case '-':
+      answer = num1 - num2
+      break
+    case '×':
+      answer = num1 * num2
+      break
+    default:
+      answer = num1 + num2
+  }
+  
+  return { question: `${num1} ${operator} ${num2} = ?`, answer }
+}
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -17,10 +42,24 @@ export default function RegisterPage() {
   const [password, setPassword] = React.useState("")
   const [confirmPassword, setConfirmPassword] = React.useState("")
   const [agreed, setAgreed] = React.useState(false)
+  const [mathQuestion, setMathQuestion] = React.useState(() => generateMathQuestion())
+  const [mathAnswer, setMathAnswer] = React.useState("")
+
+  const refreshMathQuestion = () => {
+    setMathQuestion(generateMathQuestion())
+    setMathAnswer("")
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    // 验证数学题
+    if (parseInt(mathAnswer) !== mathQuestion.answer) {
+      setError("验证码错误，请重新计算")
+      refreshMathQuestion()
+      return
+    }
+
     if (!agreed) {
       setError("请先同意用户服务协议和隐私政策")
       return
@@ -108,6 +147,31 @@ export default function RegisterPage() {
                 icon={<ShieldCheck className="w-4 h-4" />}
                 required
                 minLength={6}
+              />
+            </div>
+
+            {/* 数学验证 */}
+            <div className="space-y-2">
+              <div className="flex items-center space-x-3">
+                <div className="flex-1 flex items-center space-x-2 bg-gray-100 rounded-xl px-4 py-3">
+                  <Calculator className="w-4 h-4 text-gray-500" />
+                  <span className="text-gray-700 font-medium">{mathQuestion.question}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={refreshMathQuestion}
+                  className="px-3 py-3 text-gray-500 hover:text-rose-500 transition-colors"
+                  title="换一题"
+                >
+                  🔄
+                </button>
+              </div>
+              <Input
+                type="number"
+                placeholder="请输入计算结果"
+                value={mathAnswer}
+                onChange={(e) => setMathAnswer(e.target.value)}
+                required
               />
             </div>
             
