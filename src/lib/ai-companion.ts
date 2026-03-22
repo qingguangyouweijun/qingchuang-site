@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path'
 
 import { createClient } from '@/lib/supabase/server'
 
-export const AI_MODELS = ['qwen3:1.7b', 'qwen3:4b'] as const
+export const AI_MODELS = ['qwen3:1.7b'] as const
 export const DEFAULT_AI_MODEL = 'qwen3:1.7b'
 
 export type AiMessageRole = 'user' | 'assistant'
@@ -556,3 +556,4 @@ export function getAiConversationBundle(db: AiDatabase, conversationId: string, 
 export function getAiTemplateById(templateId: string | null | undefined) {
   return aiCharacterTemplates.find((template) => template.id === templateId) ?? null
 }
+

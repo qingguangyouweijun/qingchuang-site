@@ -122,7 +122,7 @@ export function AiCompanionHomeClient({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
               <div className="rounded-2xl bg-white/10 p-4">
                 <div className="text-sm text-white/70">支持模型</div>
-                <div className="text-xl font-semibold mt-2">qwen3:1.7b / 4b</div>
+                <div className="text-xl font-semibold mt-2">qwen3:1.7b</div>
               </div>
               <div className="rounded-2xl bg-white/10 p-4">
                 <div className="text-sm text-white/70">数据存储</div>
@@ -263,4 +263,5 @@ export function AiCompanionHomeClient({
     </div>
   )
 }
+
 

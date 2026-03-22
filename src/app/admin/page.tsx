@@ -1,4 +1,4 @@
-﻿import Link from 'next/link'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { Button } from '@/components/UI/Button'
@@ -151,7 +151,7 @@ export default async function AdminPage({
             <Card className="border-white/10 bg-white/5 text-slate-100 shadow-none">
               <CardHeader>
                 <CardTitle className="text-slate-100">用户与角色</CardTitle>
-                <CardDescription className="text-slate-400">统一注册仍然使用 11 位数字账号。这里可以把用户切换为管理员或普通用户。</CardDescription>
+                <CardDescription className="text-slate-400">统一身份已经切到邮箱验证码登录。这里可以把用户切换为管理员或普通用户。</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {(data.users || []).map((user: any) => (
@@ -159,7 +159,7 @@ export default async function AdminPage({
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <div className="font-semibold text-white">{user.nickname || user.account}</div>
-                        <div className="text-sm text-slate-400 mt-1">账号：{user.account}</div>
+                        <div className="text-sm text-slate-400 mt-1">邮箱：{user.account}</div>
                       </div>
                       <Badge variant={user.app_role === 'admin' ? 'secondary' : 'outline'}>{APP_ROLE_LABELS[user.app_role === 'admin' ? 'admin' : 'user']}</Badge>
                     </div>

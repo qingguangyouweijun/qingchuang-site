@@ -1,122 +1,151 @@
-﻿import Link from "next/link"
-import { BookOpen, Bot, HeartHandshake, Package, Shield } from "lucide-react"
-import { MainLayout } from "@/components/Layout/MainLayout"
-import { Button } from "@/components/UI/Button"
-import { Card, CardContent } from "@/components/UI/Card"
+import Link from 'next/link'
+import { ArrowRight, BookOpen, Bot, HeartHandshake, Package, ShieldCheck, Sparkles, Wallet } from 'lucide-react'
+import { MainLayout } from '@/components/Layout/MainLayout'
+import { Button } from '@/components/UI/Button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/Card'
 
-const features = [
+const modules = [
   {
-    title: '校园快递代取',
-    desc: '支持小件、中件、大件、超大件合单下单，支付后进入接单广场。',
+    title: '校园服务',
+    description: '把快递代取、旧书广场、订单中心和校园钱包放进同一个入口。',
+    href: '/campus',
     icon: Package,
-    color: 'bg-amber-50 text-amber-600',
-  },
-  {
-    title: '旧书广场',
-    desc: '卖家发布后直接进入旧书广场，买家下单后由卖家送到楼栋/楼层。',
-    icon: BookOpen,
-    color: 'bg-lime-50 text-lime-600',
+    tone: 'bg-emerald-50 text-emerald-600',
   },
   {
     title: '晴窗',
-    desc: '轻创内的同频社交功能，资料和后续付费能力统一并入 qingchuang.site 主站流程。',
+    description: '轻创里的同频社交功能，保留独立氛围，但账户、资料和支付继续复用主站。',
+    href: '/draw',
     icon: HeartHandshake,
-    color: 'bg-rose-50 text-rose-500',
+    tone: 'bg-sky-50 text-sky-600',
   },
   {
     title: 'AI 陪伴',
-    desc: '创建专属角色、开启多条会话、自动生成长期记忆，并支持语气微调。',
+    description: '创建角色、持续聊天、沉淀长期记忆，统一接入轻创账号体系。',
+    href: '/ai-companion',
     icon: Bot,
-    color: 'bg-sky-50 text-sky-600',
+    tone: 'bg-amber-50 text-amber-600',
+  },
+]
+
+const highlights = [
+  {
+    title: '邮箱一键进入',
+    description: '不再要求 11 位数字账号，用邮箱验证码就能完成注册和登录。',
+    icon: Sparkles,
   },
   {
-    title: '管理员网站',
-    desc: '普通用户和管理员入口分离，管理员独立处理订单、结算和数据看板。',
-    icon: Shield,
-    color: 'bg-emerald-50 text-emerald-600',
+    title: '校园入口更直接',
+    description: '首页和校园页都可以直接进入快递代取和旧书广场，不需要先读一堆规则。',
+    icon: BookOpen,
+  },
+  {
+    title: '账户与钱包统一',
+    description: '订单、结算、AI 陪伴和晴窗都复用轻创主站，不再四处分散。',
+    icon: Wallet,
   },
 ]
 
 export default function Home() {
   return (
     <MainLayout>
-      <section className="min-h-[76vh] flex flex-col justify-center py-16 space-y-10">
-        <div className="max-w-4xl space-y-6">
-          <div className="inline-flex items-center rounded-full bg-white/70 px-4 py-2 text-sm text-amber-700 border border-amber-100">
-            轻创 Qintra · 让便捷融入生活
+      <section className="min-h-[76vh] flex flex-col justify-center py-14 space-y-12">
+        <div className="grid gap-10 xl:grid-cols-[1.35fr_0.9fr] items-center">
+          <div className="space-y-6 max-w-4xl">
+            <div className="inline-flex items-center rounded-full border border-emerald-100 bg-white/80 px-4 py-2 text-sm text-emerald-700 shadow-sm">
+              轻创 Qintra · 让便捷融入生活
+            </div>
+            <div className="space-y-5">
+              <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
+                把校园服务、晴窗和 AI 陪伴
+                <span className="block text-gradient">收进一个更轻的入口里</span>
+              </h1>
+              <p className="text-lg md:text-xl text-slate-600 max-w-3xl leading-8">
+                轻创是你进入校园代取、旧书流转、同频社交和数字陪伴的统一入口。首页只保留最核心的去向，真正的业务细节在对应模块里完成。
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
+              <Link href="/auth/register"><Button size="lg">邮箱注册</Button></Link>
+              <Link href="/auth/login"><Button size="lg" variant="outline">邮箱登录</Button></Link>
+              <Link href="/campus/express"><Button size="lg" variant="secondary">快递代取</Button></Link>
+              <Link href="/campus/books"><Button size="lg" variant="glass">旧书广场</Button></Link>
+              <Link href="/admin/login"><Button size="lg" variant="glass">管理员入口</Button></Link>
+            </div>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-gray-900">
-            一个账号，统一进入
-            <span className="block bg-clip-text text-transparent bg-gradient-to-r from-amber-500 via-emerald-500 to-sky-500">
-              轻创 Qintra
-            </span>
-          </h1>
-          <p className="text-lg md:text-xl text-gray-600 max-w-3xl leading-8">
-            复用统一的 11 位数字账号体系，普通用户可进入校园服务、晴窗和 AI 陪伴模块，管理员进入独立后台。
-            旧的分散入口已经收掉，订单和支付能力统一沉到 qingchuang.site 主站。
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 pt-2 flex-wrap">
-            <Link href="/auth/register"><Button size="lg">普通用户注册</Button></Link>
-            <Link href="/auth/login"><Button size="lg" variant="outline">普通用户登录</Button></Link>
-            <Link href="/campus"><Button size="lg" variant="secondary">进入校园服务</Button></Link>
-            <Link href="/draw"><Button size="lg" variant="glass">进入晴窗</Button></Link>
-            <Link href="/admin/login"><Button size="lg" variant="glass">管理员登录</Button></Link>
-          </div>
+
+          <Card className="border-none shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
+            <CardHeader className="pb-4">
+              <CardTitle>轻创现在能做什么</CardTitle>
+              <CardDescription>不再展示大段规则，先把最重要的去向和能力告诉你。</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {highlights.map((item) => (
+                <div key={item.title} className="rounded-2xl border border-emerald-100/70 bg-white/90 px-4 py-4 flex gap-4 items-start">
+                  <div className="mt-1 w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <item.icon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-slate-900">{item.title}</div>
+                    <p className="text-sm text-slate-600 leading-6 mt-1">{item.description}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 pt-6">
-          {features.map((item) => (
-            <Card key={item.title} className="border-none hover:bg-white/85 transition-all duration-300">
-              <CardContent className="p-6 flex flex-col gap-4">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${item.color}`}>
-                  <item.icon className="w-6 h-6" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900">{item.title}</h2>
-                  <p className="text-sm text-gray-600 leading-6 mt-2">{item.desc}</p>
-                </div>
-              </CardContent>
-            </Card>
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {modules.map((item) => (
+            <Link key={item.href} href={item.href}>
+              <Card className="border-none h-full hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                <CardContent className="p-6 space-y-5">
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${item.tone}`}>
+                    <item.icon className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <h2 className="text-xl font-bold text-slate-900">{item.title}</h2>
+                      <ArrowRight className="w-4 h-4 text-slate-400" />
+                    </div>
+                    <p className="text-sm text-slate-600 leading-7">{item.description}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
-        </div>
+        </section>
 
-        <Card className="border-none shadow-lg">
-          <CardContent className="p-8 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            <div>
-              <h3 className="text-xl font-bold text-gray-900">当前已整合的核心模块</h3>
-              <p className="text-gray-600 mt-2 leading-7">普通用户端、晴窗、AI 陪伴、管理员网站、统一注册登录、校园订单状态流、校园结算账本。</p>
-            </div>
-            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-5 gap-4">
-              <div className="rounded-2xl bg-amber-50 p-5">
-                <Package className="w-5 h-5 text-amber-600" />
-                <div className="mt-3 font-semibold text-gray-900">快递代取</div>
-                <div className="text-sm text-gray-600 mt-1">下单、支付、接单、确认收货</div>
+        <section className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6">
+          <Card className="border-none shadow-lg">
+            <CardContent className="p-7 space-y-4">
+              <div className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+                校园服务优先
               </div>
-              <div className="rounded-2xl bg-lime-50 p-5">
-                <BookOpen className="w-5 h-5 text-lime-600" />
-                <div className="mt-3 font-semibold text-gray-900">旧书广场</div>
-                <div className="text-sm text-gray-600 mt-1">发布、购买、送达、确认收货</div>
+              <h3 className="text-2xl font-bold text-slate-900">先从快递代取和旧书广场开始</h3>
+              <p className="text-slate-600 leading-7">
+                轻创当前最核心的两条业务线是校园快递代取和旧书流转。登录后直接下单、接单、发布和购买，不需要跳转到额外的子系统。
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link href="/campus/express"><Button>进入快递代取</Button></Link>
+                <Link href="/campus/books"><Button variant="outline">进入旧书广场</Button></Link>
               </div>
-              <div className="rounded-2xl bg-rose-50 p-5">
-                <HeartHandshake className="w-5 h-5 text-rose-500" />
-                <div className="mt-3 font-semibold text-gray-900">晴窗</div>
-                <div className="text-sm text-gray-600 mt-1">统一资料、主站支付、后续社交能力</div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-lg">
+            <CardContent className="p-7 space-y-4">
+              <div className="inline-flex items-center rounded-full bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700">
+                管理与风控
               </div>
-              <div className="rounded-2xl bg-sky-50 p-5">
-                <Bot className="w-5 h-5 text-sky-600" />
-                <div className="mt-3 font-semibold text-gray-900">AI 陪伴</div>
-                <div className="text-sm text-gray-600 mt-1">角色、聊天、记忆摘要</div>
-              </div>
-              <div className="rounded-2xl bg-emerald-50 p-5">
-                <Shield className="w-5 h-5 text-emerald-600" />
-                <div className="mt-3 font-semibold text-gray-900">管理员网站</div>
-                <div className="text-sm text-gray-600 mt-1">订单、用户、结算申请处理</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              <h3 className="text-2xl font-bold text-slate-900">管理员站点独立存在</h3>
+              <p className="text-slate-600 leading-7">
+                普通用户只看服务入口，管理员通过单独页面处理用户角色、结算和订单状态，避免把后台信息暴露给普通访问者。
+              </p>
+              <Link href="/admin/login"><Button variant="secondary">进入管理员登录</Button></Link>
+            </CardContent>
+          </Card>
+        </section>
       </section>
     </MainLayout>
   )
 }
-

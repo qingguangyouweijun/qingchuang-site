@@ -1,71 +1,71 @@
 -- =============================================
--- 晴窗葳蕤 - 数据库表结构
--- 在 Supabase SQL Editor 中执行此脚本
+-- 鏅寸獥钁宠暏 - 鏁版嵁搴撹〃缁撴瀯
+-- 鍦?Supabase SQL Editor 涓墽琛屾鑴氭湰
 -- =============================================
 
--- 1. 用户资料表 (profiles)
+-- 1. 鐢ㄦ埛璧勬枡琛?(profiles)
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  account VARCHAR(11) UNIQUE NOT NULL, -- 11位数字账号
+  account VARCHAR(320) UNIQUE NOT NULL, -- 鐢ㄤ簬瀛樺偍閭鍦板潃
   nickname VARCHAR(50),
-  gender VARCHAR(10) CHECK (gender IN ('male', 'female')), -- 性别
-  age INTEGER CHECK (age >= 18 AND age <= 60), -- 年龄
-  appearance VARCHAR(20) CHECK (appearance IN ('normal', 'good', 'stunning')), -- 相貌: 普通/出众/超级哇塞
-  identity VARCHAR(20) CHECK (identity IN ('student', 'non_student')), -- 身份: 学生/非学生
-  location VARCHAR(100), -- 地域/学校
-  grade VARCHAR(20), -- 年级 (学生时必填)
-  bio TEXT, -- 个人介绍
-  contact_visibility_limit INTEGER DEFAULT 0 CHECK (contact_visibility_limit >= 0 AND contact_visibility_limit <= 20), -- 可见人数上限
-  balance DECIMAL(10, 2) DEFAULT 0.00, -- 钱包余额
-  is_verified BOOLEAN DEFAULT FALSE, -- 是否已认证
-  is_profile_complete BOOLEAN DEFAULT FALSE, -- 资料是否完善
+  gender VARCHAR(10) CHECK (gender IN ('male', 'female')), -- 鎬у埆
+  age INTEGER CHECK (age >= 18 AND age <= 60), -- 骞撮緞
+  appearance VARCHAR(20) CHECK (appearance IN ('normal', 'good', 'stunning')), -- 鐩歌矊: 鏅€?鍑轰紬/瓒呯骇鍝囧
+  identity VARCHAR(20) CHECK (identity IN ('student', 'non_student')), -- 韬唤: 瀛︾敓/闈炲鐢?
+  location VARCHAR(100), -- 鍦板煙/瀛︽牎
+  grade VARCHAR(20), -- 骞寸骇 (瀛︾敓鏃跺繀濉?
+  bio TEXT, -- 涓汉浠嬬粛
+  contact_visibility_limit INTEGER DEFAULT 0 CHECK (contact_visibility_limit >= 0 AND contact_visibility_limit <= 20), -- 鍙浜烘暟涓婇檺
+  balance DECIMAL(10, 2) DEFAULT 0.00, -- 閽卞寘浣欓
+  is_verified BOOLEAN DEFAULT FALSE, -- 鏄惁宸茶璇?
+  is_profile_complete BOOLEAN DEFAULT FALSE, -- 璧勬枡鏄惁瀹屽杽
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 2. 联系方式池表 (contact_pool)
+-- 2. 鑱旂郴鏂瑰紡姹犺〃 (contact_pool)
 CREATE TABLE IF NOT EXISTS contact_pool (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  wechat VARCHAR(100), -- 微信号
-  qq VARCHAR(20), -- QQ号
-  phone VARCHAR(20), -- 手机号
-  is_active BOOLEAN DEFAULT TRUE, -- 是否在池中
-  drawn_count INTEGER DEFAULT 0, -- 已被抽取次数
-  max_drawn_count INTEGER DEFAULT 0, -- 最大可抽取次数 (来自profile.contact_visibility_limit)
+  wechat VARCHAR(100), -- 寰俊鍙?
+  qq VARCHAR(20), -- QQ鍙?
+  phone VARCHAR(20), -- 鎵嬫満鍙?
+  is_active BOOLEAN DEFAULT TRUE, -- 鏄惁鍦ㄦ睜涓?
+  drawn_count INTEGER DEFAULT 0, -- 宸茶鎶藉彇娆℃暟
+  max_drawn_count INTEGER DEFAULT 0, -- 鏈€澶у彲鎶藉彇娆℃暟 (鏉ヨ嚜profile.contact_visibility_limit)
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(user_id)
 );
 
--- 3. 抽取记录表 (draw_history)
+-- 3. 鎶藉彇璁板綍琛?(draw_history)
 CREATE TABLE IF NOT EXISTS draw_history (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  drawer_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE, -- 抽取者
-  target_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE, -- 被抽取者
-  tier VARCHAR(20) NOT NULL CHECK (tier IN ('basic', 'advanced', 'vip')), -- 抽取档位
-  price DECIMAL(10, 2) NOT NULL, -- 支付金额
-  contact_wechat VARCHAR(100), -- 抽取时的微信
-  contact_qq VARCHAR(20), -- 抽取时的QQ
-  contact_phone VARCHAR(20), -- 抽取时的手机
-  note TEXT, -- 用户备注
-  is_deleted BOOLEAN DEFAULT FALSE, -- 是否已删除(软删除)
+  drawer_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE, -- 鎶藉彇鑰?
+  target_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE, -- 琚娊鍙栬€?
+  tier VARCHAR(20) NOT NULL CHECK (tier IN ('basic', 'advanced', 'vip')), -- 鎶藉彇妗ｄ綅
+  price DECIMAL(10, 2) NOT NULL, -- 鏀粯閲戦
+  contact_wechat VARCHAR(100), -- 鎶藉彇鏃剁殑寰俊
+  contact_qq VARCHAR(20), -- 鎶藉彇鏃剁殑QQ
+  contact_phone VARCHAR(20), -- 鎶藉彇鏃剁殑鎵嬫満
+  note TEXT, -- 鐢ㄦ埛澶囨敞
+  is_deleted BOOLEAN DEFAULT FALSE, -- 鏄惁宸插垹闄?杞垹闄?
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 4. 交易记录表 (transactions)
+-- 4. 浜ゆ槗璁板綍琛?(transactions)
 CREATE TABLE IF NOT EXISTS transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  type VARCHAR(20) NOT NULL CHECK (type IN ('recharge', 'draw', 'refund')), -- 类型: 充值/抽取/退款
-  amount DECIMAL(10, 2) NOT NULL, -- 金额
-  balance_after DECIMAL(10, 2) NOT NULL, -- 交易后余额
-  description TEXT, -- 描述
-  related_draw_id UUID REFERENCES draw_history(id), -- 关联的抽取记录
+  type VARCHAR(20) NOT NULL CHECK (type IN ('recharge', 'draw', 'refund')), -- 绫诲瀷: 鍏呭€?鎶藉彇/閫€娆?
+  amount DECIMAL(10, 2) NOT NULL, -- 閲戦
+  balance_after DECIMAL(10, 2) NOT NULL, -- 浜ゆ槗鍚庝綑棰?
+  description TEXT, -- 鎻忚堪
+  related_draw_id UUID REFERENCES draw_history(id), -- 鍏宠仈鐨勬娊鍙栬褰?
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 5. 创建索引
+-- 5. 鍒涘缓绱㈠紩
 CREATE INDEX IF NOT EXISTS idx_profiles_gender ON profiles(gender);
 CREATE INDEX IF NOT EXISTS idx_profiles_age ON profiles(age);
 CREATE INDEX IF NOT EXISTS idx_profiles_identity ON profiles(identity);
@@ -74,15 +74,16 @@ CREATE INDEX IF NOT EXISTS idx_contact_pool_active ON contact_pool(is_active);
 CREATE INDEX IF NOT EXISTS idx_draw_history_drawer ON draw_history(drawer_id);
 CREATE INDEX IF NOT EXISTS idx_draw_history_created ON draw_history(created_at DESC);
 
--- 6. 启用 Row Level Security (RLS)
+-- 6. 鍚敤 Row Level Security (RLS)
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles ALTER COLUMN account TYPE VARCHAR(320);
 ALTER TABLE contact_pool ENABLE ROW LEVEL SECURITY;
 ALTER TABLE draw_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 
--- 7. RLS 策略
+-- 7. RLS 绛栫暐
 
--- profiles: 用户只能读自己的资料，但可以读取其他用户的公开信息
+-- profiles: 鐢ㄦ埛鍙兘璇昏嚜宸辩殑璧勬枡锛屼絾鍙互璇诲彇鍏朵粬鐢ㄦ埛鐨勫叕寮€淇℃伅
 CREATE POLICY "Users can view own profile" ON profiles
   FOR SELECT USING (auth.uid() = id);
 
@@ -92,19 +93,19 @@ CREATE POLICY "Users can update own profile" ON profiles
 CREATE POLICY "Users can insert own profile" ON profiles
   FOR INSERT WITH CHECK (auth.uid() = id);
 
--- 允许查看其他用户的公开资料 (用于抽取结果展示)
+-- 鍏佽鏌ョ湅鍏朵粬鐢ㄦ埛鐨勫叕寮€璧勬枡 (鐢ㄤ簬鎶藉彇缁撴灉灞曠ず)
 CREATE POLICY "Users can view public profiles for matching" ON profiles
   FOR SELECT USING (is_profile_complete = TRUE);
 
--- contact_pool: 用户只能管理自己的联系方式
+-- contact_pool: 鐢ㄦ埛鍙兘绠＄悊鑷繁鐨勮仈绯绘柟寮?
 CREATE POLICY "Users can manage own contact" ON contact_pool
   FOR ALL USING (auth.uid() = user_id);
 
--- 允许抽取时读取其他用户的联系方式
+-- 鍏佽鎶藉彇鏃惰鍙栧叾浠栫敤鎴风殑鑱旂郴鏂瑰紡
 CREATE POLICY "Active contacts visible for draw" ON contact_pool
   FOR SELECT USING (is_active = TRUE AND drawn_count < max_drawn_count);
 
--- draw_history: 用户只能看自己的抽取记录
+-- draw_history: 鐢ㄦ埛鍙兘鐪嬭嚜宸辩殑鎶藉彇璁板綍
 CREATE POLICY "Users can view own draw history" ON draw_history
   FOR SELECT USING (auth.uid() = drawer_id);
 
@@ -114,14 +115,14 @@ CREATE POLICY "Users can insert own draw history" ON draw_history
 CREATE POLICY "Users can update own draw history" ON draw_history
   FOR UPDATE USING (auth.uid() = drawer_id);
 
--- transactions: 用户只能看自己的交易记录
+-- transactions: 鐢ㄦ埛鍙兘鐪嬭嚜宸辩殑浜ゆ槗璁板綍
 CREATE POLICY "Users can view own transactions" ON transactions
   FOR SELECT USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can insert own transactions" ON transactions
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- 8. 自动更新 updated_at 的触发器
+-- 8. 鑷姩鏇存柊 updated_at 鐨勮Е鍙戝櫒
 CREATE OR REPLACE FUNCTION update_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -138,7 +139,7 @@ CREATE TRIGGER contact_pool_updated_at
   BEFORE UPDATE ON contact_pool
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
--- 9. 抽取函数 (随机匹配 + 扣费 + 记录)
+-- 9. 鎶藉彇鍑芥暟 (闅忔満鍖归厤 + 鎵ｈ垂 + 璁板綍)
 CREATE OR REPLACE FUNCTION perform_draw(
   p_drawer_id UUID,
   p_tier VARCHAR(20),
@@ -159,16 +160,16 @@ DECLARE
   v_draw_id UUID;
   v_new_balance DECIMAL(10, 2);
 BEGIN
-  -- 获取抽取者信息
+  -- 鑾峰彇鎶藉彇鑰呬俊鎭?
   SELECT balance, gender INTO v_drawer_balance, v_drawer_gender
   FROM profiles WHERE id = p_drawer_id;
   
-  -- 检查余额
+  -- 妫€鏌ヤ綑棰?
   IF v_drawer_balance < p_price THEN
-    RETURN json_build_object('success', FALSE, 'error', '余额不足，请先充值');
+    RETURN json_build_object('success', FALSE, 'error', '浣欓涓嶈冻锛岃鍏堝厖鍊?);
   END IF;
   
-  -- 查找匹配的异性用户 (排除自己和30天内抽过的)
+  -- 鏌ユ壘鍖归厤鐨勫紓鎬х敤鎴?(鎺掗櫎鑷繁鍜?0澶╁唴鎶借繃鐨?
   SELECT p.id INTO v_target_id
   FROM profiles p
   JOIN contact_pool c ON c.user_id = p.id
@@ -176,7 +177,7 @@ BEGIN
     AND p.is_profile_complete = TRUE
     AND c.is_active = TRUE
     AND c.drawn_count < c.max_drawn_count
-    AND p.gender != v_drawer_gender  -- 只匹配异性
+    AND p.gender != v_drawer_gender  -- 鍙尮閰嶅紓鎬?
     AND (p_gender IS NULL OR p.gender = p_gender)
     AND (p_age_min IS NULL OR p.age >= p_age_min)
     AND (p_age_max IS NULL OR p.age <= p_age_max)
@@ -190,37 +191,37 @@ BEGIN
   ORDER BY RANDOM()
   LIMIT 1;
   
-  -- 检查是否找到匹配
+  -- 妫€鏌ユ槸鍚︽壘鍒板尮閰?
   IF v_target_id IS NULL THEN
-    RETURN json_build_object('success', FALSE, 'error', '暂无符合条件的用户，请调整筛选条件');
+    RETURN json_build_object('success', FALSE, 'error', '鏆傛棤绗﹀悎鏉′欢鐨勭敤鎴凤紝璇疯皟鏁寸瓫閫夋潯浠?);
   END IF;
   
-  -- 获取目标用户信息
+  -- 鑾峰彇鐩爣鐢ㄦ埛淇℃伅
   SELECT * INTO v_target_record FROM profiles WHERE id = v_target_id;
   SELECT * INTO v_contact_record FROM contact_pool WHERE user_id = v_target_id;
   
-  -- 扣费
+  -- 鎵ｈ垂
   v_new_balance := v_drawer_balance - p_price;
   UPDATE profiles SET balance = v_new_balance WHERE id = p_drawer_id;
   
-  -- 增加被抽取次数
+  -- 澧炲姞琚娊鍙栨鏁?
   UPDATE contact_pool SET drawn_count = drawn_count + 1 WHERE user_id = v_target_id;
   
-  -- 如果达到上限，自动下架
+  -- 濡傛灉杈惧埌涓婇檺锛岃嚜鍔ㄤ笅鏋?
   UPDATE contact_pool 
   SET is_active = FALSE 
   WHERE user_id = v_target_id AND drawn_count >= max_drawn_count;
   
-  -- 创建抽取记录
+  -- 鍒涘缓鎶藉彇璁板綍
   INSERT INTO draw_history (drawer_id, target_id, tier, price, contact_wechat, contact_qq, contact_phone)
   VALUES (p_drawer_id, v_target_id, p_tier, p_price, v_contact_record.wechat, v_contact_record.qq, v_contact_record.phone)
   RETURNING id INTO v_draw_id;
   
-  -- 创建交易记录
+  -- 鍒涘缓浜ゆ槗璁板綍
   INSERT INTO transactions (user_id, type, amount, balance_after, description, related_draw_id)
-  VALUES (p_drawer_id, 'draw', -p_price, v_new_balance, '抽取 ' || p_tier || ' 档位', v_draw_id);
+  VALUES (p_drawer_id, 'draw', -p_price, v_new_balance, '鎶藉彇 ' || p_tier || ' 妗ｄ綅', v_draw_id);
   
-  -- 返回结果
+  -- 杩斿洖缁撴灉
   RETURN json_build_object(
     'success', TRUE,
     'draw_id', v_draw_id,
@@ -246,7 +247,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- =============================================
--- 校园快递代取 + 旧书交易 + 管理后台扩展
+-- 鏍″洯蹇€掍唬鍙?+ 鏃т功浜ゆ槗 + 绠＄悊鍚庡彴鎵╁睍
 -- =============================================
 
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS app_role VARCHAR(20) DEFAULT 'user' CHECK (app_role IN ('user', 'admin'));

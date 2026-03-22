@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import * as React from "react"
 import Link from "next/link"
@@ -133,7 +133,7 @@ export default function ProfilePage() {
 
             <div className="flex flex-col md:flex-row items-center md:items-start md:pl-36 gap-6">
               <div className="text-center md:text-left flex-1">
-                <Badge variant="secondary">账号中心</Badge>
+                <Badge variant="secondary">个人中心</Badge>
                 <h1 className="text-3xl font-bold text-gray-900 mt-3">{profile.nickname || profile.account}</h1>
                 <p className="text-gray-500 mt-2">轻创 Qintra</p>
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-4">
@@ -160,7 +160,7 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
               <div className="rounded-2xl bg-amber-50 p-4">
-                <div className="text-gray-500">账号</div>
+                <div className="text-gray-500">邮箱</div>
                 <div className="text-lg font-semibold text-gray-900 mt-2">{profile.account}</div>
               </div>
               <div className="rounded-2xl bg-sky-50 p-4">

@@ -1,13 +1,13 @@
-﻿"use client"
+"use client"
 
-import * as React from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Menu, X, Home, Package, BookOpen, ReceiptText, Wallet, Shield, LogOut, Bot, SunMedium, HeartHandshake } from "lucide-react"
-import { Button } from "@/components/UI/Button"
-import { createClient } from "@/lib/supabase/client"
-import type { Profile } from "@/lib/types"
+import * as React from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
+import { Menu, X, Home, Package, LogOut, Bot, SunMedium, HeartHandshake, Shield } from 'lucide-react'
+import { Button } from '@/components/UI/Button'
+import { createClient } from '@/lib/supabase/client'
+import type { Profile } from '@/lib/types'
 
 export function Header() {
   const pathname = usePathname()
@@ -50,20 +50,16 @@ export function Header() {
     { name: '校园服务', href: '/campus', icon: Package },
     { name: '晴窗', href: '/draw', icon: HeartHandshake },
     { name: 'AI 陪伴', href: '/ai-companion', icon: Bot },
-    { name: '快递代取', href: '/campus/express', icon: Package },
-    { name: '旧书广场', href: '/campus/books', icon: BookOpen },
-    { name: '我的订单', href: '/campus/orders', icon: ReceiptText },
-    { name: '校园钱包', href: '/campus/wallet', icon: Wallet },
   ]
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass border-b-0 border-white/20">
+    <header className="fixed top-0 left-0 right-0 z-50 glass border-b-0">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center space-x-2 group">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-400 to-emerald-500 flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform shadow-sm">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-500 to-sky-500 flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform shadow-sm">
             <SunMedium className="w-4 h-4" />
           </div>
-          <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-emerald-600">
+          <span className="text-xl font-bold text-gradient">
             轻创 Qintra
           </span>
         </Link>
@@ -76,8 +72,8 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center space-x-1 text-sm font-medium transition-colors hover:text-emerald-600',
-                  isActive ? 'text-emerald-700 font-semibold' : 'text-gray-600'
+                  'flex items-center space-x-1 text-sm font-medium transition-colors hover:text-emerald-700',
+                  isActive ? 'text-emerald-700 font-semibold' : 'text-slate-600'
                 )}
               >
                 <item.icon className="w-4 h-4" />
@@ -86,7 +82,7 @@ export function Header() {
             )
           })}
           {user?.app_role === 'admin' && (
-            <Link href="/admin" className={cn('flex items-center space-x-1 text-sm font-medium transition-colors hover:text-sky-600', pathname.startsWith('/admin') ? 'text-sky-700 font-semibold' : 'text-gray-600')}>
+            <Link href="/admin" className={cn('flex items-center space-x-1 text-sm font-medium transition-colors hover:text-sky-700', pathname.startsWith('/admin') ? 'text-sky-700 font-semibold' : 'text-slate-600')}>
               <Shield className="w-4 h-4" />
               <span>管理员网站</span>
             </Link>
@@ -95,10 +91,10 @@ export function Header() {
 
         <div className="hidden md:flex items-center space-x-4">
           {isLoading ? (
-            <div className="w-20 h-8 rounded-full bg-gray-200 animate-pulse" />
+            <div className="w-20 h-8 rounded-full bg-slate-200 animate-pulse" />
           ) : user ? (
             <>
-              <Link href="/profile" className="text-sm text-gray-700 hover:text-emerald-700 transition-colors">
+              <Link href="/profile" className="text-sm text-slate-700 hover:text-emerald-700 transition-colors">
                 {(user.nickname || user.account) ?? '当前用户'}
               </Link>
               {user.app_role === 'admin' && (
@@ -106,17 +102,17 @@ export function Header() {
                   <Button variant="secondary" size="sm">管理后台</Button>
                 </Link>
               )}
-              <button onClick={handleLogout} className="p-2 text-gray-500 hover:text-emerald-600 transition-colors" title="退出登录">
+              <button onClick={handleLogout} className="p-2 text-slate-500 hover:text-emerald-700 transition-colors" title="退出登录">
                 <LogOut className="w-4 h-4" />
               </button>
             </>
           ) : (
             <>
               <Link href="/auth/login">
-                <Button variant="ghost" size="sm">普通登录</Button>
+                <Button variant="ghost" size="sm">邮箱登录</Button>
               </Link>
               <Link href="/auth/register">
-                <Button size="sm">注册账号</Button>
+                <Button size="sm">邮箱注册</Button>
               </Link>
               <Link href="/admin/login">
                 <Button variant="secondary" size="sm">管理员登录</Button>
@@ -125,16 +121,16 @@ export function Header() {
           )}
         </div>
 
-        <button className="md:hidden p-2 text-gray-600" onClick={() => setIsMenuOpen((prev) => !prev)}>
+        <button className="md:hidden p-2 text-slate-600" onClick={() => setIsMenuOpen((prev) => !prev)}>
           {isMenuOpen ? <X /> : <Menu />}
         </button>
       </div>
 
       {isMenuOpen && (
-        <div className="md:hidden bg-white shadow-xl border-t border-gray-100">
+        <div className="md:hidden bg-white/95 shadow-xl border-t border-emerald-100 backdrop-blur-xl">
           <nav className="flex flex-col p-4 space-y-2">
             {navItems.map((item) => (
-              <Link key={item.href} href={item.href} className="px-4 py-3 rounded-xl hover:bg-emerald-50 text-gray-700" onClick={() => setIsMenuOpen(false)}>
+              <Link key={item.href} href={item.href} className="px-4 py-3 rounded-xl hover:bg-emerald-50 text-slate-700" onClick={() => setIsMenuOpen(false)}>
                 {item.name}
               </Link>
             ))}
@@ -143,13 +139,13 @@ export function Header() {
                 管理员网站
               </Link>
             )}
-            <div className="pt-3 border-t border-gray-100 flex flex-col gap-2">
+            <div className="pt-3 border-t border-emerald-100 flex flex-col gap-2">
               {user ? (
                 <Button variant="ghost" className="w-full" onClick={() => void handleLogout()}>退出登录</Button>
               ) : (
                 <>
-                  <Link href="/auth/login" onClick={() => setIsMenuOpen(false)}><Button variant="ghost" className="w-full">普通登录</Button></Link>
-                  <Link href="/auth/register" onClick={() => setIsMenuOpen(false)}><Button className="w-full">注册账号</Button></Link>
+                  <Link href="/auth/login" onClick={() => setIsMenuOpen(false)}><Button variant="ghost" className="w-full">邮箱登录</Button></Link>
+                  <Link href="/auth/register" onClick={() => setIsMenuOpen(false)}><Button className="w-full">邮箱注册</Button></Link>
                   <Link href="/admin/login" onClick={() => setIsMenuOpen(false)}><Button variant="secondary" className="w-full">管理员登录</Button></Link>
                 </>
               )}

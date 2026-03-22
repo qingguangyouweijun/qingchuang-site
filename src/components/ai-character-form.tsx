@@ -11,7 +11,7 @@ import { Input } from '@/components/UI/Input'
 import { Select } from '@/components/UI/Select'
 import type { AiCharacter, AiCharacterDraft, AiCharacterTemplate } from '@/lib/ai-companion'
 
-const MODEL_OPTIONS = ['qwen3:1.7b', 'qwen3:4b']
+const MODEL_OPTIONS = ['qwen3:1.7b']
 
 const EMPTY_DRAFT: AiCharacterDraft = {
   avatarUrl: '',
@@ -306,3 +306,4 @@ export function AiCharacterForm({
     </div>
   )
 }
+
