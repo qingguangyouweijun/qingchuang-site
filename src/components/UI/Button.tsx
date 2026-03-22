@@ -15,15 +15,15 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center rounded-full font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:pointer-events-none disabled:opacity-50 active:scale-95',
+          'inline-flex items-center justify-center rounded-full font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]',
           {
-            'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-200/80 hover:shadow-xl hover:shadow-emerald-200 hover:-translate-y-0.5': variant === 'primary',
-            'bg-gradient-to-r from-sky-500 to-cyan-600 text-white shadow-lg shadow-sky-200/80 hover:shadow-xl hover:shadow-sky-200 hover:-translate-y-0.5': variant === 'secondary',
-            'border border-emerald-200 bg-white/85 hover:bg-emerald-50 text-emerald-800': variant === 'outline',
-            'hover:bg-emerald-50/80 text-emerald-700 hover:text-emerald-900': variant === 'ghost',
-            'bg-white/70 backdrop-blur-md border border-white/70 text-slate-700 hover:bg-white/90 shadow-sm hover:shadow-md': variant === 'glass',
+            'bg-emerald-600 text-white shadow-[0_10px_26px_rgba(22,163,74,0.2)] hover:bg-emerald-700': variant === 'primary',
+            'bg-slate-900 text-white shadow-[0_10px_26px_rgba(15,23,42,0.14)] hover:bg-slate-800': variant === 'secondary',
+            'border border-emerald-200 bg-white text-emerald-800 hover:bg-emerald-50': variant === 'outline',
+            'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900': variant === 'ghost',
+            'border border-slate-200 bg-white/92 text-slate-700 hover:bg-white shadow-sm': variant === 'glass',
 
-            'h-8 px-4 text-xs': size === 'sm',
+            'h-9 px-4 text-xs': size === 'sm',
             'h-11 px-6 text-sm': size === 'md',
             'h-14 px-8 text-base': size === 'lg',
             'h-10 w-10 p-0': size === 'icon',

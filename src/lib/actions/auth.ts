@@ -16,12 +16,16 @@ function validateEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
-function mapAuthError(message: string) {
-  if (message.includes('rate limit')) {
-    return '验证码发送过于频繁，请稍后再试。'
-  }
+function resolveMode(value: string): AuthMode {
+  return value === 'register' ? 'register' : 'login'
+}
 
-  if (message.includes('For security purposes')) {
+function resolveScope(value: string): AuthScope {
+  return value === 'admin' ? 'admin' : 'user'
+}
+
+function mapAuthError(message: string) {
+  if (message.includes('rate limit') || message.includes('For security purposes')) {
     return '验证码发送过于频繁，请稍后再试。'
   }
 
@@ -37,8 +41,16 @@ function mapAuthError(message: string) {
     return '该邮箱尚未注册，请先注册。'
   }
 
+  if (message.includes('already registered') || message.includes('already been registered')) {
+    return '该邮箱已注册，请直接登录。'
+  }
+
+  if (message.includes('Password should be at least')) {
+    return '密码至少需要 6 位。'
+  }
+
   if (message.includes('Email not confirmed')) {
-    return '请使用邮箱验证码完成登录。'
+    return '请先完成邮箱验证码验证。'
   }
 
   return message
@@ -53,7 +65,7 @@ async function verifyTurnstileToken(token: string) {
   }
 
   if (!token) {
-    throw new Error('请先完成 Cloudflare 人机校验。')
+    throw new Error('请先完成 Cloudflare 真人验证。')
   }
 
   const payload = new URLSearchParams()
@@ -70,13 +82,13 @@ async function verifyTurnstileToken(token: string) {
   })
 
   if (!response.ok) {
-    throw new Error('Cloudflare 人机校验暂时不可用，请稍后重试。')
+    throw new Error('Cloudflare 真人验证暂时不可用，请稍后重试。')
   }
 
   const result = await response.json() as { success?: boolean }
 
   if (!result.success) {
-    throw new Error('Cloudflare 人机校验未通过，请重试。')
+    throw new Error('Cloudflare 真人验证未通过，请重试。')
   }
 
   return true
@@ -137,18 +149,13 @@ async function ensureProfile(userId: string, email: string) {
   return 'user' as AppRole
 }
 
-function resolveMode(value: string): AuthMode {
-  return value === 'register' ? 'register' : 'login'
-}
-
-function resolveScope(value: string): AuthScope {
-  return value === 'admin' ? 'admin' : 'user'
-}
-
 export async function requestEmailCode(formData: FormData) {
   const email = normalizeEmail(String(formData.get('email') || ''))
   const mode = resolveMode(String(formData.get('mode') || 'login'))
   const turnstileToken = String(formData.get('turnstileToken') || '')
+  const password = String(formData.get('password') || '')
+  const confirmPassword = String(formData.get('confirmPassword') || '')
+  const resend = String(formData.get('resend') || '') === 'true'
 
   if (!validateEmail(email)) {
     return { error: '请输入有效的邮箱地址。' }
@@ -157,14 +164,38 @@ export async function requestEmailCode(formData: FormData) {
   try {
     await verifyTurnstileToken(turnstileToken)
   } catch (error) {
-    return { error: error instanceof Error ? error.message : 'Cloudflare 人机校验失败。' }
+    return { error: error instanceof Error ? error.message : 'Cloudflare 真人验证失败。' }
   }
 
   const supabase = await createClient()
+
+  if (mode === 'register') {
+    if (!password || password.length < 6) {
+      return { error: '注册密码至少需要 6 位。' }
+    }
+
+    if (password !== confirmPassword) {
+      return { error: '两次输入的密码不一致。' }
+    }
+
+    const response = resend
+      ? await supabase.auth.resend({ type: 'signup', email })
+      : await supabase.auth.signUp({ email, password })
+
+    if (response.error) {
+      return { error: mapAuthError(response.error.message) }
+    }
+
+    return {
+      success: true,
+      message: '注册验证码已发送到你的邮箱，请输入验证码完成注册。',
+    }
+  }
+
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      shouldCreateUser: mode === 'register',
+      shouldCreateUser: false,
     },
   })
 
@@ -174,9 +205,7 @@ export async function requestEmailCode(formData: FormData) {
 
   return {
     success: true,
-    message: mode === 'register'
-      ? '验证码已发送到你的邮箱，验证后会自动创建并登录轻创账号。'
-      : '验证码已发送到你的邮箱，请输入后继续登录。',
+    message: '登录验证码已发送到你的邮箱，请输入验证码继续。',
   }
 }
 
@@ -184,6 +213,7 @@ export async function verifyEmailCode(formData: FormData) {
   const email = normalizeEmail(String(formData.get('email') || ''))
   const code = String(formData.get('code') || '').trim()
   const scope = resolveScope(String(formData.get('scope') || 'user'))
+  const mode = resolveMode(String(formData.get('mode') || 'login'))
 
   if (!validateEmail(email)) {
     return { error: '请输入有效的邮箱地址。' }
@@ -197,7 +227,7 @@ export async function verifyEmailCode(formData: FormData) {
   const { data, error } = await supabase.auth.verifyOtp({
     email,
     token: code,
-    type: 'email',
+    type: mode === 'register' ? 'signup' : 'email',
   })
 
   if (error || !data.user) {
@@ -216,8 +246,7 @@ export async function verifyEmailCode(formData: FormData) {
       return { success: true, redirectTo: '/admin' }
     }
 
-    const redirectTo = role === 'admin' ? '/admin' : '/campus'
-    return { success: true, redirectTo }
+    return { success: true, redirectTo: role === 'admin' ? '/admin' : '/campus' }
   } catch (profileError) {
     await supabase.auth.signOut()
     return { error: profileError instanceof Error ? profileError.message : '登录完成，但初始化资料失败。' }
@@ -232,13 +261,17 @@ export async function signOut() {
 
 export async function getSession() {
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
   return session
 }
 
 export async function getCurrentUser() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) {
     return null

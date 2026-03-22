@@ -1,59 +1,51 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: #eefaf3;
-  --color-primary-100: #d9f3e3;
-  --color-primary-200: #b8e7c9;
-  --color-primary-300: #8fd8aa;
-  --color-primary-400: #5dc084;
-  --color-primary-500: #34a96a;
-  --color-primary-600: #238754;
-  --color-primary-700: #1d6a45;
-  --color-primary-800: #1a5439;
-  --color-primary-900: #17452f;
-  --color-primary-950: #0b2819;
+  --color-primary-50: #eff8f1;
+  --color-primary-100: #dceddf;
+  --color-primary-200: #bddac5;
+  --color-primary-300: #91c0a0;
+  --color-primary-400: #62a878;
+  --color-primary-500: #438b5b;
+  --color-primary-600: #336d48;
+  --color-primary-700: #29573b;
+  --color-primary-800: #234631;
+  --color-primary-900: #1e3b2a;
+  --color-primary-950: #0f2117;
 
-  --color-sky-soft: #e0f2fe;
-  --color-leaf-soft: #e7f7ee;
-  --color-sun-soft: #fff6d9;
-
-  --animate-fade-in: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  --animate-slide-up: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  --animate-float: float 6s ease-in-out infinite;
-  --animate-pulse-glow: pulseGlow 3.2s ease-in-out infinite;
-
-  --font-sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Heiti SC", system-ui, sans-serif;
+  --animate-fade-in: fadeIn 0.6s ease forwards;
+  --animate-slide-up: slideUp 0.6s ease forwards;
 }
 
 @layer utilities {
   .glass {
-    @apply bg-white/78 backdrop-blur-xl border border-emerald-100/70 shadow-[0_18px_60px_rgba(15,23,42,0.06)];
+    @apply bg-white/92 backdrop-blur-md border border-slate-200/70 shadow-[0_10px_28px_rgba(15,23,42,0.06)];
   }
 
   .glass-card {
-    @apply bg-white/84 backdrop-blur-lg border border-emerald-100/70 shadow-[0_12px_36px_rgba(15,23,42,0.06)] hover:shadow-[0_18px_42px_rgba(16,185,129,0.12)] transition-all duration-500 hover:-translate-y-1;
+    @apply bg-white/94 backdrop-blur-md border border-slate-200/70 shadow-[0_12px_30px_rgba(15,23,42,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(15,23,42,0.08)];
   }
 
   .glass-input {
-    @apply bg-white/88 border border-emerald-100/80 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 outline-none backdrop-blur-sm transition-all duration-300 placeholder:text-slate-400;
+    @apply bg-white border border-slate-200 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 outline-none transition-all duration-200 placeholder:text-slate-400;
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 via-teal-500 to-sky-500;
-  }
-
-  .text-gradient-gold {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-amber-500 via-yellow-400 to-emerald-500;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-500;
   }
 }
 
+html {
+  color-scheme: light;
+}
+
 body {
-  background:
-    radial-gradient(circle at top left, rgba(187, 247, 208, 0.45), transparent 30%),
-    radial-gradient(circle at top right, rgba(186, 230, 253, 0.38), transparent 34%),
-    linear-gradient(180deg, #f7fbf7 0%, #f6fbff 48%, #ffffff 100%);
-  color: #334155;
   min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(220, 237, 223, 0.75), transparent 28%),
+    radial-gradient(circle at top right, rgba(245, 247, 235, 0.85), transparent 32%),
+    linear-gradient(180deg, #f8fbf7 0%, #fdfcf7 52%, #ffffff 100%);
+  color: #334155;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -63,16 +55,6 @@ body {
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
-}
-
-@keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.12); }
-  50% { box-shadow: 0 0 26px rgba(14, 165, 233, 0.16); }
 }
