@@ -244,3 +244,165 @@ BEGIN
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- =============================================
+-- 校园快递代取 + 旧书交易 + 管理后台扩展
+-- =============================================
+
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS app_role VARCHAR(20) DEFAULT 'user' CHECK (app_role IN ('user', 'admin'));
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS campus_available_balance DECIMAL(10, 2) DEFAULT 0.00;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS campus_pending_balance DECIMAL(10, 2) DEFAULT 0.00;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS campus_settlement_applying_amount DECIMAL(10, 2) DEFAULT 0.00;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS campus_settled_total DECIMAL(10, 2) DEFAULT 0.00;
+
+CREATE TABLE IF NOT EXISTS campus_express_orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_no VARCHAR(40) UNIQUE NOT NULL,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  runner_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  small_count INTEGER NOT NULL DEFAULT 0,
+  medium_count INTEGER NOT NULL DEFAULT 0,
+  large_count INTEGER NOT NULL DEFAULT 0,
+  xlarge_count INTEGER NOT NULL DEFAULT 0,
+  total_count INTEGER NOT NULL DEFAULT 0,
+  pickup_station VARCHAR(120) NOT NULL,
+  pickup_codes TEXT[] NOT NULL DEFAULT '{}',
+  delivery_building VARCHAR(120) NOT NULL,
+  delivery_address VARCHAR(120) NOT NULL,
+  expected_time VARCHAR(120) NOT NULL,
+  remark TEXT,
+  order_amount DECIMAL(10, 2) NOT NULL,
+  platform_fee DECIMAL(10, 2) NOT NULL,
+  runner_income DECIMAL(10, 2) NOT NULL,
+  pay_type VARCHAR(20) CHECK (pay_type IN ('wxpay', 'alipay')),
+  status VARCHAR(30) NOT NULL DEFAULT 'PENDING_PAYMENT' CHECK (status IN ('PENDING_PAYMENT', 'OPEN', 'ACCEPTED', 'PICKED_UP', 'DELIVERED', 'COMPLETED')),
+  paid_at TIMESTAMP WITH TIME ZONE,
+  accepted_at TIMESTAMP WITH TIME ZONE,
+  picked_up_at TIMESTAMP WITH TIME ZONE,
+  delivered_at TIMESTAMP WITH TIME ZONE,
+  confirmed_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS campus_book_posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  seller_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  title VARCHAR(120) NOT NULL,
+  category VARCHAR(60) NOT NULL,
+  isbn VARCHAR(40),
+  condition_level VARCHAR(40) NOT NULL,
+  sale_price DECIMAL(10, 2) NOT NULL,
+  platform_fee DECIMAL(10, 2) NOT NULL DEFAULT 2.00,
+  seller_income DECIMAL(10, 2) NOT NULL,
+  description TEXT,
+  shelf_status VARCHAR(20) NOT NULL DEFAULT 'ON_SALE' CHECK (shelf_status IN ('ON_SALE', 'LOCKED', 'SOLD', 'OFF_SHELF')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS campus_book_orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_no VARCHAR(40) UNIQUE NOT NULL,
+  book_id UUID NOT NULL REFERENCES campus_book_posts(id) ON DELETE CASCADE,
+  book_title VARCHAR(120) NOT NULL,
+  buyer_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  seller_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  sale_price DECIMAL(10, 2) NOT NULL,
+  platform_fee DECIMAL(10, 2) NOT NULL,
+  seller_income DECIMAL(10, 2) NOT NULL,
+  delivery_building VARCHAR(120) NOT NULL,
+  pay_type VARCHAR(20) CHECK (pay_type IN ('wxpay', 'alipay')),
+  status VARCHAR(30) NOT NULL DEFAULT 'PENDING_PAYMENT' CHECK (status IN ('PENDING_PAYMENT', 'WAITING_SELLER', 'DELIVERED', 'COMPLETED')),
+  paid_at TIMESTAMP WITH TIME ZONE,
+  delivered_at TIMESTAMP WITH TIME ZONE,
+  received_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS campus_payment_records (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  out_trade_no VARCHAR(50) UNIQUE NOT NULL,
+  biz_type VARCHAR(30) NOT NULL CHECK (biz_type IN ('EXPRESS_ORDER', 'BOOK_ORDER')),
+  biz_id UUID NOT NULL,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  amount DECIMAL(10, 2) NOT NULL,
+  pay_type VARCHAR(20) CHECK (pay_type IN ('wxpay', 'alipay')),
+  status VARCHAR(20) NOT NULL DEFAULT 'CREATED' CHECK (status IN ('CREATED', 'SUCCESS', 'FAILED')),
+  trade_status VARCHAR(30),
+  gateway_trade_no VARCHAR(80),
+  gateway_order_id VARCHAR(80),
+  pay_url TEXT,
+  qr_code TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS campus_settlement_applications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  application_no VARCHAR(40) UNIQUE NOT NULL,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  amount DECIMAL(10, 2) NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED')),
+  user_role VARCHAR(20) NOT NULL DEFAULT 'user',
+  note TEXT,
+  transfer_ref VARCHAR(100),
+  handled_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS campus_balance_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  biz_type VARCHAR(40) NOT NULL,
+  biz_id VARCHAR(80) NOT NULL,
+  change_type VARCHAR(40) NOT NULL,
+  amount DECIMAL(10, 2) NOT NULL,
+  before_available DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+  after_available DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+  before_pending DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+  after_pending DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+  remark TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_campus_express_orders_user_id ON campus_express_orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_campus_express_orders_runner_id ON campus_express_orders(runner_id);
+CREATE INDEX IF NOT EXISTS idx_campus_express_orders_status ON campus_express_orders(status);
+CREATE INDEX IF NOT EXISTS idx_campus_book_posts_seller_id ON campus_book_posts(seller_id);
+CREATE INDEX IF NOT EXISTS idx_campus_book_posts_shelf_status ON campus_book_posts(shelf_status);
+CREATE INDEX IF NOT EXISTS idx_campus_book_orders_buyer_id ON campus_book_orders(buyer_id);
+CREATE INDEX IF NOT EXISTS idx_campus_book_orders_seller_id ON campus_book_orders(seller_id);
+CREATE INDEX IF NOT EXISTS idx_campus_book_orders_status ON campus_book_orders(status);
+CREATE INDEX IF NOT EXISTS idx_campus_payment_records_user_id ON campus_payment_records(user_id);
+CREATE INDEX IF NOT EXISTS idx_campus_payment_records_out_trade_no ON campus_payment_records(out_trade_no);
+CREATE INDEX IF NOT EXISTS idx_campus_settlement_user_id ON campus_settlement_applications(user_id);
+CREATE INDEX IF NOT EXISTS idx_campus_settlement_status ON campus_settlement_applications(status);
+CREATE INDEX IF NOT EXISTS idx_campus_balance_logs_user_id ON campus_balance_logs(user_id);
+
+DROP TRIGGER IF EXISTS campus_express_orders_updated_at ON campus_express_orders;
+CREATE TRIGGER campus_express_orders_updated_at
+  BEFORE UPDATE ON campus_express_orders
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+DROP TRIGGER IF EXISTS campus_book_posts_updated_at ON campus_book_posts;
+CREATE TRIGGER campus_book_posts_updated_at
+  BEFORE UPDATE ON campus_book_posts
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+DROP TRIGGER IF EXISTS campus_book_orders_updated_at ON campus_book_orders;
+CREATE TRIGGER campus_book_orders_updated_at
+  BEFORE UPDATE ON campus_book_orders
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+DROP TRIGGER IF EXISTS campus_payment_records_updated_at ON campus_payment_records;
+CREATE TRIGGER campus_payment_records_updated_at
+  BEFORE UPDATE ON campus_payment_records
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+DROP TRIGGER IF EXISTS campus_settlement_applications_updated_at ON campus_settlement_applications;
+CREATE TRIGGER campus_settlement_applications_updated_at
+  BEFORE UPDATE ON campus_settlement_applications
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();

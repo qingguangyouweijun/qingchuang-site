@@ -1,135 +1,104 @@
+﻿import Link from "next/link"
+import { BookOpen, Bot, Package, ReceiptText, Shield, Wallet } from "lucide-react"
 import { MainLayout } from "@/components/Layout/MainLayout"
 import { Button } from "@/components/UI/Button"
 import { Card, CardContent } from "@/components/UI/Card"
-import { ArrowRight, Heart, Shield, Sparkles } from "lucide-react"
-import Link from "next/link"
+
+const features = [
+  {
+    title: '校园快递代取',
+    desc: '支持小件、中件、大件、超大件合单下单，支付后进入接单广场。',
+    icon: Package,
+  },
+  {
+    title: '旧书广场',
+    desc: '卖家发布后直接进入旧书广场，买家下单后由卖家送到楼栋/楼层。',
+    icon: BookOpen,
+  },
+  {
+    title: 'AI 陪伴',
+    desc: '创建专属角色、开启多条会话、自动生成长期记忆，并支持语气微调。',
+    icon: Bot,
+  },
+  {
+    title: '管理员网站',
+    desc: '普通用户和管理员入口分离，管理员独立处理订单、结算和数据看板。',
+    icon: Shield,
+  },
+]
 
 export default function Home() {
   return (
     <MainLayout>
-      {/* Hero Section */}
-      <section className="min-h-[80vh] flex flex-col items-center justify-center text-center space-y-8 py-20 relative">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-rose-200/40 to-purple-200/40 rounded-full blur-[120px] -z-10" />
-        
-        <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/50 backdrop-blur-sm border border-white/60 text-rose-600 text-sm font-medium animate-fade-in mb-4">
-          <Sparkles className="w-4 h-4 mr-2" />
-          大学生专属实名交友平台
-        </div>
-        
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tight animate-slide-up" style={{ animationDelay: "0.1s" }}>
-          <span className="text-gray-800">晴窗</span>
-          <span className="text-gradient">葳蕤</span>
-        </h1>
-        
-        <p className="text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto font-light animate-slide-up" style={{ animationDelay: "0.2s" }}>
-          在繁花似锦的年华里，遇见那个让你怦然心动的人。
-          <br className="hidden md:block" />
-          真实、安全、浪漫的校园社交体验。
-        </p>
-        
-        <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 pt-8 animate-slide-up" style={{ animationDelay: "0.3s" }}>
-          <Link href="/draw">
-            <Button size="lg" className="rounded-full px-10 text-lg h-14 shadow-rose-300/50 shadow-xl hover:shadow-2xl hover:scale-105 transition-all">
-              开始邂逅 <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-          </Link>
-          <Link href="/about">
-            <Button variant="glass" size="lg" className="rounded-full px-10 text-lg h-14">
-              了解更多
-            </Button>
-          </Link>
+      <section className="min-h-[76vh] flex flex-col justify-center py-16 space-y-10">
+        <div className="max-w-4xl space-y-6">
+          <div className="inline-flex items-center rounded-full bg-white/60 px-4 py-2 text-sm text-orange-700 border border-orange-100">
+            校园快递代取 + 旧书售卖 + AI 陪伴 + 管理员网站
+          </div>
+          <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-gray-900">
+            一个账号，统一使用
+            <span className="block bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-rose-600">
+              校园服务、AI 陪伴与管理员系统
+            </span>
+          </h1>
+          <p className="text-lg md:text-xl text-gray-600 max-w-3xl leading-8">
+            复用现在这套 11 位数字账号注册方式，普通用户进入校园服务端和 AI 陪伴模块，管理员进入独立后台。
+            支持快递代取、旧书广场、订单流转、余额结算、AI 角色聊天和管理员审批。
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 pt-2">
+            <Link href="/auth/register"><Button size="lg">普通用户注册</Button></Link>
+            <Link href="/auth/login"><Button size="lg" variant="outline">普通用户登录</Button></Link>
+            <Link href="/ai-companion"><Button size="lg" variant="secondary">进入 AI 陪伴</Button></Link>
+            <Link href="/admin/login"><Button size="lg" variant="glass">管理员登录</Button></Link>
+          </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-16 w-full max-w-4xl animate-fade-in mx-auto" style={{ animationDelay: "0.5s" }}>
-          {[
-            { label: "注册用户", value: "10,000+" },
-            { label: "成功匹配", value: "5,200+" },
-            { label: "覆盖高校", value: "100+" },
-            { label: "好评率", value: "99%" },
-          ].map((stat, i) => (
-            <div key={i} className="flex flex-col items-center">
-              <span className="text-3xl font-bold text-rose-600">{stat.value}</span>
-              <span className="text-sm text-gray-500 mt-1">{stat.label}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-gray-800">
-          为什么选择<span className="text-rose-600">晴窗葳蕤</span>
-        </h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            {
-              icon: Sparkles,
-              title: "随机邂逅",
-              desc: "打破固有的社交圈子，通过智能算法为您匹配最契合的灵魂。",
-              color: "text-amber-500",
-              bg: "bg-amber-50"
-            },
-            {
-              icon: Shield,
-              title: "真实可信",
-              desc: "严格的学生身份认证机制，确保每一位用户都是真实的在校大学生。",
-              color: "text-rose-500",
-              bg: "bg-rose-50"
-            },
-            {
-              icon: Heart,
-              title: "隐私保护",
-              desc: "多重隐私设置，您可以完全掌控自己的信息展示范围和联系方式。",
-              color: "text-purple-500",
-              bg: "bg-purple-50"
-            }
-          ].map((feature, i) => (
-            <Card key={i} className="border-none hover:bg-white/80 transition-all duration-500">
-              <CardContent className="p-8 flex flex-col items-center text-center space-y-4">
-                <div className={`w-16 h-16 rounded-2xl ${feature.bg} flex items-center justify-center mb-2 rotate-3 hover:rotate-6 transition-transform duration-300`}>
-                  <feature.icon className={`w-8 h-8 ${feature.color}`} />
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 pt-6">
+          {features.map((item) => (
+            <Card key={item.title} className="border-none hover:bg-white/80 transition-all duration-300">
+              <CardContent className="p-6 flex flex-col gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center">
+                  <item.icon className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800">{feature.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">{item.title}</h2>
+                  <p className="text-sm text-gray-600 leading-6 mt-2">{item.desc}</p>
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
-      </section>
 
-      {/* Testimonials */}
-      <section className="py-20 mb-20">
-        <div className="glass rounded-3xl p-10 md:p-16 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-rose-100 rounded-full blur-3xl -z-10 opacity-50" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-100 rounded-full blur-3xl -z-10 opacity-50" />
-          
-          <h2 className="text-3xl font-bold text-center mb-12">心动故事</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white/60 p-6 rounded-2xl shadow-sm">
-              <p className="text-gray-600 italic mb-4">"本来只是抱着试一试的心态，没想到真的遇到了和我一样喜欢摄影的她。感谢晴窗葳蕤！"</p>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">L</div>
-                <div>
-                  <p className="text-sm font-bold text-gray-800">李同学</p>
-                  <p className="text-xs text-gray-500">浙江大学 · 大三</p>
-                </div>
+        <Card className="border-none shadow-lg">
+          <CardContent className="p-8 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">当前已整合的核心模块</h3>
+              <p className="text-gray-600 mt-2 leading-7">普通用户端、AI 陪伴、管理员网站、统一注册登录、校园订单状态流、校园结算账本。</p>
+            </div>
+            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div className="rounded-2xl bg-rose-50 p-5">
+                <Package className="w-5 h-5 text-rose-600" />
+                <div className="mt-3 font-semibold text-gray-900">快递代取</div>
+                <div className="text-sm text-gray-600 mt-1">下单、支付、接单、确认收货</div>
+              </div>
+              <div className="rounded-2xl bg-amber-50 p-5">
+                <BookOpen className="w-5 h-5 text-amber-600" />
+                <div className="mt-3 font-semibold text-gray-900">旧书广场</div>
+                <div className="text-sm text-gray-600 mt-1">发布、购买、送达、确认收货</div>
+              </div>
+              <div className="rounded-2xl bg-cyan-50 p-5">
+                <Bot className="w-5 h-5 text-cyan-600" />
+                <div className="mt-3 font-semibold text-gray-900">AI 陪伴</div>
+                <div className="text-sm text-gray-600 mt-1">角色、聊天、记忆摘要</div>
+              </div>
+              <div className="rounded-2xl bg-indigo-50 p-5">
+                <ReceiptText className="w-5 h-5 text-indigo-600" />
+                <div className="mt-3 font-semibold text-gray-900">管理员网站</div>
+                <div className="text-sm text-gray-600 mt-1">订单、用户、结算申请处理</div>
               </div>
             </div>
-            <div className="bg-white/60 p-6 rounded-2xl shadow-sm">
-              <p className="text-gray-600 italic mb-4">"界面的设计真的太美了，完全符合我的审美。在这里交友感觉很放心，也很浪漫。"</p>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 font-bold">W</div>
-                <div>
-                  <p className="text-sm font-bold text-gray-800">王同学</p>
-                  <p className="text-xs text-gray-500">复旦大学 · 研一</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </section>
     </MainLayout>
   )

@@ -1,41 +1,52 @@
-'use server'
+﻿'use server'
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import type { AppRole } from '@/lib/types'
 
-// 验证11位数字账号
-function validateAccount(account: string): boolean {
+function validateAccount(account: string) {
   return /^\d{11}$/.test(account)
 }
 
-// 验证密码 (至少6位，包含字母和数字)
-function validatePassword(password: string): boolean {
+function validatePassword(password: string) {
   return password.length >= 6 && /[a-zA-Z]/.test(password) && /\d/.test(password)
 }
 
-export async function signUp(formData: FormData) {
-  const account = formData.get('account') as string
-  const password = formData.get('password') as string
-  const confirmPassword = formData.get('confirmPassword') as string
+function toEmail(account: string) {
+  return `${account}@qingchuang.local`
+}
 
-  // 验证
+async function loadProfileRole(userId: string) {
+  const supabase = await createClient()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('app_role')
+    .eq('id', userId)
+    .single()
+
+  return (profile?.app_role as AppRole | null) ?? 'user'
+}
+
+export async function signUp(formData: FormData) {
+  const account = String(formData.get('account') || '')
+  const password = String(formData.get('password') || '')
+  const confirmPassword = String(formData.get('confirmPassword') || '')
+
   if (!validateAccount(account)) {
-    return { error: '账号必须是11位数字' }
+    return { error: '账号必须是 11 位数字。' }
   }
-  
+
   if (!validatePassword(password)) {
-    return { error: '密码至少6位，且必须包含字母和数字' }
+    return { error: '密码至少 6 位，且必须同时包含字母和数字。' }
   }
-  
+
   if (password !== confirmPassword) {
-    return { error: '两次密码输入不一致' }
+    return { error: '两次输入的密码不一致。' }
   }
 
   const supabase = await createClient()
-  
-  // 使用账号作为email前缀 (Supabase需要email格式)
-  const email = `${account}@qingchuang.local`
-  
+  const email = toEmail(account)
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -43,65 +54,70 @@ export async function signUp(formData: FormData) {
 
   if (error) {
     if (error.message.includes('already registered')) {
-      return { error: '该账号已被注册' }
+      return { error: '该账号已经注册。' }
     }
     return { error: error.message }
   }
 
   if (data.user) {
-    // 创建用户资料
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert({
-        id: data.user.id,
-        account,
-        balance: 10.00, // 新用户赠送10元
-      })
+    const { error: profileError } = await supabase.from('profiles').insert({
+      id: data.user.id,
+      account,
+      balance: 10,
+      app_role: 'user',
+      campus_available_balance: 0,
+      campus_pending_balance: 0,
+      campus_settlement_applying_amount: 0,
+      campus_settled_total: 0,
+    })
 
     if (profileError) {
       console.error('Create profile error:', profileError)
-      return { error: '创建用户资料失败' }
+      return { error: '创建用户资料失败，请先执行最新 schema。' }
     }
   }
 
-  return { success: true, redirectTo: '/profile/setup' }
+  return { success: true, redirectTo: '/campus' }
 }
 
 export async function signIn(formData: FormData) {
-  const account = formData.get('account') as string
-  const password = formData.get('password') as string
+  const account = String(formData.get('account') || '')
+  const password = String(formData.get('password') || '')
 
   if (!validateAccount(account)) {
-    return { error: '请输入正确的11位数字账号' }
+    return { error: '请输入正确的 11 位数字账号。' }
   }
 
   const supabase = await createClient()
-  const email = `${account}@qingchuang.local`
-
   const { data, error } = await supabase.auth.signInWithPassword({
-    email,
+    email: toEmail(account),
     password,
   })
 
   if (error) {
     if (error.message.includes('Invalid login credentials')) {
-      return { error: '账号或密码错误' }
+      return { error: '账号或密码错误。' }
     }
     return { error: error.message }
   }
 
-  // 检查用户资料是否完善
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('is_profile_complete')
-    .eq('id', data.user.id)
-    .single()
+  const role = await loadProfileRole(data.user.id)
+  return { success: true, redirectTo: role === 'admin' ? '/admin' : '/campus' }
+}
 
-  if (!profile?.is_profile_complete) {
-    return { success: true, redirectTo: '/profile/setup' }
+export async function signInAdmin(formData: FormData) {
+  const result = await signIn(formData)
+  if (result.error || !result.redirectTo) {
+    return result
   }
 
-  return { success: true, redirectTo: '/draw' }
+  if (result.redirectTo !== '/admin') {
+    const supabase = await createClient()
+    await supabase.auth.signOut()
+    return { error: '当前账号不是管理员。' }
+  }
+
+  return result
 }
 
 export async function signOut() {
@@ -119,14 +135,16 @@ export async function getSession() {
 export async function getCurrentUser() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  
-  if (!user) return null
-  
+
+  if (!user) {
+    return null
+  }
+
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single()
-    
+
   return { user, profile }
 }
