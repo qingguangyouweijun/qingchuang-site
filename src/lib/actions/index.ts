@@ -1,6 +1,3 @@
 ﻿export * from './auth'
 export * from './profile'
-export * from './contact'
-export * from './draw'
-export * from './wallet'
 export * from './campus'

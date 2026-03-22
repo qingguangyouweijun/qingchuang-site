@@ -1,337 +1,110 @@
-"use client"
-
-import * as React from "react"
+﻿import Link from "next/link"
+import { HeartHandshake, ReceiptText, ShieldCheck, UserRound } from "lucide-react"
 import { MainLayout } from "@/components/Layout/MainLayout"
-import { Button } from "@/components/UI/Button"
-import { Card, CardContent } from "@/components/UI/Card"
-import { Select } from "@/components/UI/Select"
-import { Modal } from "@/components/UI/Modal"
 import { Badge } from "@/components/UI/Badge"
-import { Sparkles, Filter, Lock, Gift, Zap, Crown, Copy, Phone, MessageCircle } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { performDraw } from "@/lib/actions/draw"
-import { getProfile } from "@/lib/actions/profile"
-import { PRICING, APPEARANCE_LABELS, IDENTITY_LABELS, GENDER_LABELS } from "@/lib/types"
-import type { DrawTier, DrawFilters, DrawResult, Gender, Appearance, Identity } from "@/lib/types"
+import { Button } from "@/components/UI/Button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/UI/Card"
+
+const highlights = [
+  {
+    title: "统一账号资料",
+    desc: "晴窗不再单独注册账号，直接复用轻创 Qintra 的统一资料、登录态和身份信息。",
+    icon: UserRound,
+    color: "bg-amber-50 text-amber-600",
+  },
+  {
+    title: "统一支付与收款",
+    desc: "后续如有解锁、特权或订单类付费，会复用 qingchuang.site 站内的统一支付、回调和账本流程。",
+    icon: ReceiptText,
+    color: "bg-emerald-50 text-emerald-600",
+  },
+  {
+    title: "统一规则与风控",
+    desc: "账号资料、订单能力和管理员审核都会放在同一套规则下，减少孤立页面和旧链路残留。",
+    icon: ShieldCheck,
+    color: "bg-sky-50 text-sky-600",
+  },
+]
 
 export default function DrawPage() {
-  const [selectedTier, setSelectedTier] = React.useState<DrawTier>('basic')
-  const [isDrawing, setIsDrawing] = React.useState(false)
-  const [showResult, setShowResult] = React.useState(false)
-  const [result, setResult] = React.useState<DrawResult | null>(null)
-  const [error, setError] = React.useState("")
-  const [balance, setBalance] = React.useState<number>(0)
-  const [hasDiscount, setHasDiscount] = React.useState(false)
-  
-  // Filters
-  const [filterGender, setFilterGender] = React.useState<Gender | "">("")
-  const [filterAgeRange, setFilterAgeRange] = React.useState<string>("")
-  const [filterIdentity, setFilterIdentity] = React.useState<Identity | "">("")
-  const [filterAppearance, setFilterAppearance] = React.useState<Appearance | "">("")
-
-  React.useEffect(() => {
-    loadProfile()
-  }, [])
-
-  const loadProfile = async () => {
-    const { profile } = await getProfile()
-    if (profile) {
-      setBalance(profile.balance)
-      setHasDiscount(profile.contact_visibility_limit > 0)
-    }
-  }
-
-  const tiers = [
-    {
-      id: 'basic' as DrawTier,
-      name: '单次邂逅',
-      price: hasDiscount ? PRICING.basic.discount : PRICING.basic.normal,
-      originalPrice: PRICING.basic.normal,
-      icon: Gift,
-      color: 'blue',
-      features: ['随机匹配', '基础筛选'],
-      gradient: 'from-blue-400 to-cyan-500'
-    },
-    {
-      id: 'advanced' as DrawTier,
-      name: '相貌优选',
-      price: hasDiscount ? PRICING.advanced.discount : PRICING.advanced.normal,
-      originalPrice: PRICING.advanced.normal,
-      icon: Sparkles,
-      color: 'rose',
-      features: ['优先匹配颜值高', '解锁相貌筛选', '地域精准筛选'],
-      gradient: 'from-rose-400 to-pink-500'
-    },
-    {
-      id: 'vip' as DrawTier,
-      name: '超级VIP',
-      price: hasDiscount ? PRICING.vip.discount : PRICING.vip.normal,
-      originalPrice: PRICING.vip.normal,
-      icon: Crown,
-      color: 'amber',
-      features: ['AI智能推荐', '查看详细资料', '解锁全部筛选', 'VIP专属标识'],
-      gradient: 'from-amber-400 to-orange-500'
-    }
-  ]
-
-  const currentTier = tiers.find(t => t.id === selectedTier)!
-
-  const handleDraw = async () => {
-    setIsDrawing(true)
-    setError("")
-
-    // Parse age range
-    let ageMin: number | undefined
-    let ageMax: number | undefined
-    if (filterAgeRange) {
-      const [min, max] = filterAgeRange.split('-').map(Number)
-      ageMin = min
-      ageMax = max
-    }
-
-    const filters: DrawFilters = {
-      gender: filterGender || undefined,
-      ageMin,
-      ageMax,
-      identity: filterIdentity || undefined,
-      appearance: (selectedTier !== 'basic' && filterAppearance) ? filterAppearance : undefined,
-    }
-
-    const drawResult = await performDraw(selectedTier, filters)
-    
-    setIsDrawing(false)
-    
-    if (drawResult.success) {
-      setResult(drawResult)
-      setShowResult(true)
-      if (drawResult.new_balance !== undefined) {
-        setBalance(drawResult.new_balance)
-      }
-    } else {
-      setError(drawResult.error || "抽取失败")
-    }
-  }
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-  }
-
   return (
     <MainLayout>
-      <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-gray-800">缘分抽取</h1>
-          <p className="text-gray-500">选择您的心动方案，开启浪漫邂逅</p>
-          <p className="text-sm text-rose-500">当前余额: ¥{balance.toFixed(2)}</p>
-          {hasDiscount && (
-            <Badge variant="secondary" className="ml-2">已投放联系方式，享优惠价</Badge>
-          )}
-        </div>
+      <div className="max-w-6xl mx-auto py-10 space-y-8">
+        <section className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6">
+          <Card className="border-none shadow-xl bg-gradient-to-br from-amber-500 via-emerald-500 to-sky-600 text-white">
+            <CardContent className="p-8 space-y-6">
+              <div className="flex flex-wrap items-center gap-3">
+                <Badge variant="secondary" className="bg-white/15 text-white hover:bg-white/15">轻创功能模块</Badge>
+                <Badge variant="outline" className="border-white/25 text-white">晴窗</Badge>
+              </div>
+              <div>
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight">晴窗</h1>
+                <p className="text-white/90 mt-4 max-w-2xl leading-8">
+                  晴窗现在是轻创 Qintra 里的一个独立功能，不再承担总站品牌。
+                  资料、支付、订单和后续收款能力都会并到 qingchuang.site 主站体系里。
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Link href="/profile/setup"><Button size="lg">完善我的资料</Button></Link>
+                <Link href="/campus"><Button size="lg" variant="glass" className="text-white hover:bg-white/20">先看主站服务</Button></Link>
+              </div>
+            </CardContent>
+          </Card>
 
-        {error && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-center">
-            {error}
-          </div>
-        )}
+          <Card className="border-none shadow-xl">
+            <CardHeader>
+              <CardTitle>当前整理结果</CardTitle>
+              <CardDescription>这次已经把旧交友链路里明显不适合继续保留的部分收掉了。</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm text-gray-600 leading-7">
+              <div className="rounded-2xl bg-amber-50 p-4">
+                旧的抽卡页和分散页面已经移除，不再保留一套和主站平行的付费路径。
+              </div>
+              <div className="rounded-2xl bg-lime-50 p-4">
+                后续如果你继续做晴窗的会员、解锁或订单能力，建议直接挂到主站订单体系和统一支付回调里。
+              </div>
+              <div className="rounded-2xl bg-sky-50 p-4">
+                当前入口先保留为功能页，方便后续继续往里接资料、内容、关系和支付规则，而不是留一堆失效旧页。
+              </div>
+            </CardContent>
+          </Card>
+        </section>
 
-        {/* Pricing Tiers */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {tiers.map((tier) => (
-            <div
-              key={tier.id}
-              onClick={() => setSelectedTier(tier.id)}
-              className={cn(
-                "relative cursor-pointer rounded-3xl border-2 p-6 transition-all duration-300 hover:-translate-y-1 overflow-hidden group",
-                selectedTier === tier.id 
-                  ? "border-rose-400 bg-white shadow-xl" 
-                  : "border-transparent bg-white/60 hover:bg-white border-white/50"
-              )}
-            >
-              {selectedTier === tier.id && (
-                <div className={`absolute top-0 right-0 px-3 py-1 bg-gradient-to-r ${tier.gradient} text-white text-xs font-bold rounded-bl-xl`}>
-                  已选择
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {highlights.map((item) => (
+            <Card key={item.title} className="border-none shadow-lg">
+              <CardContent className="p-6 space-y-4">
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${item.color}`}>
+                  <item.icon className="w-6 h-6" />
                 </div>
-              )}
-              
-              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${tier.gradient} flex items-center justify-center text-white mb-4 shadow-lg`}>
-                <tier.icon className="w-6 h-6" />
-              </div>
-              
-              <h3 className="text-xl font-bold text-gray-800 mb-1">{tier.name}</h3>
-              <div className="flex items-baseline space-x-2 mb-4">
-                <span className="text-3xl font-bold text-rose-600">¥{tier.price.toFixed(2)}</span>
-                {hasDiscount && (
-                  <span className="text-sm text-gray-400 line-through">¥{tier.originalPrice.toFixed(2)}</span>
-                )}
-              </div>
-              
-              <ul className="space-y-2 mb-4">
-                {tier.features.map((feature, i) => (
-                  <li key={i} className="text-sm text-gray-600 flex items-center">
-                    <div className="w-1.5 h-1.5 rounded-full bg-rose-400 mr-2" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">{item.title}</h2>
+                  <p className="text-sm text-gray-600 mt-2 leading-7">{item.desc}</p>
+                </div>
+              </CardContent>
+            </Card>
           ))}
-        </div>
+        </section>
 
-        {/* Filters */}
-        <Card className="border-none bg-white/40 backdrop-blur-md">
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2 mb-6">
-              <Filter className="w-5 h-5 text-gray-600" />
-              <h3 className="font-bold text-gray-800">筛选条件</h3>
+        <Card className="border-none shadow-lg">
+          <CardHeader>
+            <CardTitle>下一步建议</CardTitle>
+            <CardDescription>如果你继续扩展晴窗，建议沿用主站已有能力，而不是再起一套独立系统。</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 leading-7">
+            <div className="rounded-2xl bg-amber-50 p-5">
+              资料侧复用当前账号、头像、身份和地区信息，避免多套资料反复维护。
             </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              <Select value={filterGender} onChange={(e) => setFilterGender(e.target.value as Gender | "")}>
-                <option value="">性别: 不限</option>
-                <option value="male">男生</option>
-                <option value="female">女生</option>
-              </Select>
-              
-              <Select value={filterAgeRange} onChange={(e) => setFilterAgeRange(e.target.value)}>
-                <option value="">年龄: 不限</option>
-                <option value="18-20">18-20岁</option>
-                <option value="21-23">21-23岁</option>
-                <option value="24-26">24-26岁</option>
-                <option value="27-60">27岁以上</option>
-              </Select>
-              
-              <Select value={filterIdentity} onChange={(e) => setFilterIdentity(e.target.value as Identity | "")}>
-                <option value="">身份: 不限</option>
-                <option value="student">在校学生</option>
-                <option value="non_student">非学生</option>
-              </Select>
-              
-              <div className="relative">
-                <Select 
-                  disabled={selectedTier === 'basic'} 
-                  className={selectedTier === 'basic' ? "opacity-50" : ""}
-                  value={filterAppearance}
-                  onChange={(e) => setFilterAppearance(e.target.value as Appearance | "")}
-                >
-                  <option value="">相貌: 不限</option>
-                  <option value="normal">普通</option>
-                  <option value="good">出众</option>
-                  <option value="stunning">超级哇塞</option>
-                </Select>
-                {selectedTier === 'basic' && (
-                  <Lock className="absolute right-8 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                )}
-              </div>
+            <div className="rounded-2xl bg-emerald-50 p-5">
+              交易侧复用站内支付和账本，后续如有解锁、会员或陪伴订单，不再做独立收款页。
+            </div>
+            <div className="rounded-2xl bg-sky-50 p-5">
+              管理侧复用管理员后台，统一处理内容、订单、结算和用户角色。
             </div>
           </CardContent>
         </Card>
-
-        {/* Draw Button */}
-        <div className="flex flex-col items-center pt-8 pb-20 space-y-4">
-          <p className="text-gray-500">
-            本次抽取需支付: <span className="text-rose-600 font-bold text-xl">¥{currentTier.price.toFixed(2)}</span>
-          </p>
-          <Button
-            size="lg"
-            className="w-full md:w-auto px-20 py-8 text-xl rounded-full shadow-rose-400/50 shadow-2xl animate-pulse-glow"
-            onClick={handleDraw}
-            isLoading={isDrawing}
-            disabled={balance < currentTier.price}
-          >
-            {isDrawing ? "正在寻找有缘人..." : balance < currentTier.price ? "余额不足" : "立即抽取"}
-            {!isDrawing && balance >= currentTier.price && <Zap className="ml-2 w-6 h-6 fill-current" />}
-          </Button>
-          {balance < currentTier.price && (
-            <p className="text-red-500 text-sm">余额不足，请先充值</p>
-          )}
-        </div>
       </div>
-
-      {/* Result Modal */}
-      <Modal isOpen={showResult} onClose={() => setShowResult(false)} title="匹配成功！">
-        {result?.target && (
-          <div className="flex flex-col items-center text-center space-y-6">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-rose-300 to-purple-300 p-1">
-                <div className="w-full h-full rounded-full bg-white overflow-hidden">
-                  <div className="w-full h-full bg-gray-100 flex items-center justify-center text-4xl">
-                    {result.target.gender === 'female' ? '👩‍🎓' : '👨‍🎓'}
-                  </div>
-                </div>
-              </div>
-              <div className="absolute bottom-0 right-0 bg-green-500 w-6 h-6 rounded-full border-4 border-white" />
-            </div>
-            
-            <div>
-              <h3 className="text-2xl font-bold text-gray-800">
-                {result.target.nickname || '神秘用户'}
-              </h3>
-              <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
-                {result.target.location && <Badge variant="secondary">{result.target.location}</Badge>}
-                <Badge variant="outline">{result.target.age}岁</Badge>
-                <Badge variant="default">{APPEARANCE_LABELS[result.target.appearance]}</Badge>
-                <Badge variant="outline">{IDENTITY_LABELS[result.target.identity]}</Badge>
-              </div>
-              {result.target.bio && (
-                <p className="text-gray-500 text-sm mt-3 max-w-xs">{result.target.bio}</p>
-              )}
-            </div>
-            
-            <div className="w-full bg-gray-50 rounded-2xl p-4 text-left space-y-3">
-              {result.contact?.wechat && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center text-gray-600">
-                    <MessageCircle className="w-4 h-4 mr-2 text-green-500" />
-                    <span>微信号</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="font-mono font-medium mr-2">{result.contact.wechat}</span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(result.contact!.wechat!)}>
-                      <Copy className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-              {result.contact?.qq && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center text-gray-600">
-                    <MessageCircle className="w-4 h-4 mr-2 text-blue-500" />
-                    <span>QQ号</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="font-mono font-medium mr-2">{result.contact.qq}</span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(result.contact!.qq!)}>
-                      <Copy className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-              {result.contact?.phone && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center text-gray-600">
-                    <Phone className="w-4 h-4 mr-2 text-rose-500" />
-                    <span>手机号</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="font-mono font-medium mr-2">{result.contact.phone}</span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(result.contact!.phone!)}>
-                      <Copy className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <p className="text-sm text-gray-500">
-              请礼貌打招呼，说明来自<span className="text-rose-500">晴窗葳蕤</span>哦~
-            </p>
-            
-            <Button className="w-full" onClick={() => setShowResult(false)}>
-              我知道了
-            </Button>
-          </div>
-        )}
-      </Modal>
     </MainLayout>
   )
 }
+

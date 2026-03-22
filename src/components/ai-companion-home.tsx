@@ -3,7 +3,7 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Bot, MessageCircle, Plus, Sparkles } from 'lucide-react'
+import { Bot, MessageCircle, Plus, Sparkles, SunMedium } from 'lucide-react'
 import { Avatar } from '@/components/UI/Avatar'
 import { Badge } from '@/components/UI/Badge'
 import { Button } from '@/components/UI/Button'
@@ -102,22 +102,22 @@ export function AiCompanionHomeClient({
   return (
     <div className="space-y-8">
       <section className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6">
-        <Card className="border-none shadow-xl bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-950 text-white">
+        <Card className="border-none shadow-xl bg-gradient-to-br from-amber-500 via-emerald-500 to-sky-600 text-white">
           <CardContent className="p-8 space-y-6">
             <div className="flex flex-wrap items-center gap-3">
               <Badge variant="secondary" className="bg-white/15 text-white hover:bg-white/15">AI 陪伴模块</Badge>
               <Badge variant="outline" className="border-white/20 text-white">复用当前账号登录</Badge>
             </div>
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight">把 AI 陪伴也接进青创</h1>
-              <p className="text-white/80 mt-4 max-w-2xl leading-8">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight">把 AI 陪伴接进轻创 Qintra</h1>
+              <p className="text-white/85 mt-4 max-w-2xl leading-8">
                 角色创建、长期聊天、记忆摘要、语气微调都放进当前站点。
                 普通用户不再单独注册第二套账号，直接用现有登录态进入聊天模块。
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
               <Link href="/ai-companion/characters/new"><Button size="lg">创建角色</Button></Link>
-              <Link href="#ai-templates"><Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10">先挑模板</Button></Link>
+              <Link href="#ai-templates"><Button size="lg" variant="glass" className="text-white hover:bg-white/20">先挑模板</Button></Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
               <div className="rounded-2xl bg-white/10 p-4">
@@ -139,19 +139,19 @@ export function AiCompanionHomeClient({
         <Card className="border-none shadow-xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-cyan-600" />
+              <SunMedium className="w-5 h-5 text-amber-600" />
               接入后的核心能力
             </CardTitle>
             <CardDescription>这部分不再独立部署，直接作为普通用户功能模块提供。</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-gray-600 leading-7">
-            <div className="rounded-2xl bg-cyan-50 p-4">
+            <div className="rounded-2xl bg-amber-50 p-4">
               角色由你自定义：名字、关系、性格、语气、背景、相处方式、边界、开场白、默认模型。
             </div>
-            <div className="rounded-2xl bg-amber-50 p-4">
+            <div className="rounded-2xl bg-lime-50 p-4">
               每个角色可以开多条会话，适合日常聊天、陪伴、剧情推进和人设实验。
             </div>
-            <div className="rounded-2xl bg-indigo-50 p-4">
+            <div className="rounded-2xl bg-sky-50 p-4">
               聊天后自动生成长期记忆摘要，后续回复会把既有人设和互动历史一起带进模型提示词。
             </div>
           </CardContent>
@@ -176,13 +176,13 @@ export function AiCompanionHomeClient({
                     <div className="text-xl font-bold text-gray-900">{template.name}</div>
                     <p className="text-sm text-gray-600 leading-6 mt-2">{template.blurb}</p>
                   </div>
-                  <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-sm font-semibold">
+                  <div className="w-12 h-12 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center text-sm font-semibold">
                     {template.avatarFallback.slice(0, 2)}
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {template.tags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="border-gray-200 text-gray-600">{tag}</Badge>
+                    <Badge key={tag} variant="outline">{tag}</Badge>
                   ))}
                 </div>
                 <div className="text-sm text-gray-500">关系：{template.relationship || '自由定义'}</div>
@@ -215,7 +215,7 @@ export function AiCompanionHomeClient({
         ) : characters.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center space-y-4">
-              <Bot className="w-10 h-10 mx-auto text-cyan-600" />
+              <Bot className="w-10 h-10 mx-auto text-sky-600" />
               <div className="text-xl font-semibold text-gray-900">你还没有创建角色</div>
               <p className="text-sm text-gray-600 leading-7 max-w-2xl mx-auto">
                 建议先从模板开始，这样更容易得到一个稳定、不容易跑偏的小模型角色。
@@ -263,3 +263,4 @@ export function AiCompanionHomeClient({
     </div>
   )
 }
+

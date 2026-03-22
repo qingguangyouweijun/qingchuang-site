@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Lock, Smartphone } from "lucide-react"
+import { ArrowLeft, Lock, Smartphone, SunMedium } from "lucide-react"
 import { Button } from "@/components/UI/Button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/UI/Card"
 import { Input } from "@/components/UI/Input"
@@ -39,11 +39,11 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-orange-200/30 rounded-full blur-[100px] animate-float" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-rose-200/30 rounded-full blur-[100px] animate-float" style={{ animationDelay: '2s' }} />
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-amber-200/35 rounded-full blur-[100px] animate-float" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-sky-200/30 rounded-full blur-[100px] animate-float" style={{ animationDelay: '2s' }} />
 
       <div className="absolute top-8 left-8">
-        <Link href="/" className="flex items-center text-gray-600 hover:text-rose-600 transition-colors">
+        <Link href="/" className="flex items-center text-gray-600 hover:text-emerald-600 transition-colors">
           <ArrowLeft className="w-5 h-5 mr-2" />
           返回首页
         </Link>
@@ -51,13 +51,13 @@ export default function LoginPage() {
 
       <Card className="w-full max-w-md border-white/50 shadow-2xl animate-slide-up">
         <CardHeader className="space-y-1 text-center pb-8">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-orange-400 to-rose-500 mx-auto flex items-center justify-center text-white font-bold text-2xl mb-4 shadow-lg shadow-orange-200">
-            校
+          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-400 to-emerald-500 mx-auto flex items-center justify-center text-white mb-4 shadow-lg shadow-amber-200">
+            <SunMedium className="w-7 h-7" />
           </div>
-          <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-rose-600">
-            普通用户登录
+          <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-600 to-emerald-600">
+            轻创登录
           </CardTitle>
-          <CardDescription>登录后进入校园服务端；管理员请使用单独的管理员登录入口。</CardDescription>
+          <CardDescription>登录后可进入轻创的校园服务、晴窗和 AI 陪伴模块；管理员请使用单独入口。</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -87,13 +87,13 @@ export default function LoginPage() {
         <CardFooter className="flex flex-col space-y-4 text-center text-sm text-gray-500 pb-8">
           <div>
             还没有账号？
-            <Link href="/auth/register" className="text-rose-500 hover:text-rose-600 font-medium ml-1 underline decoration-2 underline-offset-4">
+            <Link href="/auth/register" className="text-emerald-600 hover:text-emerald-700 font-medium ml-1 underline decoration-2 underline-offset-4">
               立即注册
             </Link>
           </div>
           <div>
             管理员入口：
-            <Link href="/admin/login" className="text-indigo-500 hover:text-indigo-600 font-medium ml-1">
+            <Link href="/admin/login" className="text-sky-600 hover:text-sky-700 font-medium ml-1">
               管理员登录
             </Link>
           </div>

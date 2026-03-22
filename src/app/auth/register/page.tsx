@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Calculator, Lock, ShieldCheck, Smartphone } from "lucide-react"
+import { ArrowLeft, Calculator, Lock, ShieldCheck, Smartphone, SunMedium } from "lucide-react"
 import { Button } from "@/components/UI/Button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/UI/Card"
 import { Input } from "@/components/UI/Input"
@@ -81,11 +81,11 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-orange-200/30 rounded-full blur-[100px] animate-float" />
-      <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-rose-200/30 rounded-full blur-[100px] animate-float" style={{ animationDelay: '2s' }} />
+      <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-amber-200/35 rounded-full blur-[100px] animate-float" />
+      <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-sky-200/30 rounded-full blur-[100px] animate-float" style={{ animationDelay: '2s' }} />
 
       <div className="absolute top-8 left-8">
-        <Link href="/" className="flex items-center text-gray-600 hover:text-rose-600 transition-colors">
+        <Link href="/" className="flex items-center text-gray-600 hover:text-emerald-600 transition-colors">
           <ArrowLeft className="w-5 h-5 mr-2" />
           返回首页
         </Link>
@@ -93,14 +93,14 @@ export default function RegisterPage() {
 
       <Card className="w-full max-w-md border-white/50 shadow-2xl animate-slide-up">
         <CardHeader className="space-y-1 text-center pb-8">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-orange-400 to-rose-500 mx-auto flex items-center justify-center text-white font-bold text-2xl mb-4 shadow-lg shadow-orange-200">
-            校
+          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-400 to-emerald-500 mx-auto flex items-center justify-center text-white mb-4 shadow-lg shadow-amber-200">
+            <SunMedium className="w-7 h-7" />
           </div>
-          <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-rose-600">
-            创建校园账号
+          <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-600 to-emerald-600">
+            创建轻创账号
           </CardTitle>
           <CardDescription>
-            使用统一 11 位数字账号注册，注册后默认进入普通用户端。
+            使用统一 11 位数字账号注册，注册后默认进入轻创普通用户端。
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -141,7 +141,7 @@ export default function RegisterPage() {
                   <Calculator className="w-4 h-4 text-gray-500" />
                   <span className="text-gray-700 font-medium">{mathQuestion.question}</span>
                 </div>
-                <button type="button" onClick={refreshMathQuestion} className="px-3 py-3 text-gray-500 hover:text-rose-500 transition-colors">
+                <button type="button" onClick={refreshMathQuestion} className="px-3 py-3 text-gray-500 hover:text-emerald-600 transition-colors">
                   换一题
                 </button>
               </div>
@@ -155,7 +155,7 @@ export default function RegisterPage() {
             </div>
 
             <label className="flex items-start space-x-2 cursor-pointer text-sm text-gray-500">
-              <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-1 rounded border-gray-300 text-rose-500 focus:ring-rose-500" />
+              <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-1 rounded border-gray-300 text-emerald-500 focus:ring-emerald-500" />
               <span>我已阅读并同意《用户协议》和《隐私政策》。</span>
             </label>
 
@@ -167,7 +167,7 @@ export default function RegisterPage() {
         <CardFooter className="flex flex-col space-y-4 text-center text-sm text-gray-500 pb-8">
           <div>
             已有账号？
-            <Link href="/auth/login" className="text-rose-500 hover:text-rose-600 font-medium ml-1 underline decoration-2 underline-offset-4">
+            <Link href="/auth/login" className="text-emerald-600 hover:text-emerald-700 font-medium ml-1 underline decoration-2 underline-offset-4">
               直接登录
             </Link>
           </div>
