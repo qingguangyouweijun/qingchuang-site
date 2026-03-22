@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import * as React from 'react'
 import Link from 'next/link'
@@ -70,7 +70,7 @@ export function Header() {
     <header className="fixed left-0 right-0 top-0 z-50 border-b border-slate-200/70 bg-white/92 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="group flex items-center space-x-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-700 text-white shadow-sm transition-transform group-hover:scale-105">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-700 text-white transition-transform group-hover:scale-105">
             <SunMedium className="h-4 w-4" />
           </div>
           <span className="text-xl font-bold text-slate-900">轻创 Qintra</span>
@@ -113,8 +113,8 @@ export function Header() {
             </>
           ) : (
             <>
-              <Link href="/auth/login"><Button variant="ghost" size="sm">邮箱登录</Button></Link>
-              <Link href="/auth/register"><Button size="sm">邮箱注册</Button></Link>
+              <Button asChild variant="ghost" size="sm"><Link href="/auth/login">邮箱登录</Link></Button>
+              <Button asChild size="sm"><Link href="/auth/register">邮箱注册</Link></Button>
             </>
           )}
         </div>
@@ -145,8 +145,8 @@ export function Header() {
                 <Button variant="ghost" className="w-full" onClick={() => void handleLogout()}>退出登录</Button>
               ) : (
                 <>
-                  <Link href="/auth/login" onClick={() => setIsMenuOpen(false)}><Button variant="ghost" className="w-full">邮箱登录</Button></Link>
-                  <Link href="/auth/register" onClick={() => setIsMenuOpen(false)}><Button className="w-full">邮箱注册</Button></Link>
+                  <Button asChild variant="ghost" className="w-full"><Link href="/auth/login" onClick={() => setIsMenuOpen(false)}>邮箱登录</Link></Button>
+                  <Button asChild className="w-full"><Link href="/auth/register" onClick={() => setIsMenuOpen(false)}>邮箱注册</Link></Button>
                 </>
               )}
             </div>

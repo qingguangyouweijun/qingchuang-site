@@ -1,110 +1,106 @@
-﻿import Link from "next/link"
-import { HeartHandshake, ReceiptText, ShieldCheck, UserRound } from "lucide-react"
-import { MainLayout } from "@/components/Layout/MainLayout"
-import { Badge } from "@/components/UI/Badge"
-import { Button } from "@/components/UI/Button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/UI/Card"
+﻿import Link from 'next/link'
+import { HeartHandshake, MessageCircleHeart, ShieldCheck, UserRound } from 'lucide-react'
+import { MainLayout } from '@/components/Layout/MainLayout'
+import { Badge } from '@/components/UI/Badge'
+import { Button } from '@/components/UI/Button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/Card'
 
 const highlights = [
   {
-    title: "统一账号资料",
-    desc: "晴窗不再单独注册账号，直接复用轻创 Qintra 的统一资料、登录态和身份信息。",
+    title: '完善个人资料',
+    desc: '补充头像、昵称和基础信息后，晴窗里的展示会更完整，也更方便建立互动。',
     icon: UserRound,
-    color: "bg-amber-50 text-amber-600",
+    color: 'bg-amber-50 text-amber-600',
   },
   {
-    title: "统一支付与收款",
-    desc: "后续如有解锁、特权或订单类付费，会复用 qingchuang.site 站内的统一支付、回调和账本流程。",
-    icon: ReceiptText,
-    color: "bg-emerald-50 text-emerald-600",
+    title: '同校互动交流',
+    desc: '围绕校园生活、兴趣话题和日常状态展开交流，让互动更轻松自然。',
+    icon: MessageCircleHeart,
+    color: 'bg-emerald-50 text-emerald-600',
   },
   {
-    title: "统一规则与风控",
-    desc: "账号资料、订单能力和管理员审核都会放在同一套规则下，减少孤立页面和旧链路残留。",
+    title: '友好与守护',
+    desc: '统一沿用轻创账户体系和基础安全能力，减少重复注册和割裂体验。',
     icon: ShieldCheck,
-    color: "bg-sky-50 text-sky-600",
+    color: 'bg-sky-50 text-sky-600',
   },
 ]
 
 export default function DrawPage() {
   return (
     <MainLayout>
-      <div className="max-w-6xl mx-auto py-10 space-y-8">
-        <section className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6">
-          <Card className="border-none shadow-xl bg-gradient-to-br from-amber-500 via-emerald-500 to-sky-600 text-white">
-            <CardContent className="p-8 space-y-6">
+      <div className="mx-auto max-w-6xl space-y-8 py-10">
+        <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+          <Card className="border-none shadow-[0_18px_42px_rgba(15,23,42,0.06)]">
+            <CardContent className="space-y-6 p-8">
               <div className="flex flex-wrap items-center gap-3">
-                <Badge variant="secondary" className="bg-white/15 text-white hover:bg-white/15">轻创功能模块</Badge>
-                <Badge variant="outline" className="border-white/25 text-white">晴窗</Badge>
+                <Badge variant="secondary">轻创功能</Badge>
+                <Badge variant="outline">晴窗</Badge>
               </div>
-              <div>
-                <h1 className="text-4xl md:text-5xl font-bold tracking-tight">晴窗</h1>
-                <p className="text-white/90 mt-4 max-w-2xl leading-8">
-                  晴窗现在是轻创 Qintra 里的一个独立功能，不再承担总站品牌。
-                  资料、支付、订单和后续收款能力都会并到 qingchuang.site 主站体系里。
+              <div className="space-y-4">
+                <h1 className="text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">晴窗</h1>
+                <p className="max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
+                  晴窗是轻创里的校园互动功能，适合完善资料、认识同校、寻找同频话题，也能和校园服务、AI 陪伴保持同一个使用入口。
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Link href="/profile/setup"><Button size="lg">完善我的资料</Button></Link>
-                <Link href="/campus"><Button size="lg" variant="glass" className="text-white hover:bg-white/20">先看主站服务</Button></Link>
+                <Button asChild size="lg">
+                  <Link href="/profile/setup">完善我的资料</Link>
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <Link href="/campus">进入校园服务</Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-xl">
+          <Card className="border-none shadow-[0_16px_36px_rgba(15,23,42,0.05)]">
             <CardHeader>
-              <CardTitle>当前整理结果</CardTitle>
-              <CardDescription>这次已经把旧交友链路里明显不适合继续保留的部分收掉了。</CardDescription>
+              <CardTitle>适合从这里开始</CardTitle>
+              <CardDescription>如果你是第一次进入晴窗，先把资料补全，再慢慢展开互动会更顺手。</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 text-sm text-gray-600 leading-7">
-              <div className="rounded-2xl bg-amber-50 p-4">
-                旧的抽卡页和分散页面已经移除，不再保留一套和主站平行的付费路径。
+            <CardContent className="space-y-4 text-sm leading-7 text-slate-600">
+              <div className="rounded-2xl bg-slate-50 p-4">
+                先完善头像、昵称和基础信息，让其他人看到的是清晰、完整的个人展示。
               </div>
-              <div className="rounded-2xl bg-lime-50 p-4">
-                后续如果你继续做晴窗的会员、解锁或订单能力，建议直接挂到主站订单体系和统一支付回调里。
+              <div className="rounded-2xl bg-slate-50 p-4">
+                再进入校园服务或继续使用 AI 陪伴，所有常用入口都共用同一套轻创账号。
               </div>
-              <div className="rounded-2xl bg-sky-50 p-4">
-                当前入口先保留为功能页，方便后续继续往里接资料、内容、关系和支付规则，而不是留一堆失效旧页。
+              <div className="rounded-2xl bg-slate-50 p-4">
+                晴窗会保持轻松自然的互动氛围，不需要你先读一大堆说明，直接进入使用即可。
               </div>
             </CardContent>
           </Card>
         </section>
 
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {highlights.map((item) => (
-            <Card key={item.title} className="border-none shadow-lg">
-              <CardContent className="p-6 space-y-4">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${item.color}`}>
-                  <item.icon className="w-6 h-6" />
+            <Card key={item.title} className="border-none shadow-[0_12px_28px_rgba(15,23,42,0.05)]">
+              <CardContent className="space-y-4 p-6">
+                <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${item.color}`}>
+                  <item.icon className="h-6 w-6" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">{item.title}</h2>
-                  <p className="text-sm text-gray-600 mt-2 leading-7">{item.desc}</p>
+                  <h2 className="text-xl font-bold text-slate-900">{item.title}</h2>
+                  <p className="mt-2 text-sm leading-7 text-slate-600">{item.desc}</p>
                 </div>
               </CardContent>
             </Card>
           ))}
         </section>
 
-        <Card className="border-none shadow-lg">
+        <Card className="border-none shadow-[0_12px_28px_rgba(15,23,42,0.05)]">
           <CardHeader>
-            <CardTitle>下一步建议</CardTitle>
-            <CardDescription>如果你继续扩展晴窗，建议沿用主站已有能力，而不是再起一套独立系统。</CardDescription>
+            <CardTitle>与轻创其他功能一起使用</CardTitle>
+            <CardDescription>你可以在晴窗之外继续使用校园服务和 AI 陪伴，不需要切换成另一套站点。</CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 leading-7">
-            <div className="rounded-2xl bg-amber-50 p-5">
-              资料侧复用当前账号、头像、身份和地区信息，避免多套资料反复维护。
-            </div>
-            <div className="rounded-2xl bg-emerald-50 p-5">
-              交易侧复用站内支付和账本，后续如有解锁、会员或陪伴订单，不再做独立收款页。
-            </div>
-            <div className="rounded-2xl bg-sky-50 p-5">
-              管理侧复用管理员后台，统一处理内容、订单、结算和用户角色。
-            </div>
+          <CardContent className="grid grid-cols-1 gap-4 text-sm leading-7 text-slate-600 md:grid-cols-3">
+            <div className="rounded-2xl bg-emerald-50 p-5">快递代取和旧书广场仍然放在校园服务里，适合从校园主线进入。</div>
+            <div className="rounded-2xl bg-amber-50 p-5">如果你想先认识同校或完善个人展示，可以先从晴窗开始。</div>
+            <div className="rounded-2xl bg-sky-50 p-5">需要陪聊、角色互动或长期聊天时，可以直接进入 AI 陪伴继续使用。</div>
           </CardContent>
         </Card>
       </div>
     </MainLayout>
   )
 }
-

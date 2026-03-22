@@ -4,11 +4,17 @@ import { AiCompanionHomeClient } from '@/components/ai-companion-home'
 import { aiCharacterTemplates, getAiCurrentUser } from '@/lib/ai-companion'
 
 export default async function AiCompanionPage() {
-  const current = await getAiCurrentUser()
+  let current = null
+
+  try {
+    current = await getAiCurrentUser()
+  } catch {
+    current = null
+  }
 
   return (
     <MainLayout>
-      <div className="max-w-6xl mx-auto py-8">
+      <div className="mx-auto max-w-6xl py-8">
         {current ? <AiCompanionHomeClient templates={aiCharacterTemplates} /> : <AiAuthRequired />}
       </div>
     </MainLayout>

@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { BookOpen, Bot, HeartHandshake, Package, ReceiptText, Wallet } from 'lucide-react'
 import { MainLayout } from '@/components/Layout/MainLayout'
 import { CampusSubnav } from '@/components/campus/CampusSubnav'
@@ -41,7 +41,7 @@ const extensionEntries = [
   {
     href: '/draw',
     title: '晴窗',
-    description: '校园同频互动功能，继续复用轻创账号。',
+    description: '校园互动功能，继续复用轻创账号。',
     icon: HeartHandshake,
     tone: 'bg-rose-50 text-rose-700',
   },
@@ -55,38 +55,47 @@ const extensionEntries = [
 ]
 
 export default async function CampusPage() {
-  const session = await getSession()
+  const session = await getSession().catch(() => null)
   const displayName = session?.user?.email?.split('@')[0] || '轻创同学'
 
   return (
     <MainLayout>
-      <div className="mx-auto max-w-6xl py-8 space-y-8">
+      <div className="mx-auto max-w-6xl space-y-8 py-8">
         <CampusSubnav />
 
-        <section className="grid gap-6 lg:grid-cols-[1.16fr_0.84fr] items-start">
+        <section className="grid items-start gap-6 lg:grid-cols-[1.12fr_0.88fr]">
           <Card className="border-none shadow-[0_16px_40px_rgba(15,23,42,0.07)]">
             <CardContent className="space-y-5 p-8">
               <div className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                轻创核心功能
+                校园核心入口
               </div>
               <div className="space-y-3">
-                <h1 className="text-4xl font-bold text-slate-900">
+                <h1 className="text-4xl font-bold text-slate-900 md:text-[2.75rem]">
                   {session ? `${displayName}，校园服务从这里进入` : '校园服务是轻创的核心入口'}
                 </h1>
                 <p className="max-w-3xl text-base leading-7 text-slate-600">
-                  把快递代取、旧书广场、订单中心和校园钱包收在一条主线上，用户只需要从这里进去，不需要先读规则，也不需要跳来跳去找入口。
+                  把快递代取、旧书广场、订单中心和校园钱包收在一条主线上。用户只需要从这里进入，
+                  就能继续完成校园里的常用操作。
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
                 {session ? (
                   <>
-                    <Link href="/campus/express"><Button>进入快递代取</Button></Link>
-                    <Link href="/campus/books"><Button variant="outline">进入旧书广场</Button></Link>
+                    <Button asChild>
+                      <Link href="/campus/express">进入快递代取</Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <Link href="/campus/books">进入旧书广场</Link>
+                    </Button>
                   </>
                 ) : (
                   <>
-                    <Link href="/auth/register"><Button>邮箱注册</Button></Link>
-                    <Link href="/auth/login"><Button variant="outline">邮箱登录</Button></Link>
+                    <Button asChild>
+                      <Link href="/auth/register">邮箱注册</Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <Link href="/auth/login">邮箱登录</Link>
+                    </Button>
                   </>
                 )}
               </div>
@@ -155,3 +164,4 @@ export default async function CampusPage() {
     </MainLayout>
   )
 }
+
