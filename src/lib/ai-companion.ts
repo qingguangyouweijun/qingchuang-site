@@ -1,4 +1,4 @@
-﻿import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 
 import { createClient } from '@/lib/supabase/server'
@@ -499,38 +499,70 @@ export function buildAiOllamaMessages(character: AiCharacter, memory: AiMemory |
   ]
 }
 
+function resolveOllamaBaseUrl() {
+  return (process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434').replace(/\/$/, '')
+}
+
+function mapOllamaError(detail: string) {
+  if (!detail) {
+    return 'AI 陪伴暂时不可用，请稍后重试。'
+  }
+
+  const lower = detail.toLowerCase()
+
+  if (lower.includes('model') && (lower.includes('not found') || lower.includes('no such file'))) {
+    return 'AI 模型还没有准备好，请先执行 ollama pull qwen3:1.7b。'
+  }
+
+  if (lower.includes('failed to fetch') || lower.includes('econnrefused') || lower.includes('connect')) {
+    return '当前连不上 Ollama 模型服务，请确认服务器上的 Ollama 已启动，并监听 127.0.0.1:11434。'
+  }
+
+  if (lower.includes('aborted') || lower.includes('timeout')) {
+    return '等待 AI 模型响应超时，请稍后再试。'
+  }
+
+  return detail
+}
+
 export async function generateAiReply(options: {
   character: AiCharacter
   memory: AiMemory | null
   messages: AiMessage[]
   toneHint?: string
 }) {
-  const response = await fetch(`${process.env.OLLAMA_BASE_URL ?? 'http://127.0.0.1:11434'}/api/chat`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: options.character.modelName || process.env.OLLAMA_MODEL || DEFAULT_AI_MODEL,
-      stream: false,
-      messages: buildAiOllamaMessages(options.character, options.memory, options.messages, options.toneHint),
-    }),
-    cache: 'no-store',
-  })
+  try {
+    const response = await fetch(`${resolveOllamaBaseUrl()}/api/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: options.character.modelName || process.env.OLLAMA_MODEL || DEFAULT_AI_MODEL,
+        stream: false,
+        messages: buildAiOllamaMessages(options.character, options.memory, options.messages, options.toneHint),
+      }),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(45_000),
+    })
 
-  if (!response.ok) {
-    const detail = await response.text()
-    throw new Error(detail || `Ollama 请求失败：${response.status}`)
+    if (!response.ok) {
+      const detail = await response.text()
+      throw new Error(mapOllamaError(detail || `Ollama 请求失败：${response.status}`))
+    }
+
+    const data = (await response.json()) as OllamaChatResponse
+    const content = data.message?.content?.trim()
+
+    if (!content) {
+      throw new Error(mapOllamaError(data.error || '模型没有返回有效内容。'))
+    }
+
+    return content
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'AI 陪伴暂时不可用，请稍后再试。'
+    throw new Error(mapOllamaError(message))
   }
-
-  const data = (await response.json()) as OllamaChatResponse
-  const content = data.message?.content?.trim()
-
-  if (!content) {
-    throw new Error(data.error || '模型没有返回有效内容。')
-  }
-
-  return content
 }
 
 export function getAiConversationBundle(db: AiDatabase, conversationId: string, userId: string) {
