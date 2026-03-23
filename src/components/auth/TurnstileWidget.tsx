@@ -61,9 +61,9 @@ export function TurnstileWidget({
       <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-4 text-sm text-slate-500">
         <div className="mb-1 flex items-center gap-2 font-medium text-slate-700">
           <ShieldCheck className="h-4 w-4 text-emerald-700" />
-          人机验证区域
+          人机验证
         </div>
-        <p>验证完成后即可发送邮箱验证码。</p>
+        <p>验证区域将在这里显示，验证后即可发送邮箱验证码。</p>
       </div>
     )
   }
@@ -80,3 +80,4 @@ export function TurnstileWidget({
     </div>
   )
 }
+

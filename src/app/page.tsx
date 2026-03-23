@@ -1,5 +1,4 @@
-﻿import Image from 'next/image'
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { ArrowRight, BookOpen, Bot, HeartHandshake, LayoutGrid, Package, ReceiptText, Wallet } from 'lucide-react'
 import { MainLayout } from '@/components/Layout/MainLayout'
 import { Button } from '@/components/UI/Button'
@@ -64,16 +63,12 @@ export default function Home() {
       <section className="mx-auto max-w-6xl space-y-10 py-8">
         <div className="grid items-start gap-8 lg:grid-cols-[1.08fr_0.92fr]">
           <div className="space-y-6">
-            <Image
-              src="/qintra-logo.svg"
-              alt="轻创 Qintra 让便捷融入生活"
-              width={760}
-              height={203}
-              priority
-              className="h-auto w-full max-w-[520px]"
-            />
+            <div className="space-y-2">
+              <div className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-700">轻创 Qintra</div>
+              <div className="text-2xl font-medium tracking-[0.08em] text-slate-500">让便捷融入生活</div>
+            </div>
             <div className="space-y-4">
-              <h1 className="max-w-4xl text-4xl font-bold tracking-tight leading-tight text-slate-900 md:text-5xl">
+              <h1 className="max-w-4xl text-3xl font-bold tracking-tight leading-tight text-slate-900 sm:text-4xl md:text-5xl">
                 校园服务为主线，
                 <span className="block text-emerald-700">把常用入口收进一个更清晰的站点里。</span>
               </h1>
@@ -162,3 +157,4 @@ export default function Home() {
     </MainLayout>
   )
 }
+

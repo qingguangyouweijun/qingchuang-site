@@ -32,7 +32,7 @@ const CONFIG: Record<EmailAuthVariant, {
   },
   register: {
     title: '邮箱注册轻创',
-    description: '填写邮箱和登录密码，完成人机验证后发送验证码，再输入验证码完成注册。',
+    description: '填写邮箱、设置密码并完成人机验证，发送验证码后直接在当前页完成注册。',
     sendLabel: '发送注册验证码',
     verifyLabel: '完成注册并进入',
     helper: '注册完成后即可继续使用校园服务、晴窗和 AI 陪伴。',
@@ -50,18 +50,6 @@ const CONFIG: Record<EmailAuthVariant, {
   },
 }
 
-function StepLabel({ index, title, description }: { index: string; title: string; description: string }) {
-  return (
-    <div className="space-y-1">
-      <div className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold tracking-wide text-emerald-700">
-        步骤 {index}
-      </div>
-      <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-      <p className="text-sm leading-6 text-slate-500">{description}</p>
-    </div>
-  )
-}
-
 export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
   const router = useRouter()
   const config = CONFIG[variant]
@@ -77,8 +65,7 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
   const [isSending, setIsSending] = React.useState(false)
   const [isVerifying, setIsVerifying] = React.useState(false)
 
-  async function handleSendCode(event: React.FormEvent) {
-    event.preventDefault()
+  async function handleSendCode() {
     setIsSending(true)
     setError('')
     setNotice('')
@@ -149,14 +136,14 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
         </Link>
       </div>
 
-      <Card className="w-full max-w-2xl border-none shadow-[0_24px_60px_rgba(15,23,42,0.08)] animate-slide-up">
+      <Card className="w-full max-w-xl border-none shadow-[0_24px_60px_rgba(15,23,42,0.08)] animate-slide-up">
         <CardHeader className="space-y-4 pb-6 text-center sm:pb-8">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-700 text-white shadow-sm">
             {variant === 'admin' ? <Shield className="h-7 w-7" /> : isRegister ? <Sparkles className="h-7 w-7" /> : <MailCheck className="h-7 w-7" />}
           </div>
           <div className="space-y-2">
             <CardTitle className="text-3xl font-bold text-slate-900">{config.title}</CardTitle>
-            <CardDescription className="mx-auto max-w-xl text-base leading-7 text-slate-600">
+            <CardDescription className="mx-auto max-w-lg text-base leading-7 text-slate-600">
               {config.description}
             </CardDescription>
           </div>
@@ -166,85 +153,52 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
           {error && <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
           {notice && <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{notice}</div>}
 
-          <div className="grid gap-5 lg:grid-cols-[1.2fr,0.8fr]">
-            <form onSubmit={handleSendCode} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-              <div className="space-y-5">
-                <StepLabel
-                  index="1"
-                  title={isRegister ? '填写注册信息' : '填写登录邮箱'}
-                  description={isRegister ? '先输入邮箱、登录密码并完成验证，再发送邮箱验证码。' : '先完成邮箱和人机验证，再发送登录验证码。'}
+          <form onSubmit={handleVerifyCode} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="space-y-5">
+              <div className="space-y-4">
+                <Input
+                  type="email"
+                  placeholder="输入你的邮箱地址"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  icon={<Mail className="h-4 w-4" />}
+                  disabled={codeSent}
+                  required
                 />
 
-                <div className="space-y-4">
-                  <Input
-                    type="email"
-                    placeholder="输入你的邮箱地址"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    icon={<Mail className="h-4 w-4" />}
-                    disabled={codeSent}
-                    required
-                  />
-
-                  {isRegister && (
-                    <>
-                      <Input
-                        type="password"
-                        placeholder="设置登录密码"
-                        value={password}
-                        onChange={(event) => setPassword(event.target.value)}
-                        icon={<LockKeyhole className="h-4 w-4" />}
-                        disabled={codeSent}
-                        required
-                      />
-                      <Input
-                        type="password"
-                        placeholder="再次输入密码"
-                        value={confirmPassword}
-                        onChange={(event) => setConfirmPassword(event.target.value)}
-                        icon={<LockKeyhole className="h-4 w-4" />}
-                        disabled={codeSent}
-                        required
-                      />
-                    </>
-                  )}
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                  <div className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-800">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-700" />
-                    先完成人机验证，再发送邮箱验证码
-                  </div>
-                  <TurnstileWidget onVerify={setTurnstileToken} />
-                </div>
-
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  {!codeSent ? (
-                    <Button type="submit" className="w-full sm:flex-1" size="lg" isLoading={isSending}>
-                      {config.sendLabel}
-                    </Button>
-                  ) : (
-                    <>
-                      <Button type="button" variant="outline" className="w-full sm:flex-1" size="lg" onClick={handleResetEmail}>
-                        更换邮箱
-                      </Button>
-                      <Button type="submit" variant="secondary" className="w-full sm:flex-1" size="lg" isLoading={isSending}>
-                        重新发送验证码
-                      </Button>
-                    </>
-                  )}
-                </div>
+                {isRegister && (
+                  <>
+                    <Input
+                      type="password"
+                      placeholder="设置登录密码"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      icon={<LockKeyhole className="h-4 w-4" />}
+                      disabled={codeSent}
+                      required
+                    />
+                    <Input
+                      type="password"
+                      placeholder="再次输入密码"
+                      value={confirmPassword}
+                      onChange={(event) => setConfirmPassword(event.target.value)}
+                      icon={<LockKeyhole className="h-4 w-4" />}
+                      disabled={codeSent}
+                      required
+                    />
+                  </>
+                )}
               </div>
-            </form>
 
-            <form onSubmit={handleVerifyCode} className="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm sm:p-6">
-              <div className="space-y-5">
-                <StepLabel
-                  index="2"
-                  title="输入邮箱验证码"
-                  description="收到 6 位验证码后，在这里输入并完成验证。"
-                />
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+                <div className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-800">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-700" />
+                  先完成人机验证，再发送邮箱验证码
+                </div>
+                <TurnstileWidget onVerify={setTurnstileToken} />
+              </div>
 
+              <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
                 <Input
                   type="text"
                   inputMode="numeric"
@@ -255,19 +209,28 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
                   icon={<MailCheck className="h-4 w-4" />}
                   required
                 />
-
-                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm leading-6 text-slate-600">
-                  {codeSent
-                    ? `验证码已发送到 ${email || '你的邮箱'}，请输入验证码继续。`
-                    : '先在左侧完成信息填写并发送验证码，然后再回到这里输入验证码。'}
-                </div>
-
-                <Button type="submit" className="w-full" size="lg" isLoading={isVerifying} disabled={!codeSent}>
-                  {config.verifyLabel}
+                <Button type="button" size="lg" variant={codeSent ? 'secondary' : 'outline'} onClick={handleSendCode} isLoading={isSending}>
+                  {codeSent ? '重新发送' : config.sendLabel}
                 </Button>
               </div>
-            </form>
-          </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-600">
+                {codeSent
+                  ? `验证码已发送到 ${email || '你的邮箱'}，输入验证码后即可继续。`
+                  : '填写信息并完成人机验证后，点击发送验证码。'}
+              </div>
+
+              {codeSent && (
+                <Button type="button" variant="outline" className="w-full" size="lg" onClick={handleResetEmail}>
+                  更换邮箱
+                </Button>
+              )}
+
+              <Button type="submit" className="w-full" size="lg" isLoading={isVerifying} disabled={!codeSent}>
+                {config.verifyLabel}
+              </Button>
+            </div>
+          </form>
 
           <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
             {config.helper}
@@ -304,3 +267,4 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
     </div>
   )
 }
+
