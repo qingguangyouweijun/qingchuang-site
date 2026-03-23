@@ -1,7 +1,8 @@
-"use client"
+﻿"use client"
 
 import * as React from 'react'
 import Script from 'next/script'
+import { ShieldCheck } from 'lucide-react'
 
 declare global {
   interface Window {
@@ -57,8 +58,12 @@ export function TurnstileWidget({
 
   if (!siteKey) {
     return (
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50/90 px-4 py-3 text-sm text-emerald-700">
-        当前环境未配置 Cloudflare Turnstile，将暂时跳过真人校验。
+      <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-4 text-sm text-slate-500">
+        <div className="mb-1 flex items-center gap-2 font-medium text-slate-700">
+          <ShieldCheck className="h-4 w-4 text-emerald-700" />
+          人机验证区域
+        </div>
+        <p>验证完成后即可发送邮箱验证码。</p>
       </div>
     )
   }
@@ -71,7 +76,7 @@ export function TurnstileWidget({
         onLoad={() => setScriptReady(true)}
       />
       <div ref={containerRef} />
-      <p className="text-xs text-slate-500">继续前请完成 Cloudflare 人机校验。</p>
+      <p className="text-xs text-slate-500">完成人机验证后即可继续发送验证码。</p>
     </div>
   )
 }
