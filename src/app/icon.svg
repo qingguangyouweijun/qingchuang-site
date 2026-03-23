@@ -1,0 +1,17 @@
+﻿<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="icon-ring" x1="22" y1="20" x2="220" y2="222" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8EE7F0"/>
+      <stop offset="0.4" stop-color="#46A9F4"/>
+      <stop offset="0.72" stop-color="#3458E6"/>
+      <stop offset="1" stop-color="#2B2BB7"/>
+    </linearGradient>
+    <linearGradient id="icon-tail" x1="142" y1="108" x2="214" y2="194" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6FDFF6"/>
+      <stop offset="1" stop-color="#3053E4"/>
+    </linearGradient>
+  </defs>
+  <path d="M125 18C185.2 18 235 67.8 235 128C235 188.2 185.2 238 125 238C71.4 238 26.2 199.5 16.8 148.4C15 138.8 22.7 130 32.5 130H67.3C74.6 130 80.9 134.9 83.2 141.8C89.9 162 106.1 176.5 125 176.5C151.7 176.5 173.5 154.7 173.5 128C173.5 101.3 151.7 79.5 125 79.5C106 79.5 89.6 94.2 82.9 114.6C80.6 121.4 74.4 126 67.3 126H32.5C22.5 126 14.7 117.1 16.7 107.3C25.9 56.2 71.2 18 125 18Z" fill="url(#icon-ring)"/>
+  <path d="M147.2 131.3L218.5 100C226.1 96.6 234 104.1 230.6 111.8L198.9 181.5C195.8 188.2 187.8 189.9 182.5 184.8L147.2 151.7V131.3Z" fill="url(#icon-tail)"/>
+  <path d="M139.7 145.6L205.2 175.8C212.1 179 214 188.1 208.9 193.8L186.5 218.5C181.8 223.6 173.9 224.2 168.4 219.8L133.8 192.4C129.2 188.8 126.5 183.4 126.5 177.6V157.8C126.5 148 130.8 141.6 139.7 145.6Z" fill="#335AE4"/>
+</svg>

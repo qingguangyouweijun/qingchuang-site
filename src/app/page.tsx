@@ -1,4 +1,5 @@
-﻿import Link from 'next/link'
+﻿import Image from 'next/image'
+import Link from 'next/link'
 import { ArrowRight, BookOpen, Bot, HeartHandshake, LayoutGrid, Package, ReceiptText, Wallet } from 'lucide-react'
 import { MainLayout } from '@/components/Layout/MainLayout'
 import { Button } from '@/components/UI/Button'
@@ -61,19 +62,24 @@ export default function Home() {
   return (
     <MainLayout>
       <section className="mx-auto max-w-6xl space-y-10 py-8">
-        <div className="grid items-start gap-8 lg:grid-cols-[1.12fr_0.88fr]">
+        <div className="grid items-start gap-8 lg:grid-cols-[1.08fr_0.92fr]">
           <div className="space-y-6">
-            <div className="inline-flex items-center rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
-              轻创 Qintra · 让便捷融入生活
-            </div>
+            <Image
+              src="/qintra-logo.svg"
+              alt="轻创 Qintra 让便捷融入生活"
+              width={760}
+              height={203}
+              priority
+              className="h-auto w-full max-w-[520px]"
+            />
             <div className="space-y-4">
               <h1 className="max-w-4xl text-4xl font-bold tracking-tight leading-tight text-slate-900 md:text-5xl">
-                一个更顺手的入口，
-                <span className="block text-emerald-700">把校园服务、互动和陪伴放在一起。</span>
+                校园服务为主线，
+                <span className="block text-emerald-700">把常用入口收进一个更清晰的站点里。</span>
               </h1>
               <p className="max-w-3xl text-base leading-8 text-slate-600 md:text-lg">
-                轻创把校园里最常用的几个功能收进同一个站点。想下快递代取、逛旧书广场、看订单、聊 AI 或进入晴窗，
-                都可以从这里直接开始。
+                想下快递代取、逛旧书广场、看订单、聊 AI 或进入晴窗，都可以从轻创直接开始。
+                不用在多个站点之间来回找入口，也不用先翻一大堆说明页。
               </p>
             </div>
             <div className="flex flex-wrap gap-3">

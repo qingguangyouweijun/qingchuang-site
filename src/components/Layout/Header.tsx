@@ -1,10 +1,11 @@
 ﻿"use client"
 
 import * as React from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { Bot, HeartHandshake, Home, LayoutGrid, LogOut, Menu, SunMedium, UserRound, X } from 'lucide-react'
+import { Bot, HeartHandshake, Home, LayoutGrid, LogOut, Menu, UserRound, X } from 'lucide-react'
 import { Button } from '@/components/UI/Button'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/lib/types'
@@ -67,13 +68,17 @@ export function Header() {
   }
 
   return (
-    <header className="fixed left-0 right-0 top-0 z-50 border-b border-slate-200/70 bg-white/92 backdrop-blur-xl">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="group flex items-center space-x-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-700 text-white transition-transform group-hover:scale-105">
-            <SunMedium className="h-4 w-4" />
-          </div>
-          <span className="text-xl font-bold text-slate-900">轻创 Qintra</span>
+    <header className="fixed left-0 right-0 top-0 z-50 border-b border-slate-200/70 bg-white/94 backdrop-blur-xl">
+      <div className="container mx-auto flex h-18 items-center justify-between gap-6 px-4 py-3">
+        <Link href="/" className="flex min-w-0 items-center">
+          <Image
+            src="/qintra-logo.svg"
+            alt="轻创 Qintra"
+            width={420}
+            height={112}
+            priority
+            className="h-11 w-auto sm:h-12"
+          />
         </Link>
 
         <nav className="hidden items-center space-x-6 lg:flex">
@@ -126,6 +131,15 @@ export function Header() {
 
       {isMenuOpen && (
         <div className="border-t border-slate-200 bg-white/95 px-4 py-4 md:hidden">
+          <div className="mb-4">
+            <Image
+              src="/qintra-logo.svg"
+              alt="轻创 Qintra"
+              width={360}
+              height={96}
+              className="h-10 w-auto"
+            />
+          </div>
           <nav className="flex flex-col space-y-2">
             {navItems.map((item) => (
               <Link
