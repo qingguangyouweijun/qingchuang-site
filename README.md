@@ -92,9 +92,10 @@ npm run start        # 启动生产服务器
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile 站点密钥 |
 | `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile 服务端密钥 |
 | `ZPAY_PID` | ZPay 商户 ID |
-| `ZPAY_KEY` | ZPay 商户密钥 |
-| `ZPAY_NOTIFY_URL` | ZPay 支付回调地址 |
-| `ZPAY_RETURN_URL` | ZPay 支付返回地址 |
+| `ZPAY_PKEY` | ZPay 商户密钥 |
+| `ZPAY_CID` | 可选，指定支付渠道 ID |
+| `ZPAY_GATEWAY_BASE_URL` | 可选，ZPay 网关地址，默认 `https://zpayz.cn` |
+| `APP_BASE_URL` | 站点公网地址，用于生成支付回调地址 |
 
 ## 数据存储
 

@@ -1,6 +1,7 @@
 'use server'
 
 import { and, desc, eq, inArray, ne, sql } from 'drizzle-orm'
+import { headers } from 'next/headers'
 import { getSession } from '@/lib/auth'
 import { createZPayOrder, queryZPayOrder, verifyZPayNotify } from '@/lib/campus/payment'
 import { computeBookSettlement, computeExpressQuote, roundMoney } from '@/lib/campus/pricing'
@@ -71,6 +72,20 @@ function toCampusExpressOrder(order: typeof schema.campusExpressOrders.$inferSel
 
 function toCampusExpressOrders(orders: typeof schema.campusExpressOrders.$inferSelect[]): CampusExpressOrder[] {
   return orders.map(toCampusExpressOrder)
+}
+
+async function getRequestClientIp() {
+  const headerStore = await headers()
+  const forwarded = headerStore.get('x-forwarded-for')?.split(',')[0]?.trim()
+  const realIp = headerStore.get('x-real-ip')?.trim()
+  const cfIp = headerStore.get('cf-connecting-ip')?.trim()
+  const clientIp = cfIp || forwarded || realIp
+
+  if (!clientIp || clientIp === '::1') {
+    return '127.0.0.1'
+  }
+
+  return clientIp
 }
 
 async function getAuthContext() {
@@ -873,7 +888,7 @@ export async function createCampusPayment(input: { bizType: CampusBizType; bizId
     name: orderName,
     money: amount,
     outTradeNo: payment.out_trade_no,
-    clientIp: '127.0.0.1',
+    clientIp: await getRequestClientIp(),
     param: `${input.bizType}:${input.bizId}`,
     type: input.payType,
   })
