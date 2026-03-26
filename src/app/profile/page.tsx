@@ -9,9 +9,9 @@ import { Badge } from "@/components/UI/Badge"
 import { Camera, Bot, HeartHandshake, Package, Wallet, Shield, LogOut, SunMedium } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { getProfile, uploadAvatar } from "@/lib/actions/profile"
+import { signOut } from "@/lib/actions/auth"
 import { GENDER_LABELS, APPEARANCE_LABELS, IDENTITY_LABELS } from "@/lib/types"
 import type { Profile } from "@/lib/types"
-import { createClient } from "@/lib/supabase/client"
 
 function formatDate(input: string) {
   return new Intl.DateTimeFormat('zh-CN', {
@@ -61,9 +61,7 @@ export default function ProfilePage() {
   }
 
   async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/auth/login')
+    await signOut()
   }
 
   if (isLoading) {

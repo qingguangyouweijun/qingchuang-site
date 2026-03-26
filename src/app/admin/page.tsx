@@ -286,7 +286,7 @@ export default async function AdminPage({
         <div className="max-w-2xl w-full rounded-3xl border border-white/10 bg-white/5 p-10 space-y-4">
           <h1 className="text-3xl font-bold">管理员后台暂时不可用</h1>
           <p className="text-slate-300 leading-7">{message}</p>
-          <p className="text-sm text-slate-400 leading-7">如果当前账号不是管理员，或缺少 `SUPABASE_SERVICE_ROLE_KEY`，后台页面会加载失败。</p>
+          <p className="text-sm text-slate-400 leading-7">如果当前账号不是管理员，后台页面会加载失败。请确认已使用管理员账号登录。</p>
         </div>
       </div>
     )

@@ -56,7 +56,7 @@ const extensionEntries = [
 
 export default async function CampusPage() {
   const session = await getSession().catch(() => null)
-  const displayName = session?.user?.email?.split('@')[0] || '轻创同学'
+  const displayName = session?.email?.split('@')[0] || '轻创同学'
 
   return (
     <MainLayout>

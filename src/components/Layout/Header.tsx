@@ -7,7 +7,6 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Bot, HeartHandshake, Home, LayoutGrid, LogOut, Menu, UserRound, X } from 'lucide-react'
 import { Button } from '@/components/UI/Button'
-import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/lib/types'
 
 export function Header() {
@@ -22,32 +21,29 @@ export function Header() {
   }, [pathname])
 
   async function checkUser() {
-    const supabase = createClient()
-    const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser()
+    try {
+      const response = await fetch('/api/auth/me')
+      const data = await response.json() as { user: { id: string; email: string } | null; profile: Profile | null }
 
-    if (!authUser) {
+      if (!data.user || !data.profile) {
+        setUser(null)
+        setAccountLabel('')
+        setIsLoading(false)
+        return
+      }
+
+      setUser(data.profile)
+      setAccountLabel(String(data.profile.nickname || data.profile.account || data.user.email.split('@')[0] || '我的'))
+    } catch {
       setUser(null)
       setAccountLabel('')
+    } finally {
       setIsLoading(false)
-      return
     }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', authUser.id)
-      .maybeSingle()
-
-    setUser(profile as Profile | null)
-    setAccountLabel(String(profile?.nickname || profile?.account || authUser.email?.split('@')[0] || '我的'))
-    setIsLoading(false)
   }
 
   async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
+    await fetch('/api/auth/logout', { method: 'POST' })
     window.location.href = '/auth/login'
   }
 
