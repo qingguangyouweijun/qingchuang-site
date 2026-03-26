@@ -13,7 +13,7 @@ declare global {
         callback?: (token: string) => void
         theme?: 'light' | 'dark'
         'expired-callback'?: () => void
-        'error-callback'?: () => void
+        'error-callback'?: (errorCode?: string) => void
       }) => string
       remove?: (widgetId?: string) => void
     }
@@ -21,6 +21,12 @@ declare global {
 }
 
 const TURNSTILE_LOAD_ERROR = 'Cloudflare 验证组件加载失败，请关闭广告拦截器、允许 challenges.cloudflare.com，或刷新页面后重试。'
+
+function buildTurnstileInitError(errorCode?: string) {
+  return errorCode
+    ? `Cloudflare 验证初始化失败（错误码：${errorCode}），请检查 widget hostname、关闭广告拦截器后重试。`
+    : 'Cloudflare 验证初始化失败，请点击下方按钮重新加载。'
+}
 
 export function TurnstileWidget({
   onVerify,
@@ -74,9 +80,10 @@ export function TurnstileWidget({
         onVerify(token)
       },
       'expired-callback': () => onVerify(''),
-      'error-callback': () => {
+      'error-callback': (errorCode) => {
         onVerify('')
-        setLoadError('Cloudflare 验证初始化失败，请点击下方按钮重新加载。')
+        console.error('Turnstile render error:', errorCode)
+        setLoadError(buildTurnstileInitError(errorCode))
       },
     })
 
