@@ -1,9 +1,9 @@
-﻿"use client"
+"use client"
 
 import * as React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, CheckCircle2, LockKeyhole, Mail, MailCheck, Shield, Sparkles } from 'lucide-react'
+import { ArrowLeft, LockKeyhole, Mail, MailCheck, Shield, Sparkles } from 'lucide-react'
 import { Button } from '@/components/UI/Button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/UI/Card'
 import { Input } from '@/components/UI/Input'
@@ -23,16 +23,16 @@ const CONFIG: Record<EmailAuthVariant, {
 }> = {
   login: {
     title: '邮箱验证码登录',
-    description: '输入邮箱并完成人机验证，我们会把 6 位验证码发送到你的邮箱。',
+    description: '输入邮箱并完成安全验证，我们会将 6 位验证码发送到你的邮箱。',
     sendLabel: '发送登录验证码',
     verifyLabel: '进入轻创',
-    helper: '验证码一般会很快送达，如未收到，请检查垃圾邮件箱。',
+    helper: '验证码一般会很快送达，请留意收件箱和垃圾邮件箱。',
     scope: 'user',
     mode: 'login',
   },
   register: {
     title: '邮箱注册轻创',
-    description: '填写邮箱、设置密码并完成人机验证，发送验证码后直接在当前页完成注册。',
+    description: '填写邮箱、设置密码并完成安全验证，获取验证码后即可直接完成注册。',
     sendLabel: '发送注册验证码',
     verifyLabel: '完成注册并进入',
     helper: '注册完成后即可继续使用校园服务、晴窗和 AI 陪伴。',
@@ -41,10 +41,10 @@ const CONFIG: Record<EmailAuthVariant, {
   },
   admin: {
     title: '管理员邮箱登录',
-    description: '管理员使用独立入口完成邮箱验证后进入后台。',
+    description: '管理员通过邮箱验证码完成登录。',
     sendLabel: '发送管理员验证码',
     verifyLabel: '进入管理员网站',
-    helper: '请输入管理员邮箱，完成验证码验证后继续。',
+    helper: '请使用管理员邮箱继续。',
     scope: 'admin',
     mode: 'login',
   },
@@ -102,6 +102,11 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
     formData.set('code', code)
     formData.set('scope', config.scope)
     formData.set('mode', config.mode)
+
+    if (isRegister) {
+      formData.set('password', password)
+      formData.set('confirmPassword', confirmPassword)
+    }
 
     const result = await verifyEmailCode(formData)
 
@@ -190,11 +195,7 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
                 )}
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                <div className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-800">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-700" />
-                  先完成人机验证，再发送邮箱验证码
-                </div>
+              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
                 <TurnstileWidget onVerify={setTurnstileToken} />
               </div>
 
@@ -210,15 +211,15 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
                   required
                 />
                 <Button type="button" size="lg" variant={codeSent ? 'secondary' : 'outline'} onClick={handleSendCode} isLoading={isSending}>
-                  {codeSent ? '重新发送' : config.sendLabel}
+                  {codeSent ? '重新发送验证码' : config.sendLabel}
                 </Button>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-600">
-                {codeSent
-                  ? `验证码已发送到 ${email || '你的邮箱'}，输入验证码后即可继续。`
-                  : '填写信息并完成人机验证后，点击发送验证码。'}
-              </div>
+              {codeSent && (
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm leading-6 text-emerald-700">
+                  {`验证码已发送到 ${email || '你的邮箱'}，输入验证码后即可继续。`}
+                </div>
+              )}
 
               {codeSent && (
                 <Button type="button" variant="outline" className="w-full" size="lg" onClick={handleResetEmail}>
@@ -226,15 +227,13 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
                 </Button>
               )}
 
-              <Button type="submit" className="w-full" size="lg" isLoading={isVerifying} disabled={!codeSent}>
+              <Button type="submit" className="w-full" size="lg" isLoading={isVerifying} disabled={!codeSent || code.length !== 6}>
                 {config.verifyLabel}
               </Button>
             </div>
           </form>
 
-          <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
-            {config.helper}
-          </div>
+          <p className="text-center text-sm text-slate-500">{config.helper}</p>
         </CardContent>
 
         <CardFooter className="pb-8 text-center text-sm text-slate-500">
@@ -267,4 +266,3 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
     </div>
   )
 }
-

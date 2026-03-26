@@ -18,10 +18,11 @@
 
 ## 统一注册方式
 
-沿用原项目的注册方式：
+当前认证方式：
 
-- 使用 11 位数字账号注册
-- 登录时自动映射为 `${account}@qingchuang.local`
+- 普通用户使用邮箱验证码注册，并在注册时设置密码
+- 注册验证码优先通过 Brevo SMTP 直发
+- 普通用户登录继续使用邮箱验证码
 - 普通用户默认 `app_role = 'user'`
 - 管理员与普通用户通过 `profiles.app_role` 区分
 
@@ -47,3 +48,4 @@ AI 陪伴入口：`/ai-companion`
 - `/admin`
 - `/api/campus/payments/notify`
 - `/api/ai/characters`
+
