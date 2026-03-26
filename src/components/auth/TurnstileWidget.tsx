@@ -2,7 +2,8 @@
 
 import * as React from 'react'
 import Script from 'next/script'
-import { ShieldCheck } from 'lucide-react'
+import { RotateCw, ShieldCheck, TriangleAlert } from 'lucide-react'
+import { Button } from '@/components/UI/Button'
 
 declare global {
   interface Window {
@@ -19,6 +20,8 @@ declare global {
   }
 }
 
+const TURNSTILE_LOAD_ERROR = 'Cloudflare 验证组件加载失败，请关闭广告拦截器、允许 challenges.cloudflare.com，或刷新页面后重试。'
+
 export function TurnstileWidget({
   onVerify,
   theme = 'light',
@@ -29,54 +32,138 @@ export function TurnstileWidget({
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
   const containerRef = React.useRef<HTMLDivElement | null>(null)
   const widgetIdRef = React.useRef<string | null>(null)
+  const pollTimerRef = React.useRef<number | null>(null)
   const [scriptReady, setScriptReady] = React.useState(false)
+  const [loadError, setLoadError] = React.useState('')
+  const [reloadKey, setReloadKey] = React.useState(0)
 
-  const renderWidget = React.useCallback(() => {
-    if (!siteKey || !scriptReady || !window.turnstile || !containerRef.current) {
-      return
+  const clearPollTimer = React.useCallback(() => {
+    if (pollTimerRef.current !== null) {
+      window.clearInterval(pollTimerRef.current)
+      pollTimerRef.current = null
+    }
+  }, [])
+
+  const cleanupWidget = React.useCallback(() => {
+    clearPollTimer()
+
+    if (widgetIdRef.current && window.turnstile?.remove) {
+      window.turnstile.remove(widgetIdRef.current)
+      widgetIdRef.current = null
     }
 
-    containerRef.current.innerHTML = ''
+    if (containerRef.current) {
+      containerRef.current.innerHTML = ''
+    }
+  }, [clearPollTimer])
+
+  const renderWidget = React.useCallback(() => {
+    if (!siteKey || !containerRef.current || !window.turnstile) {
+      return false
+    }
+
+    cleanupWidget()
+    onVerify('')
+    setLoadError('')
+
     widgetIdRef.current = window.turnstile.render(containerRef.current, {
       sitekey: siteKey,
       theme,
-      callback: (token) => onVerify(token),
+      callback: (token) => {
+        setLoadError('')
+        onVerify(token)
+      },
       'expired-callback': () => onVerify(''),
-      'error-callback': () => onVerify(''),
+      'error-callback': () => {
+        onVerify('')
+        setLoadError('Cloudflare 验证初始化失败，请点击下方按钮重新加载。')
+      },
     })
-  }, [onVerify, scriptReady, siteKey, theme])
+
+    return true
+  }, [cleanupWidget, onVerify, siteKey, theme])
 
   React.useEffect(() => {
-    renderWidget()
-
-    return () => {
-      if (widgetIdRef.current && window.turnstile?.remove) {
-        window.turnstile.remove(widgetIdRef.current)
-      }
+    if (!siteKey || !scriptReady) {
+      return
     }
-  }, [renderWidget])
+
+    if (renderWidget()) {
+      return
+    }
+
+    let attempts = 0
+    pollTimerRef.current = window.setInterval(() => {
+      attempts += 1
+
+      if (renderWidget()) {
+        clearPollTimer()
+        return
+      }
+
+      if (attempts >= 20) {
+        clearPollTimer()
+        setLoadError(TURNSTILE_LOAD_ERROR)
+      }
+    }, 250)
+
+    return clearPollTimer
+  }, [clearPollTimer, reloadKey, renderWidget, scriptReady, siteKey])
+
+  React.useEffect(() => cleanupWidget, [cleanupWidget])
+
+  const handleRetry = React.useCallback(() => {
+    cleanupWidget()
+    onVerify('')
+    setLoadError('')
+    setScriptReady(Boolean(window.turnstile))
+    setReloadKey((value) => value + 1)
+  }, [cleanupWidget, onVerify])
 
   if (!siteKey) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-500">
-        <div className="mb-1 flex items-center gap-2 font-medium text-slate-700">
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">
+        <div className="mb-1 flex items-center gap-2 font-medium text-amber-900">
           <ShieldCheck className="h-4 w-4 text-emerald-700" />
           安全验证
         </div>
-        <p>完成人机验证后即可发送邮箱验证码。</p>
+        <p>当前未配置 NEXT_PUBLIC_TURNSTILE_SITE_KEY，所以验证组件不会显示。</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <Script
-        src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+        key={`turnstile-${reloadKey}`}
+        src={`https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&retry=${reloadKey}`}
         strategy="afterInteractive"
-        onLoad={() => setScriptReady(true)}
+        onLoad={() => {
+          setScriptReady(true)
+          setLoadError('')
+        }}
+        onError={() => {
+          setScriptReady(false)
+          setLoadError(TURNSTILE_LOAD_ERROR)
+        }}
       />
+
       <div ref={containerRef} className="min-h-[65px]" />
-      <p className="text-xs text-slate-500">完成人机验证后即可继续发送验证码。</p>
+
+      {loadError ? (
+        <div className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-xs text-amber-800">
+          <div className="flex items-start gap-2 leading-6">
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{loadError}</span>
+          </div>
+          <Button type="button" size="sm" variant="outline" onClick={handleRetry}>
+            <RotateCw className="mr-2 h-4 w-4" />
+            重新加载验证
+          </Button>
+        </div>
+      ) : (
+        <p className="text-xs text-slate-500">如果验证区域一直不出现，请关闭广告拦截器或切换网络后重试。</p>
+      )}
     </div>
   )
 }
