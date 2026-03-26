@@ -1,8 +1,12 @@
-﻿import crypto from 'crypto'
+import crypto from 'node:crypto'
 import type { PayType } from '@/lib/types'
 
 function getEnv(name: string, fallback = '') {
   return process.env[name] ?? fallback
+}
+
+function getPaymentKey() {
+  return getEnv('ZPAY_PKEY', getEnv('ZPAY_KEY', getEnv('PAY_PKEY', getEnv('PAY_KEY'))))
 }
 
 function md5(content: string) {
@@ -20,7 +24,7 @@ export function createZPaySign(params: Record<string, string | number | null | u
 }
 
 export function verifyZPayNotify(params: Record<string, string>) {
-  const key = getEnv('ZPAY_PKEY', getEnv('PAY_PKEY'))
+  const key = getPaymentKey()
   if (!key) {
     return false
   }
@@ -42,7 +46,7 @@ export async function createZPayOrder(input: {
 }) {
   const gatewayBaseUrl = getEnv('ZPAY_GATEWAY_BASE_URL', getEnv('PAY_GATEWAY_BASE_URL', 'https://zpayz.cn'))
   const pid = getEnv('ZPAY_PID', getEnv('PAY_PID'))
-  const pkey = getEnv('ZPAY_PKEY', getEnv('PAY_PKEY'))
+  const pkey = getPaymentKey()
   const cid = getEnv('ZPAY_CID', getEnv('PAY_CID'))
 
   if (!pid || !pkey) {
@@ -69,7 +73,9 @@ export async function createZPayOrder(input: {
   params.sign = createZPaySign(params, pkey)
 
   const formData = new FormData()
-  Object.entries(params).forEach(([key, value]) => formData.append(key, value))
+  Object.entries(params).forEach(([key, value]) => {
+    formData.append(key, value)
+  })
 
   const response = await fetch(`${gatewayBaseUrl}/mapi.php`, {
     method: 'POST',
@@ -92,7 +98,7 @@ export async function createZPayOrder(input: {
 export async function queryZPayOrder(input: { outTradeNo?: string; tradeNo?: string }) {
   const gatewayBaseUrl = getEnv('ZPAY_GATEWAY_BASE_URL', getEnv('PAY_GATEWAY_BASE_URL', 'https://zpayz.cn'))
   const pid = getEnv('ZPAY_PID', getEnv('PAY_PID'))
-  const pkey = getEnv('ZPAY_PKEY', getEnv('PAY_PKEY'))
+  const pkey = getPaymentKey()
 
   if (!pid || !pkey) {
     throw new Error('Missing ZPAY_PID / ZPAY_PKEY configuration.')

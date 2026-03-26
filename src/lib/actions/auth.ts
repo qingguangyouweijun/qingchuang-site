@@ -1,26 +1,21 @@
-﻿'use server'
+'use server'
 
 import { createHash, randomInt } from 'node:crypto'
 import nodemailer from 'nodemailer'
 import { redirect } from 'next/navigation'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
+import { eq, and } from 'drizzle-orm'
+import { getDb, schema } from '@/lib/db'
+import {
+  createSession,
+  destroySession,
+  getSession as getAuthSession,
+  hashPassword,
+  verifyPassword,
+} from '@/lib/auth'
 import type { AppRole } from '@/lib/types'
 
-type AuthMode = 'login' | 'register'
 type AuthScope = 'user' | 'admin'
 type EmailCodePurpose = 'register'
-
-type EmailVerificationCodeRecord = {
-  id: string
-  email: string
-  purpose: EmailCodePurpose
-  code_hash: string
-  expires_at: string
-  sent_at: string
-  consumed_at: string | null
-  attempt_count: number
-}
 
 const REGISTER_CODE_PURPOSE: EmailCodePurpose = 'register'
 const REGISTER_CODE_LENGTH = 6
@@ -36,72 +31,8 @@ function validateEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
-function resolveMode(value: string): AuthMode {
-  return value === 'register' ? 'register' : 'login'
-}
-
 function resolveScope(value: string): AuthScope {
   return value === 'admin' ? 'admin' : 'user'
-}
-
-function mapAuthError(message: string) {
-  if (message.includes('rate limit') || message.includes('For security purposes')) {
-    return '验证码发送过于频繁，请稍后再试。'
-  }
-
-  if (message.includes('Token has expired')) {
-    return '验证码已过期，请重新获取。'
-  }
-
-  if (message.includes('invalid') || message.includes('Invalid')) {
-    return '验证码无效或已过期，请重新输入。'
-  }
-
-  if (message.includes('User not found')) {
-    return '该邮箱尚未注册，请先注册。'
-  }
-
-  if (message.includes('already registered') || message.includes('already been registered') || message.includes('already exists')) {
-    return '该邮箱已注册，请直接登录。'
-  }
-
-  if (message.includes('Invalid login credentials')) {
-    return '邮箱或密码错误。'
-  }
-
-  if (message.includes('Password should be at least')) {
-    return '密码至少需要 6 位。'
-  }
-
-  if (message.includes('Email not confirmed')) {
-    return '请先完成邮箱验证码验证。'
-  }
-
-  return message
-}
-
-function mapRegisterFlowError(message: string) {
-  if (message.includes('email_verification_codes')) {
-    return '缺少邮箱验证码数据表，请先执行 supabase 中新增的验证码 SQL。'
-  }
-
-  if (message.includes('Missing required environment variable: SUPABASE_SERVICE_ROLE_KEY')) {
-    return '缺少 SUPABASE_SERVICE_ROLE_KEY，注册验证码流程无法创建用户。'
-  }
-
-  return message
-}
-
-function validateRegisterPassword(password: string, confirmPassword: string) {
-  if (!password || password.length < 6) {
-    return '注册密码至少需要 6 位。'
-  }
-
-  if (password !== confirmPassword) {
-    return '两次输入的密码不一致。'
-  }
-
-  return null
 }
 
 function generateEmailCode() {
@@ -111,11 +42,8 @@ function generateEmailCode() {
 function getVerificationSecret() {
   return (
     process.env.AUTH_CODE_SECRET ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.AUTH_JWT_SECRET ||
     process.env.BREVO_API_KEY ||
-    process.env.BREVO_KEY ||
-    process.env.SENDINBLUE_API_KEY ||
-    process.env.SIB_API_KEY ||
     ''
   )
 }
@@ -132,7 +60,6 @@ function getBrevoApiKey() {
     process.env.BREVO_KEY ||
     process.env.SENDINBLUE_API_KEY ||
     process.env.SIB_API_KEY ||
-    process.env.BRAVE_API_KEY ||
     ''
   )
 }
@@ -257,15 +184,8 @@ async function sendBrevoEmail(input: {
       'api-key': apiKey,
     },
     body: JSON.stringify({
-      sender: {
-        name: senderName,
-        email: senderEmail,
-      },
-      to: [
-        {
-          email: input.toEmail,
-        },
-      ],
+      sender: { name: senderName, email: senderEmail },
+      to: [{ email: input.toEmail }],
       subject: input.subject,
       textContent: input.textContent,
       htmlContent: input.htmlContent,
@@ -278,7 +198,6 @@ async function sendBrevoEmail(input: {
   }
 
   let errorMessage = 'Brevo 邮件发送失败，请稍后重试。'
-
   try {
     const payload = (await response.json()) as { message?: string; code?: string }
     if (payload.message) {
@@ -287,7 +206,7 @@ async function sendBrevoEmail(input: {
       errorMessage = `Brevo 邮件发送失败：${payload.code}`
     }
   } catch {
-    // ignore malformed response bodies
+    // ignore malformed bodies
   }
 
   throw new Error(errorMessage)
@@ -311,9 +230,7 @@ async function verifyTurnstileToken(token: string) {
 
   const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: payload,
     cache: 'no-store',
   })
@@ -323,7 +240,6 @@ async function verifyTurnstileToken(token: string) {
   }
 
   const result = (await response.json()) as { success?: boolean }
-
   if (!result.success) {
     throw new Error('安全验证未通过，请重试。')
   }
@@ -331,86 +247,43 @@ async function verifyTurnstileToken(token: string) {
   return true
 }
 
-async function loadProfileRole(userId: string) {
-  const admin = createAdminClient()
-  const { data: profile } = await admin.from('profiles').select('app_role').eq('id', userId).maybeSingle()
-
-  return (profile?.app_role as AppRole | null) ?? 'user'
-}
-
-async function ensureProfile(userId: string, email: string) {
-  const admin = createAdminClient()
-  const { data: existing, error: existingError } = await admin
-    .from('profiles')
-    .select('id, app_role')
-    .eq('id', userId)
-    .maybeSingle()
-
-  if (existingError) {
-    throw new Error('读取用户资料失败，请检查 Supabase 配置。')
+function validateRegisterPassword(password: string, confirmPassword: string) {
+  if (!password || password.length < 6) {
+    return '注册密码至少需要 6 位。'
   }
-
-  if (existing) {
-    return (existing.app_role as AppRole | null) ?? 'user'
+  if (password !== confirmPassword) {
+    return '两次输入的密码不一致。'
   }
-
-  const nickname = email.split('@')[0].slice(0, 24)
-  const { error: profileError } = await admin.from('profiles').insert({
-    id: userId,
-    account: email,
-    nickname,
-    balance: 0,
-    app_role: 'user',
-    campus_available_balance: 0,
-    campus_pending_balance: 0,
-    campus_settlement_applying_amount: 0,
-    campus_settled_total: 0,
-  })
-
-  if (profileError) {
-    console.error('Create profile error:', profileError)
-
-    if (profileError.message.includes('character varying(11)') || profileError.message.includes('value too long')) {
-      throw new Error('当前数据库仍是旧版账号字段，请先执行最新 schema，将 profiles.account 改成支持邮箱的长度。')
-    }
-
-    throw new Error('创建用户资料失败，请先执行最新 schema。')
-  }
-
-  return 'user' as AppRole
+  return null
 }
 
 async function getRegisterVerificationRecord(email: string) {
-  const admin = createAdminClient()
-  const { data, error } = await admin
-    .from('email_verification_codes')
-    .select('id, email, purpose, code_hash, expires_at, sent_at, consumed_at, attempt_count')
-    .eq('email', email)
-    .eq('purpose', REGISTER_CODE_PURPOSE)
-    .maybeSingle()
+  const db = getDb()
+  const rows = await db.select()
+    .from(schema.emailVerificationCodes)
+    .where(
+      and(
+        eq(schema.emailVerificationCodes.email, email),
+        eq(schema.emailVerificationCodes.purpose, REGISTER_CODE_PURPOSE),
+      ),
+    )
+    .limit(1)
 
-  if (error) {
-    throw new Error(mapRegisterFlowError(error.message))
-  }
-
-  return data as EmailVerificationCodeRecord | null
+  return rows[0] ?? null
 }
 
 async function removeRegisterVerificationRecord(email: string) {
-  const admin = createAdminClient()
-  const { error } = await admin
-    .from('email_verification_codes')
-    .delete()
-    .eq('email', email)
-    .eq('purpose', REGISTER_CODE_PURPOSE)
-
-  if (error) {
-    throw new Error(mapRegisterFlowError(error.message))
-  }
+  const db = getDb()
+  await db.delete(schema.emailVerificationCodes).where(
+    and(
+      eq(schema.emailVerificationCodes.email, email),
+      eq(schema.emailVerificationCodes.purpose, REGISTER_CODE_PURPOSE),
+    ),
+  )
 }
 
 async function storeRegisterVerificationCode(email: string, code: string) {
-  const admin = createAdminClient()
+  const db = getDb()
   const now = Date.now()
   const existing = await getRegisterVerificationRecord(email)
 
@@ -418,36 +291,38 @@ async function storeRegisterVerificationCode(email: string, code: string) {
     throw new Error('验证码发送过于频繁，请 60 秒后再试。')
   }
 
-  const { error } = await admin.from('email_verification_codes').upsert(
-    {
-      email,
-      purpose: REGISTER_CODE_PURPOSE,
-      code_hash: hashVerificationCode(email, REGISTER_CODE_PURPOSE, code),
-      expires_at: new Date(now + REGISTER_CODE_TTL_MS).toISOString(),
-      sent_at: new Date(now).toISOString(),
-      consumed_at: null,
-      attempt_count: 0,
-      updated_at: new Date(now).toISOString(),
-    },
-    {
-      onConflict: 'email,purpose',
-    }
-  )
+  const record = {
+    email,
+    purpose: REGISTER_CODE_PURPOSE,
+    code_hash: hashVerificationCode(email, REGISTER_CODE_PURPOSE, code),
+    expires_at: new Date(now + REGISTER_CODE_TTL_MS).toISOString(),
+    sent_at: new Date(now).toISOString(),
+    consumed_at: null,
+    attempt_count: 0,
+    updated_at: new Date(now).toISOString(),
+  }
 
-  if (error) {
-    throw new Error(mapRegisterFlowError(error.message))
+  if (existing) {
+    await db.update(schema.emailVerificationCodes)
+      .set(record)
+      .where(eq(schema.emailVerificationCodes.id, existing.id))
+  } else {
+    await db.insert(schema.emailVerificationCodes).values({
+      id: crypto.randomUUID(),
+      ...record,
+      created_at: new Date(now).toISOString(),
+    })
   }
 }
 
 async function ensureRegisterEmailAvailable(email: string) {
-  const admin = createAdminClient()
-  const { data, error } = await admin.from('profiles').select('id').eq('account', email).maybeSingle()
+  const db = getDb()
+  const rows = await db.select({ id: schema.profiles.id })
+    .from(schema.profiles)
+    .where(eq(schema.profiles.account, email))
+    .limit(1)
 
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  if (data) {
+  if (rows.length > 0) {
     throw new Error('该邮箱已注册，请直接登录。')
   }
 }
@@ -498,20 +373,15 @@ async function verifyRegisterCodeAndCreateUser(input: {
 
   const submittedHash = hashVerificationCode(input.email, REGISTER_CODE_PURPOSE, input.code)
   if (submittedHash !== record.code_hash) {
-    const admin = createAdminClient()
+    const db = getDb()
     const nextAttempts = Number(record.attempt_count || 0) + 1
 
-    const { error } = await admin
-      .from('email_verification_codes')
-      .update({
+    await db.update(schema.emailVerificationCodes)
+      .set({
         attempt_count: nextAttempts,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', record.id)
-
-    if (error) {
-      throw new Error(mapRegisterFlowError(error.message))
-    }
+      .where(eq(schema.emailVerificationCodes.id, record.id))
 
     if (nextAttempts >= MAX_REGISTER_VERIFY_ATTEMPTS) {
       await removeRegisterVerificationRecord(input.email)
@@ -521,54 +391,45 @@ async function verifyRegisterCodeAndCreateUser(input: {
     return { error: '验证码无效或已过期，请重新输入。' }
   }
 
-  const admin = createAdminClient()
-  const createUserResponse = await admin.auth.admin.createUser({
-    email: input.email,
-    password: input.password,
-    email_confirm: true,
+  const db = getDb()
+  const userId = crypto.randomUUID()
+  const now = new Date().toISOString()
+  const nickname = input.email.split('@')[0].slice(0, 24)
+  const passwordHash = await hashPassword(input.password)
+
+  await db.insert(schema.profiles).values({
+    id: userId,
+    account: input.email,
+    password_hash: passwordHash,
+    nickname,
+    balance: 0,
+    app_role: 'user',
+    campus_available_balance: 0,
+    campus_pending_balance: 0,
+    campus_settlement_applying_amount: 0,
+    campus_settled_total: 0,
+    created_at: now,
+    updated_at: now,
   })
 
-  if (createUserResponse.error || !createUserResponse.data.user) {
-    return {
-      error: createUserResponse.error ? mapAuthError(createUserResponse.error.message) : '创建账号失败，请稍后再试。',
-    }
+  await removeRegisterVerificationRecord(input.email)
+
+  await createSession({
+    userId,
+    email: input.email,
+    role: 'user',
+  })
+
+  if (input.scope === 'admin') {
+    return { error: '当前邮箱不是管理员账号。' }
   }
 
-  const createdUser = createUserResponse.data.user
-
-  try {
-    const role = await ensureProfile(createdUser.id, input.email)
-    const supabase = await createClient()
-    const signInResult = await supabase.auth.signInWithPassword({
-      email: input.email,
-      password: input.password,
-    })
-
-    await removeRegisterVerificationRecord(input.email)
-
-    if (signInResult.error) {
-      return { success: true, redirectTo: '/auth/login' }
-    }
-
-    if (input.scope === 'admin') {
-      if (role !== 'admin') {
-        await supabase.auth.signOut()
-        return { error: '当前邮箱不是管理员账号。' }
-      }
-
-      return { success: true, redirectTo: '/admin' }
-    }
-
-    return { success: true, redirectTo: role === 'admin' ? '/admin' : '/campus' }
-  } catch (error) {
-    await admin.auth.admin.deleteUser(createdUser.id)
-    return { error: error instanceof Error ? error.message : '注册完成，但初始化资料失败。' }
-  }
+  return { success: true, redirectTo: '/campus' }
 }
 
 export async function requestEmailCode(formData: FormData) {
   const email = normalizeEmail(String(formData.get('email') || ''))
-  const mode = resolveMode(String(formData.get('mode') || 'login'))
+  const mode = String(formData.get('mode') || 'login')
   const turnstileToken = String(formData.get('turnstileToken') || '')
   const password = String(formData.get('password') || '')
   const confirmPassword = String(formData.get('confirmPassword') || '')
@@ -609,33 +470,19 @@ export async function requestEmailCode(formData: FormData) {
           : '注册验证码已发送到你的邮箱，请输入验证码完成注册。',
       }
     } catch (error) {
-      return { error: error instanceof Error ? mapRegisterFlowError(error.message) : '发送注册验证码失败，请稍后重试。' }
+      return { error: error instanceof Error ? error.message : '发送注册验证码失败，请稍后重试。' }
     }
   }
 
-  const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      shouldCreateUser: false,
-    },
-  })
-
-  if (error) {
-    return { error: mapAuthError(error.message) }
-  }
-
-  return {
-    success: true,
-    message: '登录验证码已发送到你的邮箱，请输入验证码继续。',
-  }
+  // Login mode: password-based, no OTP
+  return { error: '登录请使用邮箱和密码。' }
 }
 
 export async function verifyEmailCode(formData: FormData) {
   const email = normalizeEmail(String(formData.get('email') || ''))
   const code = String(formData.get('code') || '').trim()
   const scope = resolveScope(String(formData.get('scope') || 'user'))
-  const mode = resolveMode(String(formData.get('mode') || 'login'))
+  const mode = String(formData.get('mode') || 'login')
   const password = String(formData.get('password') || '')
   const confirmPassword = String(formData.get('confirmPassword') || '')
 
@@ -657,82 +504,103 @@ export async function verifyEmailCode(formData: FormData) {
         scope,
       })
     } catch (error) {
-      return { error: error instanceof Error ? mapRegisterFlowError(error.message) : '注册验证失败，请稍后重试。' }
+      return { error: error instanceof Error ? error.message : '注册验证失败，请稍后重试。' }
     }
   }
 
-  const supabase = await createClient()
-  const { data, error } = await supabase.auth.verifyOtp({
-    email,
-    token: code,
-    type: 'email',
-  })
+  return { error: '登录请使用邮箱和密码。' }
+}
 
-  if (error || !data.user) {
-    return { error: error ? mapAuthError(error.message) : '验证码无效或已过期。' }
+export async function loginWithPassword(formData: FormData) {
+  const email = normalizeEmail(String(formData.get('email') || ''))
+  const password = String(formData.get('password') || '')
+  const scope = resolveScope(String(formData.get('scope') || 'user'))
+  const turnstileToken = String(formData.get('turnstileToken') || '')
+
+  if (!validateEmail(email)) {
+    return { error: '请输入有效的邮箱地址。' }
+  }
+
+  if (!password) {
+    return { error: '请输入密码。' }
   }
 
   try {
-    const role = await ensureProfile(data.user.id, email)
-
-    if (scope === 'admin') {
-      if (role !== 'admin') {
-        await supabase.auth.signOut()
-        return { error: '当前邮箱不是管理员账号。' }
-      }
-
-      return { success: true, redirectTo: '/admin' }
-    }
-
-    return { success: true, redirectTo: role === 'admin' ? '/admin' : '/campus' }
-  } catch (profileError) {
-    await supabase.auth.signOut()
-    return { error: profileError instanceof Error ? profileError.message : '登录完成，但初始化资料失败。' }
+    await verifyTurnstileToken(turnstileToken)
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : '安全验证失败。' }
   }
+
+  const db = getDb()
+  const rows = await db.select()
+    .from(schema.profiles)
+    .where(eq(schema.profiles.account, email))
+    .limit(1)
+
+  const profile = rows[0]
+  if (!profile) {
+    return { error: '该邮箱尚未注册，请先注册。' }
+  }
+
+  if (!profile.password_hash) {
+    return { error: '该账号尚未设置密码，请联系管理员。' }
+  }
+
+  const valid = await verifyPassword(password, profile.password_hash)
+  if (!valid) {
+    return { error: '邮箱或密码错误。' }
+  }
+
+  const role = (profile.app_role as AppRole) || 'user'
+
+  if (scope === 'admin' && role !== 'admin') {
+    return { error: '当前邮箱不是管理员账号。' }
+  }
+
+  await createSession({
+    userId: profile.id,
+    email,
+    role,
+  })
+
+  const redirectTo = role === 'admin' && scope === 'admin' ? '/admin' : '/campus'
+  return { success: true, redirectTo }
 }
 
 export async function signOut() {
-  const supabase = await createClient()
-  await supabase.auth.signOut()
+  await destroySession()
   redirect('/auth/login')
 }
 
 export async function getSession() {
-  const supabase = await createClient()
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-  return session
+  return getAuthSession()
 }
 
 export async function getCurrentUser() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
+  const session = await getAuthSession()
+  if (!session) {
     return null
   }
 
-  const admin = createAdminClient()
-  const { data: profile } = await admin.from('profiles').select('*').eq('id', user.id).maybeSingle()
+  const db = getDb()
+  const rows = await db.select()
+    .from(schema.profiles)
+    .where(eq(schema.profiles.id, session.userId))
+    .limit(1)
 
-  if (!profile && user.email) {
-    try {
-      await ensureProfile(user.id, user.email)
-      const { data: refreshedProfile } = await admin.from('profiles').select('*').eq('id', user.id).maybeSingle()
-
-      return { user, profile: refreshedProfile }
-    } catch (error) {
-      console.error('Ensure profile error:', error)
-      return { user, profile: null }
-    }
+  const profile = rows[0] ?? null
+  return {
+    user: { id: session.userId, email: session.email },
+    profile,
   }
-
-  return { user, profile }
 }
 
 export async function getProfileRole(userId: string) {
-  return loadProfileRole(userId)
+  const db = getDb()
+  const rows = await db.select({ app_role: schema.profiles.app_role })
+    .from(schema.profiles)
+    .where(eq(schema.profiles.id, userId))
+    .limit(1)
+
+  return (rows[0]?.app_role as AppRole) ?? 'user'
 }

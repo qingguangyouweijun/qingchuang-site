@@ -1,7 +1,9 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
+import { eq } from 'drizzle-orm'
 
-import { createClient } from '@/lib/supabase/server'
+import { getDb, schema } from '@/lib/db'
+import { getSession } from '@/lib/auth'
 
 export const AI_MODELS = ['qwen3:1.7b'] as const
 export const DEFAULT_AI_MODEL = 'qwen3:1.7b'
@@ -281,24 +283,27 @@ export async function withAiDb<T>(updater: (db: AiDatabase) => Promise<T> | T): 
 }
 
 export async function getAiCurrentUser(): Promise<AiPublicUser | null> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
+  const session = await getSession()
+  if (!session) {
     return null
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('id, account, nickname')
-    .eq('id', user.id)
-    .single()
+  const db = getDb()
+  const rows = await db.select({
+    id: schema.profiles.id,
+    account: schema.profiles.account,
+    nickname: schema.profiles.nickname,
+  })
+    .from(schema.profiles)
+    .where(eq(schema.profiles.id, session.userId))
+    .limit(1)
 
-  const account = String(profile?.account || user.email || user.id)
-  const nickname = (profile?.nickname as string | null | undefined) ?? null
+  const profile = rows[0]
+  const account = profile?.account || session.email || session.userId
+  const nickname = profile?.nickname ?? null
 
   return {
-    id: user.id,
+    id: session.userId,
     account,
     nickname,
     label: nickname || account,
@@ -588,4 +593,3 @@ export function getAiConversationBundle(db: AiDatabase, conversationId: string, 
 export function getAiTemplateById(templateId: string | null | undefined) {
   return aiCharacterTemplates.find((template) => template.id === templateId) ?? null
 }
-
