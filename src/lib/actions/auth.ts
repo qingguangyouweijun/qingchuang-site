@@ -134,7 +134,7 @@ function buildRegisterCodeEmail(code: string) {
     process.env.APP_BASE_URL ||
     "https://qingchuang.site";
 
-  const logoUrl = `${appUrl}/qintra-logo.png`;
+  const logoUrl = `${appUrl}/qingchuang.jpg`;
 
   return {
     subject: "轻创注册验证码",

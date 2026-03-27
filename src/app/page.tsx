@@ -1,5 +1,4 @@
 ﻿import Link from "next/link";
-import Image from "next/image";
 import {
   ArrowRight,
   BookOpen,
@@ -74,14 +73,12 @@ export default function Home() {
         <div className="grid items-start gap-8 lg:grid-cols-[1.08fr_0.92fr]">
           <div className="space-y-6">
             <div className="space-y-2">
-              <Image
-                src="/qintra-logo.png"
-                alt="轻创 Qintra"
-                width={420}
-                height={112}
-                priority
-                className="h-16 w-auto sm:h-20"
-              />
+              <div className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-700">
+                轻创 Qintra
+              </div>
+              <div className="text-2xl font-medium tracking-[0.08em] text-slate-500">
+                让便捷融入生活
+              </div>
             </div>
             <div className="space-y-4">
               <h1 className="max-w-4xl text-3xl font-bold tracking-tight leading-tight text-slate-900 sm:text-4xl md:text-5xl">
