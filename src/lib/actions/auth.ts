@@ -134,23 +134,45 @@ function buildRegisterCodeEmail(code: string) {
     process.env.APP_BASE_URL ||
     "https://qingchuang.site";
 
+  const logoUrl = `${appUrl}/qintra-logo.png`;
+
   return {
     subject: "轻创注册验证码",
     text: `你的轻创注册验证码是 ${code}，10 分钟内有效。如非本人操作，请忽略本邮件。`,
     html: `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;padding:32px;color:#0f172a;">
-        <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:20px;padding:32px;border:1px solid #e2e8f0;">
-          <div style="font-size:24px;font-weight:700;margin-bottom:12px;">轻创注册验证码</div>
-          <div style="font-size:15px;line-height:1.8;color:#475569;margin-bottom:20px;">
-            你正在注册轻创账号，请输入下面的 6 位验证码完成验证。验证码 10 分钟内有效。
+        <div style="max-width:560px;margin:0 auto;">
+
+          <!-- Logo 头部 -->
+          <div style="text-align:center;padding:28px 0 20px;">
+            <img
+              src="${logoUrl}"
+              alt="轻创 Qintra"
+              width="200"
+              style="height:auto;max-width:200px;display:inline-block;"
+            />
           </div>
-          <div style="font-size:32px;letter-spacing:10px;font-weight:700;color:#047857;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:16px;padding:18px 24px;text-align:center;margin-bottom:20px;">
-            ${code}
+
+          <!-- 正文卡片 -->
+          <div style="background:#ffffff;border-radius:20px;padding:32px;border:1px solid #e2e8f0;">
+            <div style="font-size:24px;font-weight:700;margin-bottom:12px;">轻创注册验证码</div>
+            <div style="font-size:15px;line-height:1.8;color:#475569;margin-bottom:20px;">
+              你正在注册轻创账号，请输入下面的 6 位验证码完成验证。验证码 10 分钟内有效。
+            </div>
+            <div style="font-size:32px;letter-spacing:10px;font-weight:700;color:#047857;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:16px;padding:18px 24px;text-align:center;margin-bottom:20px;">
+              ${code}
+            </div>
+            <div style="font-size:14px;line-height:1.8;color:#64748b;">
+              如非本人操作，请直接忽略这封邮件。<br />
+              访问轻创：<a href="${appUrl}" style="color:#047857;">${appUrl}</a>
+            </div>
           </div>
-          <div style="font-size:14px;line-height:1.8;color:#64748b;">
-            如非本人操作，请直接忽略这封邮件。<br />
-            访问轻创：<a href="${appUrl}" style="color:#047857;">${appUrl}</a>
+
+          <!-- 底部小字 -->
+          <div style="text-align:center;padding:16px 0 8px;font-size:12px;color:#94a3b8;">
+            © 轻创 Qintra &nbsp;·&nbsp; 让便捷融入生活
           </div>
+
         </div>
       </div>
     `.trim(),
