@@ -3,7 +3,15 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, FileText, MapPin, MessageSquare, Phone, Save, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  FileText,
+  MapPin,
+  MessageSquare,
+  Phone,
+  Save,
+  Sparkles,
+} from "lucide-react";
 import { MainLayout } from "@/components/Layout/MainLayout";
 import { Badge } from "@/components/UI/Badge";
 import { Button } from "@/components/UI/Button";
@@ -20,7 +28,7 @@ import { getProfile, updateProfile } from "@/lib/actions/profile";
 import { GRADE_OPTIONS } from "@/lib/types";
 import type { Appearance, Gender, Profile } from "@/lib/types";
 
-const GRADE_VALUES = GRADE_OPTIONS.map((o) => o.value);
+const GRADE_VALUES: string[] = GRADE_OPTIONS.map((o) => o.value);
 
 interface FormState {
   gender: Gender | "";
@@ -268,13 +276,15 @@ export default function ProfileSetupPage() {
                       icon={<Sparkles className="h-4 w-4" />}
                     />
                     <p className="text-xs text-gray-500">
-                      填 0 表示暂不开放晴窗展示；填 1 及以上表示最多允许多少人查看你的资料。
+                      填 0 表示暂不开放晴窗展示；填 1
+                      及以上表示最多允许多少人查看你的资料。
                     </p>
                     {Number(formData.visibilityLimit) === 0 && (
                       <div className="rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 leading-6">
                         <p className="font-medium">💡 推荐设为 1 及以上</p>
                         <p className="mt-1">
-                          开启后你的资料将进入晴窗展示池，让同校用户有机会认识你；同时你还可以享受晴窗抽取的<strong>优惠价格</strong>。
+                          开启后你的资料将进入晴窗展示池，让同校用户有机会认识你；同时你还可以享受晴窗抽取的
+                          <strong>优惠价格</strong>。
                         </p>
                       </div>
                     )}
@@ -372,21 +382,16 @@ export default function ProfileSetupPage() {
                 管理员站和普通用户端依旧分开，后台只负责订单、结算、角色和站内规则。
               </div>
               <div className="rounded-2xl bg-emerald-50 p-4">
-                <p className="font-medium text-emerald-800 mb-1">💡 推荐开启晴窗展示</p>
-                <p>
-                  将可见人数设为 1
-                  以上并填写联系方式后：
+                <p className="font-medium text-emerald-800 mb-1">
+                  💡 推荐开启晴窗展示
                 </p>
+                <p>将可见人数设为 1 以上并填写联系方式后：</p>
                 <ul className="mt-2 space-y-1 text-xs text-emerald-700">
-                  <li>
-                    · 你的资料会进入晴窗展示池，让同校用户有机会认识你
-                  </li>
+                  <li>· 你的资料会进入晴窗展示池，让同校用户有机会认识你</li>
                   <li>
                     · 你可以享受晴窗抽取的<strong>优惠定价</strong>
                   </li>
-                  <li>
-                    · 所有支付统一通过在线支付完成，安全便捷
-                  </li>
+                  <li>· 所有支付统一通过在线支付完成，安全便捷</li>
                 </ul>
               </div>
             </CardContent>
