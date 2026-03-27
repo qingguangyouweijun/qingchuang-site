@@ -212,40 +212,6 @@ async function sendBrevoEmail(input: {
   throw new Error(errorMessage)
 }
 
-async function verifyTurnstileToken(token: string) {
-  const secret = process.env.TURNSTILE_SECRET_KEY
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
-
-  if (!secret || !siteKey) {
-    return true
-  }
-
-  if (!token) {
-    throw new Error('请先完成安全验证。')
-  }
-
-  const payload = new URLSearchParams()
-  payload.set('secret', secret)
-  payload.set('response', token)
-
-  const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: payload,
-    cache: 'no-store',
-  })
-
-  if (!response.ok) {
-    throw new Error('安全验证暂时不可用，请稍后重试。')
-  }
-
-  const result = (await response.json()) as { success?: boolean }
-  if (!result.success) {
-    throw new Error('安全验证未通过，请重试。')
-  }
-
-  return true
-}
 
 function validateRegisterPassword(password: string, confirmPassword: string) {
   if (!password || password.length < 6) {
@@ -430,7 +396,6 @@ async function verifyRegisterCodeAndCreateUser(input: {
 export async function requestEmailCode(formData: FormData) {
   const email = normalizeEmail(String(formData.get('email') || ''))
   const mode = String(formData.get('mode') || 'login')
-  const turnstileToken = String(formData.get('turnstileToken') || '')
   const password = String(formData.get('password') || '')
   const confirmPassword = String(formData.get('confirmPassword') || '')
   const resend = String(formData.get('resend') || '') === 'true'
@@ -439,11 +404,6 @@ export async function requestEmailCode(formData: FormData) {
     return { error: '请输入有效的邮箱地址。' }
   }
 
-  try {
-    await verifyTurnstileToken(turnstileToken)
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : '安全验证失败。' }
-  }
 
   if (mode === 'register') {
     const passwordError = validateRegisterPassword(password, confirmPassword)
@@ -515,7 +475,6 @@ export async function loginWithPassword(formData: FormData) {
   const email = normalizeEmail(String(formData.get('email') || ''))
   const password = String(formData.get('password') || '')
   const scope = resolveScope(String(formData.get('scope') || 'user'))
-  const turnstileToken = String(formData.get('turnstileToken') || '')
 
   if (!validateEmail(email)) {
     return { error: '请输入有效的邮箱地址。' }
@@ -525,11 +484,6 @@ export async function loginWithPassword(formData: FormData) {
     return { error: '请输入密码。' }
   }
 
-  try {
-    await verifyTurnstileToken(turnstileToken)
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : '安全验证失败。' }
-  }
 
   const db = getDb()
   const rows = await db.select()

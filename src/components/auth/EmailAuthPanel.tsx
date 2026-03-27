@@ -8,7 +8,6 @@ import { Button } from '@/components/UI/Button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/UI/Card'
 import { Input } from '@/components/UI/Input'
 import { requestEmailCode, verifyEmailCode, loginWithPassword } from '@/lib/actions/auth'
-import { TurnstileWidget } from '@/components/auth/TurnstileWidget'
 
 type EmailAuthVariant = 'login' | 'register' | 'admin'
 
@@ -20,13 +19,13 @@ const CONFIG: Record<EmailAuthVariant, {
 }> = {
   login: {
     title: '邮箱密码登录',
-    description: '输入你的邮箱和密码，完成安全验证后即可登录。',
+    description: '输入你的邮箱和密码即可登录。',
     scope: 'user',
     mode: 'login',
   },
   register: {
     title: '邮箱注册轻创',
-    description: '填写邮箱、设置密码并完成安全验证，获取验证码后即可直接完成注册。',
+    description: '填写邮箱并设置密码，获取验证码后即可直接完成注册。',
     scope: 'user',
     mode: 'register',
   },
@@ -48,14 +47,12 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
   const [password, setPassword] = React.useState('')
   const [confirmPassword, setConfirmPassword] = React.useState('')
   const [code, setCode] = React.useState('')
-  const [turnstileToken, setTurnstileToken] = React.useState('')
   const [codeSent, setCodeSent] = React.useState(false)
   const [notice, setNotice] = React.useState('')
   const [error, setError] = React.useState('')
   const [isSending, setIsSending] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
-  // --- Login (password-based) ---
   async function handleLogin(event: React.FormEvent) {
     event.preventDefault()
     setIsSubmitting(true)
@@ -66,7 +63,6 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
     formData.set('email', email)
     formData.set('password', password)
     formData.set('scope', config.scope)
-    formData.set('turnstileToken', turnstileToken)
 
     const result = await loginWithPassword(formData)
 
@@ -84,7 +80,6 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
     setIsSubmitting(false)
   }
 
-  // --- Register: send verification code ---
   async function handleSendCode() {
     setIsSending(true)
     setError('')
@@ -93,7 +88,6 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
     const formData = new FormData()
     formData.set('email', email)
     formData.set('mode', 'register')
-    formData.set('turnstileToken', turnstileToken)
     formData.set('password', password)
     formData.set('confirmPassword', confirmPassword)
     formData.set('resend', codeSent ? 'true' : 'false')
@@ -111,7 +105,6 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
     setIsSending(false)
   }
 
-  // --- Register: verify code and create account ---
   async function handleVerifyCode(event: React.FormEvent) {
     event.preventDefault()
     setIsSubmitting(true)
@@ -147,7 +140,6 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
     setCode('')
     setNotice('')
     setError('')
-    setTurnstileToken('')
   }
 
   return (
@@ -177,7 +169,6 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
           {notice && <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{notice}</div>}
 
           {isLogin ? (
-            // --- Password login form ---
             <form onSubmit={handleLogin} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
               <div className="space-y-5">
                 <div className="space-y-4">
@@ -199,17 +190,12 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
                   />
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
-                  <TurnstileWidget onVerify={setTurnstileToken} />
-                </div>
-
                 <Button type="submit" className="w-full" size="lg" isLoading={isSubmitting}>
                   {variant === 'admin' ? '进入管理员网站' : '登录轻创'}
                 </Button>
               </div>
             </form>
           ) : (
-            // --- Register form (email code) ---
             <form onSubmit={handleVerifyCode} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
               <div className="space-y-5">
                 <div className="space-y-4">
@@ -242,8 +228,8 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
                   />
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
-                  <TurnstileWidget onVerify={setTurnstileToken} />
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-600">
+                  验证码会发送到你填写的邮箱，请注意查收并在 10 分钟内完成验证。
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
