@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import * as React from 'react'
 import Link from 'next/link'
@@ -11,7 +11,7 @@ import { Input } from '@/components/UI/Input'
 import { Select } from '@/components/UI/Select'
 import type { AiCharacter, AiCharacterDraft, AiCharacterTemplate } from '@/lib/ai-companion'
 
-const MODEL_OPTIONS = ['qwen3:1.7b']
+const MODEL_OPTIONS = ['glm-4.7-flash']
 
 const EMPTY_DRAFT: AiCharacterDraft = {
   avatarUrl: '',
@@ -23,7 +23,7 @@ const EMPTY_DRAFT: AiCharacterDraft = {
   interactionStyle: '',
   boundaries: '',
   firstMessage: '',
-  modelName: 'qwen3:1.7b',
+  modelName: 'glm-4.7-flash',
 }
 
 interface CharacterSaveResponse {
@@ -49,7 +49,7 @@ function templateToDraft(template: AiCharacterTemplate): AiCharacterDraft {
     interactionStyle: template.interactionStyle,
     boundaries: template.boundaries,
     firstMessage: template.firstMessage,
-    modelName: template.modelName || 'qwen3:1.7b',
+    modelName: template.modelName || 'glm-4.7-flash',
   }
 }
 

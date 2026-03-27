@@ -5,8 +5,8 @@ import { eq } from 'drizzle-orm'
 import { getDb, schema } from '@/lib/db'
 import { getSession } from '@/lib/auth'
 
-export const AI_MODELS = ['qwen3:1.7b'] as const
-export const DEFAULT_AI_MODEL = 'qwen3:1.7b'
+export const AI_MODELS = ['glm-4.7-flash'] as const
+export const DEFAULT_AI_MODEL = 'glm-4.7-flash'
 
 export type AiMessageRole = 'user' | 'assistant'
 
@@ -100,11 +100,16 @@ export interface AiCharacterDraft {
   modelName: string
 }
 
-interface OllamaChatResponse {
-  message?: {
-    content?: string
-  }
-  error?: string
+interface BigModelChatResponse {
+  choices?: Array<{
+    message?: {
+      content?: string | Array<{ type?: string; text?: string }>
+    }
+  }>
+  error?: {
+    message?: string
+    code?: string
+  } | string
 }
 
 const DB_PATH = join(process.cwd(), 'data', 'ai-companion.json')
@@ -251,7 +256,10 @@ export async function readAiDb(): Promise<AiDatabase> {
     const raw = await readFile(DB_PATH, 'utf8')
     const parsed = JSON.parse(raw) as Partial<AiDatabase>
     return {
-      characters: parsed.characters ?? [],
+      characters: (parsed.characters ?? []).map((character) => ({
+        ...character,
+        modelName: normalizeAiModelName(character.modelName),
+      })),
       conversations: parsed.conversations ?? [],
       messages: parsed.messages ?? [],
       memories: parsed.memories ?? [],
@@ -322,6 +330,14 @@ function normalizeString(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
 }
 
+function normalizeAiModelName(value: unknown) {
+  const model = normalizeString(value)
+  if (!model || model === 'qwen3:1.7b') {
+    return DEFAULT_AI_MODEL
+  }
+  return model
+}
+
 function readRequiredString(value: unknown, label: string, min: number, max: number) {
   const text = normalizeString(value)
   if (!text) {
@@ -345,7 +361,7 @@ function readOptionalString(value: unknown, max: number) {
 }
 
 function ensureModelName(value: unknown) {
-  const model = normalizeString(value) || DEFAULT_AI_MODEL
+  const model = normalizeAiModelName(value)
   if (model.length > 40) {
     throw new Error('模型名称过长')
   }
@@ -489,7 +505,7 @@ export function buildAiSystemPrompt(character: AiCharacter, memory?: AiMemory | 
   return sections.join('\n')
 }
 
-export function buildAiOllamaMessages(character: AiCharacter, memory: AiMemory | null, messages: AiMessage[], toneHint?: string) {
+export function buildAiChatMessages(character: AiCharacter, memory: AiMemory | null, messages: AiMessage[], toneHint?: string) {
   const recentMessages = messages.slice(-12).map((message) => ({
     role: message.role,
     content: message.content,
@@ -504,27 +520,85 @@ export function buildAiOllamaMessages(character: AiCharacter, memory: AiMemory |
   ]
 }
 
-function resolveOllamaBaseUrl() {
-  return (process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434').replace(/\/$/, '')
+function resolveBigModelBaseUrl() {
+  return (process.env.BIGMODEL_BASE_URL || 'https://open.bigmodel.cn/api/paas/v4').replace(/\/$/, '')
 }
 
-function mapOllamaError(detail: string) {
+function resolveBigModelApiKey() {
+  return process.env.BIGMODEL_API_KEY || process.env.ZHIPU_API_KEY || process.env.GLM_API_KEY || ''
+}
+
+function readBigModelError(detail: string) {
+  if (!detail) {
+    return ''
+  }
+
+  try {
+    const payload = JSON.parse(detail) as {
+      error?: { message?: string; code?: string } | string
+      message?: string
+    }
+
+    if (typeof payload.error === 'string') {
+      return payload.error
+    }
+
+    if (payload.error?.message) {
+      return payload.error.code ? `${payload.error.message} (${payload.error.code})` : payload.error.message
+    }
+
+    if (payload.message) {
+      return payload.message
+    }
+  } catch {
+    // ignore malformed payloads
+  }
+
+  return detail
+}
+
+function extractBigModelContent(data: BigModelChatResponse) {
+  const content = data.choices?.[0]?.message?.content
+
+  if (typeof content === 'string') {
+    return content.trim()
+  }
+
+  if (Array.isArray(content)) {
+    return content
+      .map((part) => (typeof part?.text === 'string' ? part.text : ''))
+      .join('')
+      .trim()
+  }
+
+  return ''
+}
+
+function mapBigModelError(detail: string) {
   if (!detail) {
     return 'AI 陪伴暂时不可用，请稍后重试。'
   }
 
   const lower = detail.toLowerCase()
 
-  if (lower.includes('model') && (lower.includes('not found') || lower.includes('no such file'))) {
-    return 'AI 模型还没有准备好，请先执行 ollama pull qwen3:1.7b。'
+  if (lower.includes('api key') || lower.includes('authorization') || lower.includes('unauthorized') || lower.includes('401')) {
+    return '智谱 AI API Key 无效或未配置，请检查 BIGMODEL_API_KEY。'
   }
 
-  if (lower.includes('failed to fetch') || lower.includes('econnrefused') || lower.includes('connect')) {
-    return '当前连不上 Ollama 模型服务，请确认服务器上的 Ollama 已启动，并监听 127.0.0.1:11434。'
+  if (lower.includes('429') || lower.includes('rate') || lower.includes('limit')) {
+    return '智谱 AI 请求过于频繁，请稍后再试。'
+  }
+
+  if (lower.includes('model') && lower.includes('not found')) {
+    return '当前模型不可用，请确认使用 glm-4.7-flash。'
   }
 
   if (lower.includes('aborted') || lower.includes('timeout')) {
-    return '等待 AI 模型响应超时，请稍后再试。'
+    return '等待智谱 AI 响应超时，请稍后再试。'
+  }
+
+  if (lower.includes('failed to fetch') || lower.includes('connect') || lower.includes('enotfound') || lower.includes('econnrefused')) {
+    return '当前连不上智谱 AI 服务，请稍后重试。'
   }
 
   return detail
@@ -536,37 +610,44 @@ export async function generateAiReply(options: {
   messages: AiMessage[]
   toneHint?: string
 }) {
+  const apiKey = resolveBigModelApiKey()
+  if (!apiKey) {
+    throw new Error('缺少智谱 AI API Key，请在环境变量中配置 BIGMODEL_API_KEY。')
+  }
+
   try {
-    const response = await fetch(`${resolveOllamaBaseUrl()}/api/chat`, {
+    const response = await fetch(`${resolveBigModelBaseUrl()}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: options.character.modelName || process.env.OLLAMA_MODEL || DEFAULT_AI_MODEL,
+        model: normalizeAiModelName(options.character.modelName || process.env.BIGMODEL_MODEL || DEFAULT_AI_MODEL),
+        messages: buildAiChatMessages(options.character, options.memory, options.messages, options.toneHint),
         stream: false,
-        messages: buildAiOllamaMessages(options.character, options.memory, options.messages, options.toneHint),
       }),
       cache: 'no-store',
       signal: AbortSignal.timeout(45_000),
     })
 
     if (!response.ok) {
-      const detail = await response.text()
-      throw new Error(mapOllamaError(detail || `Ollama 请求失败：${response.status}`))
+      const detail = readBigModelError(await response.text())
+      throw new Error(mapBigModelError(detail || `智谱 AI 请求失败：${response.status}`))
     }
 
-    const data = (await response.json()) as OllamaChatResponse
-    const content = data.message?.content?.trim()
+    const data = (await response.json()) as BigModelChatResponse
+    const content = extractBigModelContent(data)
+    const errorDetail = typeof data.error === 'string' ? data.error : data.error?.message || ''
 
     if (!content) {
-      throw new Error(mapOllamaError(data.error || '模型没有返回有效内容。'))
+      throw new Error(mapBigModelError(errorDetail || '模型没有返回有效内容。'))
     }
 
     return content
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'AI 陪伴暂时不可用，请稍后再试。'
-    throw new Error(mapOllamaError(message))
+    const message = error instanceof Error ? error.message : 'AI 陪伴暂时不可用，请稍后重试。'
+    throw new Error(mapBigModelError(message))
   }
 }
 

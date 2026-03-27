@@ -12,7 +12,7 @@
 - **认证**: JWT (jose) + httpOnly cookie + bcryptjs
 - **邮件**: Brevo SMTP (nodemailer)
 - **安全验证**: Cloudflare Turnstile
-- **AI**: Ollama 本地推理
+- **AI**: 智谱 GLM-4.7-Flash API
 
 ## 功能模块
 
@@ -95,7 +95,10 @@ npm run start        # 启动生产服务器
 | `ZPAY_PKEY` | ZPay 商户密钥 |
 | `ZPAY_CID` | 可选，指定支付渠道 ID |
 | `ZPAY_GATEWAY_BASE_URL` | 可选，ZPay 网关地址，默认 `https://zpayz.cn` |
-| `APP_BASE_URL` | 站点公网地址，用于生成支付回调地址 |
+| `BIGMODEL_API_KEY` | BigModel API key |
+| `BIGMODEL_BASE_URL` | Optional. Defaults to `https://open.bigmodel.cn/api/paas/v4` |
+| `BIGMODEL_MODEL` | Optional. Defaults to `glm-4.7-flash` |
+| `APP_BASE_URL` | Public site URL used to build payment callback URLs |
 
 ## 数据存储
 
