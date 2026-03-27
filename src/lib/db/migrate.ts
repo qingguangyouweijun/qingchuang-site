@@ -55,8 +55,8 @@ CREATE TABLE IF NOT EXISTS draw_history (
   id TEXT PRIMARY KEY,
   drawer_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   target_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  tier TEXT NOT NULL,
-  price REAL NOT NULL,
+  amount REAL NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'PENDING_PAYMENT',
   contact_wechat TEXT,
   contact_qq TEXT,
   contact_phone TEXT,
@@ -67,16 +67,7 @@ CREATE TABLE IF NOT EXISTS draw_history (
 CREATE INDEX IF NOT EXISTS idx_draw_history_drawer ON draw_history(drawer_id);
 CREATE INDEX IF NOT EXISTS idx_draw_history_created ON draw_history(created_at);
 
-CREATE TABLE IF NOT EXISTS transactions (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  type TEXT NOT NULL,
-  amount REAL NOT NULL,
-  balance_after REAL NOT NULL,
-  description TEXT,
-  related_draw_id TEXT,
-  created_at TEXT NOT NULL
-);
+
 
 CREATE TABLE IF NOT EXISTS email_verification_codes (
   id TEXT PRIMARY KEY,
@@ -182,7 +173,6 @@ CREATE TABLE IF NOT EXISTS campus_payment_records (
   gateway_trade_no TEXT,
   gateway_order_id TEXT,
   pay_url TEXT,
-  qr_code TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );

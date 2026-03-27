@@ -279,6 +279,18 @@ async function markPaymentSuccess(
       )
   }
 
+  if (payment.biz_type === 'DRAW_ORDER') {
+    await db
+      .update(schema.drawHistory)
+      .set({ status: 'PAID' })
+      .where(
+        and(
+          eq(schema.drawHistory.id, payment.biz_id),
+          eq(schema.drawHistory.status, 'PENDING_PAYMENT'),
+        ),
+      )
+  }
+
   return {
     ...payment,
     status: 'SUCCESS' as const,
@@ -816,6 +828,22 @@ export async function createCampusPayment(input: { bizType: CampusBizType; bizId
     assert(order.status === EXPRESS_STATUS.PENDING_PAYMENT, '当前订单已支付或状态已变更。')
     amount = Number(order.order_amount)
     orderName = `校园快递-${order.order_no}`
+  } else if (input.bizType === 'DRAW_ORDER') {
+    const rows = await db
+      .select()
+      .from(schema.drawHistory)
+      .where(eq(schema.drawHistory.id, input.bizId))
+      .limit(1)
+
+    const draw = rows[0]
+    if (!draw) {
+      throw new Error('抽取记录不存在。')
+    }
+
+    assert(draw.drawer_id === userId, '只有抽取人可以支付。')
+    assert(draw.status === 'PENDING_PAYMENT', '当前抽取已支付或状态已变更。')
+    amount = Number(draw.amount)
+    orderName = `晴窗抽取-${draw.id.slice(0, 8)}`
   } else {
     const rows = await db
       .select()
@@ -865,7 +893,6 @@ export async function createCampusPayment(input: { bizType: CampusBizType; bizId
       gateway_trade_no: null,
       gateway_order_id: null,
       pay_url: null,
-      qr_code: null,
       created_at: now,
       updated_at: now,
     })
@@ -902,7 +929,6 @@ export async function createCampusPayment(input: { bizType: CampusBizType; bizId
       gateway_trade_no: gateway.gatewayTradeNo,
       gateway_order_id: gateway.gatewayOrderId,
       pay_url: gateway.payUrl,
-      qr_code: gateway.qrCode,
       updated_at: now,
     })
     .where(eq(schema.campusPaymentRecords.id, payment.id))
@@ -934,7 +960,6 @@ export async function createCampusPayment(input: { bizType: CampusBizType; bizId
       ...payment,
       pay_type: input.payType,
       pay_url: gateway.payUrl,
-      qr_code: gateway.qrCode,
       gateway_trade_no: gateway.gatewayTradeNo,
       gateway_order_id: gateway.gatewayOrderId,
     },

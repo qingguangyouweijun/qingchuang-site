@@ -91,7 +91,6 @@ export async function createZPayOrder(input: {
     gatewayOrderId: payload.O_id || '',
     gatewayTradeNo: payload.trade_no || '',
     payUrl: payload.payurl || '',
-    qrCode: payload.qrcode || payload.img || '',
   }
 }
 

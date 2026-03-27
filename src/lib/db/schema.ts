@@ -62,8 +62,8 @@ export const drawHistory = sqliteTable(
     id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
     drawer_id: text('drawer_id').notNull().references(() => profiles.id, { onDelete: 'cascade' }),
     target_id: text('target_id').notNull().references(() => profiles.id, { onDelete: 'cascade' }),
-    tier: text('tier').notNull(),
-    price: real('price').notNull(),
+    amount: real('amount').notNull().default(0),
+    status: text('status').notNull().default('PENDING_PAYMENT'),
     contact_wechat: text('contact_wechat'),
     contact_qq: text('contact_qq'),
     contact_phone: text('contact_phone'),
@@ -77,19 +77,7 @@ export const drawHistory = sqliteTable(
   ],
 )
 
-export const transactions = sqliteTable(
-  'transactions',
-  {
-    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-    user_id: text('user_id').notNull().references(() => profiles.id, { onDelete: 'cascade' }),
-    type: text('type').notNull(),
-    amount: real('amount').notNull(),
-    balance_after: real('balance_after').notNull(),
-    description: text('description'),
-    related_draw_id: text('related_draw_id'),
-    created_at: text('created_at').notNull().$defaultFn(() => new Date().toISOString()),
-  },
-)
+
 
 export const emailVerificationCodes = sqliteTable(
   'email_verification_codes',
@@ -217,7 +205,7 @@ export const campusPaymentRecords = sqliteTable(
     gateway_trade_no: text('gateway_trade_no'),
     gateway_order_id: text('gateway_order_id'),
     pay_url: text('pay_url'),
-    qr_code: text('qr_code'),
+
     created_at: text('created_at').notNull().$defaultFn(() => new Date().toISOString()),
     updated_at: text('updated_at').notNull().$defaultFn(() => new Date().toISOString()),
   },
