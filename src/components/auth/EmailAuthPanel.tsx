@@ -7,6 +7,7 @@ import { ArrowLeft, LockKeyhole, Mail, MailCheck, Shield, Sparkles } from 'lucid
 import { Button } from '@/components/UI/Button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/UI/Card'
 import { Input } from '@/components/UI/Input'
+import { TurnstileWidget } from '@/components/auth/TurnstileWidget'
 import { requestEmailCode, verifyEmailCode, loginWithPassword } from '@/lib/actions/auth'
 
 type EmailAuthVariant = 'login' | 'register' | 'admin'
@@ -52,6 +53,13 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
   const [error, setError] = React.useState('')
   const [isSending, setIsSending] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [turnstileToken, setTurnstileToken] = React.useState('')
+  const [turnstileKey, setTurnstileKey] = React.useState(0)
+
+  function resetTurnstile() {
+    setTurnstileToken('')
+    setTurnstileKey((k) => k + 1)
+  }
 
   async function handleLogin(event: React.FormEvent) {
     event.preventDefault()
@@ -63,11 +71,13 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
     formData.set('email', email)
     formData.set('password', password)
     formData.set('scope', config.scope)
+    formData.set('turnstileToken', turnstileToken)
 
     const result = await loginWithPassword(formData)
 
     if (result.error) {
       setError(result.error)
+      resetTurnstile()
       setIsSubmitting(false)
       return
     }
@@ -91,11 +101,13 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
     formData.set('password', password)
     formData.set('confirmPassword', confirmPassword)
     formData.set('resend', codeSent ? 'true' : 'false')
+    formData.set('turnstileToken', turnstileToken)
 
     const result = await requestEmailCode(formData)
 
     if (result.error) {
       setError(result.error)
+      resetTurnstile()
       setIsSending(false)
       return
     }
@@ -190,7 +202,9 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
                   />
                 </div>
 
-                <Button type="submit" className="w-full" size="lg" isLoading={isSubmitting}>
+                <TurnstileWidget key={`login-${turnstileKey}`} onVerify={setTurnstileToken} />
+
+                <Button type="submit" className="w-full" size="lg" isLoading={isSubmitting} disabled={!turnstileToken}>
                   {variant === 'admin' ? '进入管理员网站' : '登录轻创'}
                 </Button>
               </div>
@@ -228,6 +242,8 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
                   />
                 </div>
 
+                <TurnstileWidget key={`register-${turnstileKey}`} onVerify={setTurnstileToken} />
+
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-600">
                   验证码会发送到你填写的邮箱，请注意查收并在 10 分钟内完成验证。
                 </div>
@@ -243,7 +259,7 @@ export function EmailAuthPanel({ variant }: { variant: EmailAuthVariant }) {
                     icon={<MailCheck className="h-4 w-4" />}
                     required
                   />
-                  <Button type="button" size="lg" variant={codeSent ? 'secondary' : 'outline'} onClick={handleSendCode} isLoading={isSending}>
+                  <Button type="button" size="lg" variant={codeSent ? 'secondary' : 'outline'} onClick={handleSendCode} isLoading={isSending} disabled={!turnstileToken}>
                     {codeSent ? '重新发送验证码' : '发送注册验证码'}
                   </Button>
                 </div>
