@@ -11,7 +11,7 @@ interface ProfileData {
   nickname?: string;
   gender: Gender;
   grade: string;
-  appearance: Appearance;
+  appearance?: Appearance;
   location: string;
   bio?: string;
   contact_visibility_limit: number;

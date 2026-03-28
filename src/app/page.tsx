@@ -1,9 +1,9 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import {
   ArrowRight,
   BookOpen,
   Bot,
-  HeartHandshake,
+  Gift,
   LayoutGrid,
   Package,
   ReceiptText,
@@ -37,9 +37,9 @@ const mainFeatures = [
   },
   {
     title: "晴窗",
-    description: "校园互动与资料展示功能，适合做同校交流。",
+    description: "完善资料，付费抽取一个异性的联系方式。每个人都是独一无二的。",
     href: "/draw",
-    icon: HeartHandshake,
+    icon: Gift,
     tone: "bg-rose-50 text-rose-700",
   },
   {

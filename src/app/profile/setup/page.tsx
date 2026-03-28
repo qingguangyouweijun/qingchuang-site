@@ -93,10 +93,6 @@ export default function ProfileSetupPage() {
       setError("请选择所在年级。");
       return;
     }
-    if (!formData.appearance) {
-      setError("请选择外在印象。");
-      return;
-    }
     if (!formData.location) {
       setError("请选择所在校区情况。");
       return;
@@ -122,7 +118,7 @@ export default function ProfileSetupPage() {
     const result = await updateProfile({
       gender: formData.gender,
       grade: formData.grade,
-      appearance: formData.appearance,
+      appearance: (formData.appearance as Appearance) || undefined,
       location: formData.location,
       bio: formData.bio.trim() || undefined,
       contact_visibility_limit: visibilityLimit,
@@ -231,7 +227,7 @@ export default function ProfileSetupPage() {
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-gray-700">
-                        外在印象 <span className="text-red-500">*</span>
+                        外在印象 <span className="ml-1 text-xs font-normal text-gray-400">选填</span>
                       </label>
                       <Select
                         value={formData.appearance}

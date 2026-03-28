@@ -280,6 +280,13 @@ async function markPaymentSuccess(
   }
 
   if (payment.biz_type === 'DRAW_ORDER') {
+    // 获取抽取记录的 target_id
+    const drawRows = await db
+      .select({ target_id: schema.drawHistory.target_id })
+      .from(schema.drawHistory)
+      .where(eq(schema.drawHistory.id, payment.biz_id))
+      .limit(1)
+
     await db
       .update(schema.drawHistory)
       .set({ status: 'PAID' })
@@ -289,6 +296,17 @@ async function markPaymentSuccess(
           eq(schema.drawHistory.status, 'PENDING_PAYMENT'),
         ),
       )
+
+    // 递增 target 的 drawn_count
+    if (drawRows[0]) {
+      await db
+        .update(schema.contactPool)
+        .set({
+          drawn_count: sql`${schema.contactPool.drawn_count} + 1`,
+          updated_at: now,
+        })
+        .where(eq(schema.contactPool.user_id, drawRows[0].target_id))
+    }
   }
 
   return {
