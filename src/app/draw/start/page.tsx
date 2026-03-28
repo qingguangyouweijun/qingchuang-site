@@ -80,7 +80,7 @@ interface DrawDetail {
   } | null;
 }
 
-export default function DrawStartPage() {
+function DrawStartPageContent() {
   const searchParams = useSearchParams();
   const drawType: DrawType = searchParams.get("type") === "premium" ? "PREMIUM" : "BASIC";
 
@@ -448,5 +448,27 @@ export default function DrawStartPage() {
         )}
       </div>
     </MainLayout>
+  );
+}
+
+function DrawStartPageFallback() {
+  return (
+    <MainLayout>
+      <div className="mx-auto max-w-3xl py-10">
+        <Card className="border-none shadow-xl">
+          <CardContent className="flex items-center justify-center py-12 text-sm text-slate-500">
+            页面加载中...
+          </CardContent>
+        </Card>
+      </div>
+    </MainLayout>
+  );
+}
+
+export default function DrawStartPage() {
+  return (
+    <React.Suspense fallback={<DrawStartPageFallback />}>
+      <DrawStartPageContent />
+    </React.Suspense>
   );
 }
