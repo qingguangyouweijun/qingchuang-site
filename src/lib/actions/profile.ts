@@ -1,18 +1,18 @@
-"use server";
+﻿"use server";
 
 import { eq } from "drizzle-orm";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { getDb, schema } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import type { Gender, Appearance, Profile } from "@/lib/types";
+import type { Appearance, Gender, Profile } from "@/lib/types";
 
 interface ProfileData {
   nickname?: string;
   gender: Gender;
   grade: string;
   appearance?: Appearance;
-  location: string;
+  location?: string;
   bio?: string;
   contact_visibility_limit: number;
   wechat?: string;
@@ -23,20 +23,20 @@ interface ProfileData {
 export async function uploadAvatar(formData: FormData) {
   const session = await getSession();
   if (!session) {
-    return { error: "请先登录" };
+    return { error: "请先登录。" };
   }
 
   const file = formData.get("avatar") as File;
   if (!file) {
-    return { error: "请选择图片" };
+    return { error: "请选择一张图片后再上传。" };
   }
 
   if (file.size > 2 * 1024 * 1024) {
-    return { error: "图片大小不能超过 2MB" };
+    return { error: "图片大小不能超过 2MB。" };
   }
 
   if (!file.type.startsWith("image/")) {
-    return { error: "请上传图片文件" };
+    return { error: "请上传图片文件。" };
   }
 
   const fileExt = file.name.split(".").pop();
@@ -62,10 +62,13 @@ export async function uploadAvatar(formData: FormData) {
 export async function updateProfile(data: ProfileData) {
   const session = await getSession();
   if (!session) {
-    return { error: "请先登录" };
+    return { error: "请先登录。" };
   }
 
   const db = getDb();
+  const now = new Date().toISOString();
+  const defaultLocation = data.location?.trim() || "本校";
+
   await db
     .update(schema.profiles)
     .set({
@@ -73,26 +76,26 @@ export async function updateProfile(data: ProfileData) {
       gender: data.gender,
       grade: data.grade,
       appearance: data.appearance,
-      location: data.location,
+      location: defaultLocation,
       bio: data.bio,
       contact_visibility_limit: data.contact_visibility_limit,
       is_profile_complete: true,
-      updated_at: new Date().toISOString(),
+      updated_at: now,
     })
     .where(eq(schema.profiles.id, session.userId));
 
-  if (data.contact_visibility_limit > 0) {
-    const existing = await db
-      .select({ id: schema.contactPool.id })
-      .from(schema.contactPool)
-      .where(eq(schema.contactPool.user_id, session.userId))
-      .limit(1);
+  const existing = await db
+    .select({ id: schema.contactPool.id })
+    .from(schema.contactPool)
+    .where(eq(schema.contactPool.user_id, session.userId))
+    .limit(1);
 
-    const now = new Date().toISOString();
+  if (data.contact_visibility_limit > 0) {
     if (existing.length > 0) {
       await db
         .update(schema.contactPool)
         .set({
+          is_active: true,
           max_drawn_count: data.contact_visibility_limit,
           wechat: data.wechat || null,
           qq: data.qq || null,
@@ -107,10 +110,20 @@ export async function updateProfile(data: ProfileData) {
         wechat: data.wechat || null,
         qq: data.qq || null,
         phone: data.phone || null,
+        is_active: true,
         created_at: now,
         updated_at: now,
       });
     }
+  } else if (existing.length > 0) {
+    await db
+      .update(schema.contactPool)
+      .set({
+        is_active: false,
+        max_drawn_count: 0,
+        updated_at: now,
+      })
+      .where(eq(schema.contactPool.user_id, session.userId));
   }
 
   return { success: true };
@@ -119,7 +132,7 @@ export async function updateProfile(data: ProfileData) {
 export async function getProfile() {
   const session = await getSession();
   if (!session) {
-    return { error: "请先登录" };
+    return { error: "请先登录。" };
   }
 
   const db = getDb();
@@ -130,17 +143,17 @@ export async function getProfile() {
     .limit(1);
 
   if (!rows[0]) {
-    return { error: "获取资料失败" };
+    return { error: "获取资料失败，请稍后重试。" };
   }
 
-  const { password_hash: _, ...profile } = rows[0];
+  const { password_hash: _passwordHash, ...profile } = rows[0];
   return { profile: profile as Profile };
 }
 
 export async function getProfileStats() {
   const session = await getSession();
   if (!session) {
-    return { error: "请先登录" };
+    return { error: "请先登录。" };
   }
 
   const db = getDb();
