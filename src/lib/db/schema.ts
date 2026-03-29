@@ -224,6 +224,7 @@ export const campusSettlementApplications = sqliteTable(
     amount: real('amount').notNull(),
     status: text('status').notNull().default('PENDING'),
     user_role: text('user_role').notNull().default('user'),
+    payee_qr_code: text('payee_qr_code'),
     note: text('note'),
     transfer_ref: text('transfer_ref'),
     handled_by: text('handled_by'),

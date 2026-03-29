@@ -186,6 +186,7 @@ CREATE TABLE IF NOT EXISTS campus_settlement_applications (
   amount REAL NOT NULL,
   status TEXT NOT NULL DEFAULT 'PENDING',
   user_role TEXT NOT NULL DEFAULT 'user',
+  payee_qr_code TEXT,
   note TEXT,
   transfer_ref TEXT,
   handled_by TEXT,
@@ -219,6 +220,15 @@ export function migrate() {
   db.pragma('journal_mode = WAL')
   db.pragma('foreign_keys = ON')
   db.exec(TABLES_SQL)
+
+  // Idempotent column additions for existing databases
+  const addColumns = [
+    `ALTER TABLE campus_settlement_applications ADD COLUMN payee_qr_code TEXT`,
+  ]
+  for (const sql of addColumns) {
+    try { db.exec(sql) } catch { /* column already exists */ }
+  }
+
   db.close()
   console.log('Database migrated successfully.')
 }

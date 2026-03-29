@@ -1,4 +1,4 @@
-'use server'
+﻿'use server'
 
 import { and, desc, eq, inArray, ne, sql } from 'drizzle-orm'
 import { headers } from 'next/headers'
@@ -297,7 +297,7 @@ async function markPaymentSuccess(
         ),
       )
 
-    // 递增 target 的 drawn_count
+    // 閫掑 target 鐨?drawn_count
     if (drawRows[0]) {
       await db
         .update(schema.contactPool)
@@ -662,7 +662,7 @@ export async function listBookPosts(scope: 'market' | 'mine' = 'market') {
 
 export async function createBookOrder(input: { bookId: string; deliveryBuilding: string }) {
   const { db, userId } = await getAuthContext()
-  assert(input.deliveryBuilding, '请填写楼栋/楼层。')
+  assert(input.deliveryBuilding, '请填写楼栋 / 楼层。')
 
   const postRows = await db
     .select()
@@ -845,7 +845,7 @@ export async function createCampusPayment(input: { bizType: CampusBizType; bizId
     assert(order.user_id === userId, '只有下单人可以支付。')
     assert(order.status === EXPRESS_STATUS.PENDING_PAYMENT, '当前订单已支付或状态已变更。')
     amount = Number(order.order_amount)
-    orderName = `校园快递-${order.order_no}`
+    orderName = `校园快递代取 ${order.order_no}`
   } else if (input.bizType === 'DRAW_ORDER') {
     const rows = await db
       .select()
@@ -1053,7 +1053,7 @@ export async function getCampusWalletData() {
   }
 }
 
-export async function createSettlementApplication(amount: number) {
+export async function createSettlementApplication(amount: number, payeeQrCode?: string) {
   const { db, profile } = await getAuthContext()
   const applyAmount = roundMoney(Number(amount || 0))
 
@@ -1061,6 +1061,7 @@ export async function createSettlementApplication(amount: number) {
 
   const currentAvailable = Number(profile.campus_available_balance || 0)
   assert(currentAvailable >= applyAmount, '可结算余额不足。')
+  assert(payeeQrCode, '提交结算申请时请附带收款码。')
 
   const balance = await updateCampusBalance(profile.id, {
     available: -applyAmount,
@@ -1077,6 +1078,7 @@ export async function createSettlementApplication(amount: number) {
     amount: applyAmount,
     status: SETTLEMENT_STATUS.PENDING,
     user_role: profile.app_role || 'user',
+    payee_qr_code: payeeQrCode || null,
     note: null,
     transfer_ref: null,
     handled_by: null,
@@ -1143,7 +1145,7 @@ export async function getAdminDashboardData() {
   }
 }
 
-export async function approveSettlement(input: { applicationId: string; transferRef: string; note?: string }) {
+export async function approveSettlement(input: { applicationId: string; note?: string }) {
   const { db, profile } = await getAuthContext()
   ensureAdmin(profile)
 
@@ -1170,8 +1172,7 @@ export async function approveSettlement(input: { applicationId: string; transfer
     .set({
       status: SETTLEMENT_STATUS.APPROVED,
       handled_by: profile.id,
-      transfer_ref: input.transferRef,
-      note: input.note || '管理员已线下打款。',
+      note: input.note || '管理员已完成结算。',
       updated_at: new Date().toISOString(),
     })
     .where(eq(schema.campusSettlementApplications.id, input.applicationId))
@@ -1274,3 +1275,5 @@ export async function handleCampusPaymentNotify(params: Record<string, string>) 
 
   return { success: true }
 }
+
+

@@ -44,7 +44,7 @@ function revalidateExpressPaths() {
   revalidatePath('/campus/express')
   revalidatePath('/campus/express/order')
   revalidatePath('/campus/express/runner')
-  revalidatePath('/campus/orders')
+  revalidatePath('/profile/orders')
 }
 
 export default async function CampusExpressOrderPage({
@@ -305,4 +305,5 @@ export default async function CampusExpressOrderPage({
     </div>
   )
 }
+
 

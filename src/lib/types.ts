@@ -206,6 +206,7 @@ export interface CampusSettlementApplication {
   amount: number;
   status: SettlementStatus;
   user_role: string;
+  payee_qr_code: string | null;
   note: string | null;
   transfer_ref: string | null;
   handled_by: string | null;
@@ -318,7 +319,7 @@ export const BOOK_ORDER_STATUS_LABELS: Record<BookOrderStatus, string> = {
 };
 
 export const SETTLEMENT_STATUS_LABELS: Record<SettlementStatus, string> = {
-  PENDING: "待处理",
-  APPROVED: "已通过",
+  PENDING: "结算申请中",
+  APPROVED: "已结算",
   REJECTED: "已驳回",
 };
