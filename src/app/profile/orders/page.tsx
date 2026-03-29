@@ -6,22 +6,23 @@ import { Button } from "@/components/UI/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/UI/Card"
 import { getSession } from "@/lib/actions/auth"
 import { listBookOrders, listExpressOrders } from "@/lib/actions/campus"
+import type { BookOrderStatus, CampusBookOrder, CampusExpressOrder, ExpressOrderStatus } from "@/lib/types"
 
-const EXPRESS_STATUS_LABELS = {
+const EXPRESS_STATUS_LABELS: Record<ExpressOrderStatus, string> = {
   PENDING_PAYMENT: "待支付",
   OPEN: "待接单",
   ACCEPTED: "已接单",
   PICKED_UP: "已取件",
   DELIVERED: "已送达",
   COMPLETED: "已完成",
-} as const
+}
 
-const BOOK_ORDER_STATUS_LABELS = {
+const BOOK_ORDER_STATUS_LABELS: Record<BookOrderStatus, string> = {
   PENDING_PAYMENT: "待支付",
   WAITING_SELLER: "待卖家送达",
   DELIVERED: "待确认收货",
   COMPLETED: "已完成",
-} as const
+}
 
 const STATUS_VARIANTS: Record<string, "default" | "secondary" | "warning" | "success" | "outline"> = {
   PENDING_PAYMENT: "warning",
@@ -37,14 +38,22 @@ function resolveCollection<T>(
   result: PromiseSettledResult<T>,
   warnings: string[],
   label: string,
-  picker: (value: T) => any[],
+  picker: (value: T) => unknown[],
 ) {
   if (result.status === "fulfilled") {
     return picker(result.value)
   }
 
   warnings.push(label)
-  return [] as any[]
+  return [] as unknown[]
+}
+
+function getExpressStatusLabel(status: string) {
+  return EXPRESS_STATUS_LABELS[status as ExpressOrderStatus] || status
+}
+
+function getBookOrderStatusLabel(status: string) {
+  return BOOK_ORDER_STATUS_LABELS[status as BookOrderStatus] || status
 }
 
 export default async function CampusOrdersPage() {
@@ -88,10 +97,10 @@ export default async function CampusOrdersPage() {
     listBookOrders("seller"),
   ])
 
-  const myExpress = resolveCollection(myExpressResult, warnings, "我下的快递单", (value) => value.orders)
-  const runnerExpress = resolveCollection(runnerExpressResult, warnings, "我接的快递单", (value) => value.orders)
-  const buyerOrders = resolveCollection(buyerOrdersResult, warnings, "我买到的旧书", (value) => value.orders)
-  const sellerOrders = resolveCollection(sellerOrdersResult, warnings, "我卖出的旧书", (value) => value.orders)
+  const myExpress = resolveCollection(myExpressResult, warnings, "我下的快递单", (value) => value.orders) as CampusExpressOrder[]
+  const runnerExpress = resolveCollection(runnerExpressResult, warnings, "我接的快递单", (value) => value.orders) as CampusExpressOrder[]
+  const buyerOrders = resolveCollection(buyerOrdersResult, warnings, "我买到的旧书", (value) => value.orders) as CampusBookOrder[]
+  const sellerOrders = resolveCollection(sellerOrdersResult, warnings, "我卖出的旧书", (value) => value.orders) as CampusBookOrder[]
 
   return (
     <MainLayout>
@@ -146,7 +155,7 @@ export default async function CampusOrdersPage() {
                     </div>
                   </div>
                   <Badge variant={STATUS_VARIANTS[order.status] || "outline"}>
-                    {EXPRESS_STATUS_LABELS[order.status] || order.status}
+                    {getExpressStatusLabel(order.status)}
                   </Badge>
                 </div>
               ))}
@@ -171,7 +180,7 @@ export default async function CampusOrdersPage() {
                     </div>
                   </div>
                   <Badge variant={STATUS_VARIANTS[order.status] || "outline"}>
-                    {EXPRESS_STATUS_LABELS[order.status] || order.status}
+                    {getExpressStatusLabel(order.status)}
                   </Badge>
                 </div>
               ))}
@@ -198,7 +207,7 @@ export default async function CampusOrdersPage() {
                     </div>
                   </div>
                   <Badge variant={STATUS_VARIANTS[order.status] || "outline"}>
-                    {BOOK_ORDER_STATUS_LABELS[order.status] || order.status}
+                    {getBookOrderStatusLabel(order.status)}
                   </Badge>
                 </div>
               ))}
@@ -223,7 +232,7 @@ export default async function CampusOrdersPage() {
                     </div>
                   </div>
                   <Badge variant={STATUS_VARIANTS[order.status] || "outline"}>
-                    {BOOK_ORDER_STATUS_LABELS[order.status] || order.status}
+                    {getBookOrderStatusLabel(order.status)}
                   </Badge>
                 </div>
               ))}
