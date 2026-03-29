@@ -1,5 +1,6 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import { revalidatePath } from 'next/cache'
 import { MainLayout } from '@/components/Layout/MainLayout'
 import { CampusSubnav } from '@/components/campus/CampusSubnav'
@@ -73,9 +74,12 @@ export default async function CampusBooksPage({
         description: String(formData.get('description') || ''),
       })
       revalidatePath('/campus/books')
-      redirect(messageUrl('/campus/books', 'notice', '旧书已发布并进入旧书广场。'))
+      redirect(messageUrl('/campus/books', 'notice', '鏃т功宸插彂甯冨苟杩涘叆鏃т功骞垮満銆?))
     } catch (actionError) {
-      const message = actionError instanceof Error ? actionError.message : '发布旧书失败。'
+      if (isRedirectError(actionError)) {
+        throw actionError
+      }
+      const message = actionError instanceof Error ? actionError.message : '鍙戝竷鏃т功澶辫触銆?
       redirect(messageUrl('/campus/books', 'error', message))
     }
   }
@@ -89,9 +93,12 @@ export default async function CampusBooksPage({
         deliveryBuilding: String(formData.get('deliveryBuilding') || ''),
       })
       revalidatePath('/campus/books')
-      redirect(messageUrl('/campus/books', 'notice', '旧书订单已创建，请完成支付。'))
+      redirect(messageUrl('/campus/books', 'notice', '鏃т功璁㈠崟宸插垱寤猴紝璇峰畬鎴愭敮浠樸€?))
     } catch (actionError) {
-      const message = actionError instanceof Error ? actionError.message : '创建旧书订单失败。'
+      if (isRedirectError(actionError)) {
+        throw actionError
+      }
+      const message = actionError instanceof Error ? actionError.message : '鍒涘缓鏃т功璁㈠崟澶辫触銆?
       redirect(messageUrl('/campus/books', 'error', message))
     }
   }
@@ -109,9 +116,12 @@ export default async function CampusBooksPage({
       if (payment.pay_url) {
         redirect(payment.pay_url)
       }
-      redirect(messageUrl('/campus/books', 'notice', '支付链接已生成，请继续完成付款。'))
+      redirect(messageUrl('/campus/books', 'notice', '鏀粯閾炬帴宸茬敓鎴愶紝璇风户缁畬鎴愪粯娆俱€?))
     } catch (actionError) {
-      const message = actionError instanceof Error ? actionError.message : '发起支付失败。'
+      if (isRedirectError(actionError)) {
+        throw actionError
+      }
+      const message = actionError instanceof Error ? actionError.message : '鍙戣捣鏀粯澶辫触銆?
       redirect(messageUrl('/campus/books', 'error', message))
     }
   }
@@ -125,9 +135,12 @@ export default async function CampusBooksPage({
         bizId: String(formData.get('orderId') || ''),
       })
       revalidatePath('/campus/books')
-      redirect(messageUrl('/campus/books', 'notice', '已同步旧书订单支付状态。'))
+      redirect(messageUrl('/campus/books', 'notice', '宸插悓姝ユ棫涔﹁鍗曟敮浠樼姸鎬併€?))
     } catch (actionError) {
-      const message = actionError instanceof Error ? actionError.message : '同步支付状态失败。'
+      if (isRedirectError(actionError)) {
+        throw actionError
+      }
+      const message = actionError instanceof Error ? actionError.message : '鍚屾鏀粯鐘舵€佸け璐ャ€?
       redirect(messageUrl('/campus/books', 'error', message))
     }
   }
@@ -146,9 +159,12 @@ export default async function CampusBooksPage({
         await confirmBookOrder(orderId)
       }
       revalidatePath('/campus/books')
-      redirect(messageUrl('/campus/books', 'notice', '旧书订单状态已更新。'))
+      redirect(messageUrl('/campus/books', 'notice', '鏃т功璁㈠崟鐘舵€佸凡鏇存柊銆?))
     } catch (actionError) {
-      const message = actionError instanceof Error ? actionError.message : '旧书订单操作失败。'
+      if (isRedirectError(actionError)) {
+        throw actionError
+      }
+      const message = actionError instanceof Error ? actionError.message : '鏃т功璁㈠崟鎿嶄綔澶辫触銆?
       redirect(messageUrl('/campus/books', 'error', message))
     }
   }
@@ -160,11 +176,11 @@ export default async function CampusBooksPage({
           <CampusSubnav />
           <Card>
             <CardContent className="p-10 text-center space-y-4">
-              <h1 className="text-3xl font-bold text-slate-900">请先登录后再使用旧书广场</h1>
-              <p className="text-slate-600">登录后即可发布旧书、下单购买和跟进成交状态。</p>
+              <h1 className="text-3xl font-bold text-slate-900">璇峰厛鐧诲綍鍚庡啀浣跨敤鏃т功骞垮満</h1>
+              <p className="text-slate-600">鐧诲綍鍚庡嵆鍙彂甯冩棫涔︺€佷笅鍗曡喘涔板拰璺熻繘鎴愪氦鐘舵€併€?/p>
               <div className="flex justify-center gap-4">
-                <Link href="/auth/login"><Button>去登录</Button></Link>
-                <Link href="/auth/register"><Button variant="outline">邮箱注册</Button></Link>
+                <Link href="/auth/login"><Button>鍘荤櫥褰?/Button></Link>
+                <Link href="/auth/register"><Button variant="outline">閭娉ㄥ唽</Button></Link>
               </div>
             </CardContent>
           </Card>
@@ -181,10 +197,10 @@ export default async function CampusBooksPage({
     listBookOrders('seller'),
   ])
 
-  const marketPosts = resolveCollection(marketResult, warnings, '旧书广场', (value) => value.posts)
-  const myPosts = resolveCollection(myPostsResult, warnings, '我的旧书帖子', (value) => value.posts)
-  const buyerOrders = resolveCollection(buyerResult, warnings, '我买到的旧书', (value) => value.orders)
-  const sellerOrders = resolveCollection(sellerResult, warnings, '我卖出的旧书', (value) => value.orders)
+  const marketPosts = resolveCollection(marketResult, warnings, '鏃т功骞垮満', (value) => value.posts)
+  const myPosts = resolveCollection(myPostsResult, warnings, '鎴戠殑鏃т功甯栧瓙', (value) => value.posts)
+  const buyerOrders = resolveCollection(buyerResult, warnings, '鎴戜拱鍒扮殑鏃т功', (value) => value.orders)
+  const sellerOrders = resolveCollection(sellerResult, warnings, '鎴戝崠鍑虹殑鏃т功', (value) => value.orders)
 
   return (
     <MainLayout>
@@ -193,22 +209,22 @@ export default async function CampusBooksPage({
 
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-4xl font-bold text-slate-900">旧书广场</h1>
+            <h1 className="text-4xl font-bold text-slate-900">鏃т功骞垮満</h1>
             <p className="mt-3 max-w-3xl text-slate-600 leading-7">
-              旧书发布、广场浏览、买家下单、卖家送达和买家确认收货都放在这一页里，和校园服务其他模块保持同一套账号与支付流程。
+              鏃т功鍙戝竷銆佸箍鍦烘祻瑙堛€佷拱瀹朵笅鍗曘€佸崠瀹堕€佽揪鍜屼拱瀹剁‘璁ゆ敹璐ч兘鏀惧湪杩欎竴椤甸噷锛屽拰鏍″洯鏈嶅姟鍏朵粬妯″潡淇濇寔鍚屼竴濂楄处鍙蜂笌鏀粯娴佺▼銆?
             </p>
           </div>
           <div className="grid grid-cols-3 gap-3 text-sm">
             <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-              <div className="text-slate-500">广场在售</div>
+              <div className="text-slate-500">骞垮満鍦ㄥ敭</div>
               <div className="mt-1 text-2xl font-bold text-slate-900">{marketPosts.length}</div>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-              <div className="text-slate-500">我发布</div>
+              <div className="text-slate-500">鎴戝彂甯?/div>
               <div className="mt-1 text-2xl font-bold text-slate-900">{myPosts.length}</div>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-              <div className="text-slate-500">进行中订单</div>
+              <div className="text-slate-500">杩涜涓鍗?/div>
               <div className="mt-1 text-2xl font-bold text-slate-900">{buyerOrders.length + sellerOrders.length}</div>
             </div>
           </div>
@@ -222,47 +238,47 @@ export default async function CampusBooksPage({
 
         {warnings.length > 0 && (
           <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
-            当前旧书服务数据还在同步中，{warnings.join('、')} 可能暂时为空，但主要入口已经保持可用。
+            褰撳墠鏃т功鏈嶅姟鏁版嵁杩樺湪鍚屾涓紝{warnings.join('銆?)} 鍙兘鏆傛椂涓虹┖锛屼絾涓昏鍏ュ彛宸茬粡淇濇寔鍙敤銆?
           </div>
         )}
 
         <section className="grid grid-cols-1 xl:grid-cols-[0.96fr_1.04fr] gap-6">
           <Card className="border-none shadow-lg">
             <CardHeader>
-              <CardTitle>发布旧书</CardTitle>
-              <CardDescription>卖家到手价 = 售价 - 2 元 / 本；到账时间为买家确认收货后。</CardDescription>
+              <CardTitle>鍙戝竷鏃т功</CardTitle>
+              <CardDescription>鍗栧鍒版墜浠?= 鍞环 - 2 鍏?/ 鏈紱鍒拌处鏃堕棿涓轰拱瀹剁‘璁ゆ敹璐у悗銆?/CardDescription>
             </CardHeader>
             <CardContent>
               <form action={publishAction} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className="space-y-2 text-sm text-slate-600">
-                  <span>书名</span>
-                  <input name="title" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" placeholder="例如：高等数学（第七版）" required />
+                  <span>涔﹀悕</span>
+                  <input name="title" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" placeholder="渚嬪锛氶珮绛夋暟瀛︼紙绗竷鐗堬級" required />
                 </label>
                 <label className="space-y-2 text-sm text-slate-600">
-                  <span>分类</span>
-                  <input name="category" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" placeholder="例如：考研 / 计算机 / 专业课" required />
+                  <span>鍒嗙被</span>
+                  <input name="category" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" placeholder="渚嬪锛氳€冪爺 / 璁＄畻鏈?/ 涓撲笟璇? required />
                 </label>
                 <label className="space-y-2 text-sm text-slate-600">
-                  <span>ISBN（可选）</span>
-                  <input name="isbn" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" placeholder="可帮助买家识别版本" />
+                  <span>ISBN锛堝彲閫夛級</span>
+                  <input name="isbn" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" placeholder="鍙府鍔╀拱瀹惰瘑鍒増鏈? />
                 </label>
                 <label className="space-y-2 text-sm text-slate-600">
-                  <span>成色</span>
-                  <input name="conditionLevel" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" placeholder="例如：九成新 / 有少量划线" required />
+                  <span>鎴愯壊</span>
+                  <input name="conditionLevel" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" placeholder="渚嬪锛氫節鎴愭柊 / 鏈夊皯閲忓垝绾? required />
                 </label>
                 <label className="md:col-span-2 space-y-2 text-sm text-slate-600">
-                  <span>售价</span>
-                  <input name="salePrice" type="number" min="2" step="0.01" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" placeholder="买家看到的价格" required />
+                  <span>鍞环</span>
+                  <input name="salePrice" type="number" min="2" step="0.01" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" placeholder="涔板鐪嬪埌鐨勪环鏍? required />
                 </label>
                 <label className="md:col-span-2 space-y-2 text-sm text-slate-600">
-                  <span>描述</span>
-                  <textarea name="description" className="min-h-28 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3" placeholder="例如：无缺页、无水渍，附带课堂笔记。" />
+                  <span>鎻忚堪</span>
+                  <textarea name="description" className="min-h-28 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3" placeholder="渚嬪锛氭棤缂洪〉銆佹棤姘存笉锛岄檮甯﹁鍫傜瑪璁般€? />
                 </label>
                 <div className="md:col-span-2 rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-600 leading-7">
-                  发布后价格会直接同步展示到旧书广场。买家支付支持微信支付和支付宝；平台统一手续费 2 元 / 本。
+                  鍙戝竷鍚庝环鏍间細鐩存帴鍚屾灞曠ず鍒版棫涔﹀箍鍦恒€備拱瀹舵敮浠樻敮鎸佸井淇℃敮浠樺拰鏀粯瀹濓紱骞冲彴缁熶竴鎵嬬画璐?2 鍏?/ 鏈€?
                 </div>
                 <div className="md:col-span-2 flex justify-end">
-                  <Button type="submit">发布到旧书广场</Button>
+                  <Button type="submit">鍙戝竷鍒版棫涔﹀箍鍦?/Button>
                 </div>
               </form>
             </CardContent>
@@ -270,33 +286,33 @@ export default async function CampusBooksPage({
 
           <Card className="border-none shadow-lg">
             <CardHeader>
-              <CardTitle>旧书广场</CardTitle>
-              <CardDescription>买家下单时只填写楼栋 / 楼层，不采集电话和更细的地址。</CardDescription>
+              <CardTitle>鏃т功骞垮満</CardTitle>
+              <CardDescription>涔板涓嬪崟鏃跺彧濉啓妤兼爧 / 妤煎眰锛屼笉閲囬泦鐢佃瘽鍜屾洿缁嗙殑鍦板潃銆?/CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {marketPosts.length === 0 && <div className="rounded-2xl bg-slate-50 px-4 py-5 text-sm text-slate-500">当前还没有在售旧书。</div>}
+              {marketPosts.length === 0 && <div className="rounded-2xl bg-slate-50 px-4 py-5 text-sm text-slate-500">褰撳墠杩樻病鏈夊湪鍞棫涔︺€?/div>}
               {marketPosts.map((post) => (
                 <div key={post.id} className="space-y-3 rounded-2xl border border-slate-100 bg-white p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="font-semibold text-slate-900">{post.title}</div>
-                      <div className="mt-1 text-sm text-slate-500">{post.category} / {post.condition_level} / 卖家：{post.seller_label || '校园卖家'}</div>
+                      <div className="mt-1 text-sm text-slate-500">{post.category} / {post.condition_level} / 鍗栧锛歿post.seller_label || '鏍″洯鍗栧'}</div>
                     </div>
                     <Badge variant={POST_VARIANTS[post.shelf_status as keyof typeof POST_VARIANTS] || 'outline'}>{BOOK_POST_STATUS_LABELS[post.shelf_status as keyof typeof BOOK_POST_STATUS_LABELS] || post.shelf_status}</Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-3 text-sm text-slate-600">
-                    <div>售价：<span className="font-semibold text-slate-900">￥{Number(post.sale_price).toFixed(2)}</span></div>
-                    <div>卖家到手：<span className="font-semibold text-emerald-700">￥{Number(post.seller_income).toFixed(2)}</span></div>
-                    <div>ISBN：{post.isbn || '未填写'}</div>
-                    <div>描述：{post.description || '暂无描述'}</div>
+                    <div>鍞环锛?span className="font-semibold text-slate-900">锟Number(post.sale_price).toFixed(2)}</span></div>
+                    <div>鍗栧鍒版墜锛?span className="font-semibold text-emerald-700">锟Number(post.seller_income).toFixed(2)}</span></div>
+                    <div>ISBN锛歿post.isbn || '鏈～鍐?}</div>
+                    <div>鎻忚堪锛歿post.description || '鏆傛棤鎻忚堪'}</div>
                   </div>
                   <form action={buyAction} className="grid grid-cols-1 items-end gap-3 md:grid-cols-[1fr_auto]">
                     <label className="space-y-2 text-sm text-slate-600">
-                      <span>收货楼栋 / 楼层</span>
-                      <input name="deliveryBuilding" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" placeholder="例如：6 号楼 4 层" required />
+                      <span>鏀惰揣妤兼爧 / 妤煎眰</span>
+                      <input name="deliveryBuilding" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" placeholder="渚嬪锛? 鍙锋ゼ 4 灞? required />
                     </label>
                     <input type="hidden" name="bookId" value={post.id} />
-                    <Button type="submit">立即购买</Button>
+                    <Button type="submit">绔嬪嵆璐拱</Button>
                   </form>
                 </div>
               ))}
@@ -307,11 +323,11 @@ export default async function CampusBooksPage({
         <section className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <Card className="border-none shadow-lg">
             <CardHeader>
-              <CardTitle>我的旧书帖子</CardTitle>
-              <CardDescription>已发布帖子会直接进入广场；锁定表示已经有人下单。</CardDescription>
+              <CardTitle>鎴戠殑鏃т功甯栧瓙</CardTitle>
+              <CardDescription>宸插彂甯冨笘瀛愪細鐩存帴杩涘叆骞垮満锛涢攣瀹氳〃绀哄凡缁忔湁浜轰笅鍗曘€?/CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {myPosts.length === 0 && <div className="rounded-2xl bg-slate-50 px-4 py-5 text-sm text-slate-500">你还没有发布过旧书。</div>}
+              {myPosts.length === 0 && <div className="rounded-2xl bg-slate-50 px-4 py-5 text-sm text-slate-500">浣犺繕娌℃湁鍙戝竷杩囨棫涔︺€?/div>}
               {myPosts.map((post) => (
                 <div key={post.id} className="rounded-2xl border border-slate-100 bg-white p-4 space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-3">
@@ -322,8 +338,8 @@ export default async function CampusBooksPage({
                     <Badge variant={POST_VARIANTS[post.shelf_status as keyof typeof POST_VARIANTS] || 'outline'}>{BOOK_POST_STATUS_LABELS[post.shelf_status as keyof typeof BOOK_POST_STATUS_LABELS] || post.shelf_status}</Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-3 text-sm text-slate-600">
-                    <div>广场售价：<span className="font-semibold text-slate-900">￥{Number(post.sale_price).toFixed(2)}</span></div>
-                    <div>到手价：<span className="font-semibold text-emerald-700">￥{Number(post.seller_income).toFixed(2)}</span></div>
+                    <div>骞垮満鍞环锛?span className="font-semibold text-slate-900">锟Number(post.sale_price).toFixed(2)}</span></div>
+                    <div>鍒版墜浠凤細<span className="font-semibold text-emerald-700">锟Number(post.seller_income).toFixed(2)}</span></div>
                   </div>
                 </div>
               ))}
@@ -332,51 +348,51 @@ export default async function CampusBooksPage({
 
           <Card className="border-none shadow-lg">
             <CardHeader>
-              <CardTitle>我买到的旧书</CardTitle>
-              <CardDescription>支付和确认收货都在这里继续完成。</CardDescription>
+              <CardTitle>鎴戜拱鍒扮殑鏃т功</CardTitle>
+              <CardDescription>鏀粯鍜岀‘璁ゆ敹璐ч兘鍦ㄨ繖閲岀户缁畬鎴愩€?/CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {buyerOrders.length === 0 && <div className="rounded-2xl bg-slate-50 px-4 py-5 text-sm text-slate-500">你还没有买过旧书。</div>}
+              {buyerOrders.length === 0 && <div className="rounded-2xl bg-slate-50 px-4 py-5 text-sm text-slate-500">浣犺繕娌℃湁涔拌繃鏃т功銆?/div>}
               {buyerOrders.map((order) => (
                 <div key={order.id} className="space-y-4 rounded-2xl border border-slate-100 bg-white p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <div className="font-semibold text-slate-900">{order.book_title}</div>
-                      <div className="mt-1 text-sm text-slate-500">订单号：{order.order_no} / 卖家：{order.seller_label || '校园卖家'}</div>
+                      <div className="mt-1 text-sm text-slate-500">璁㈠崟鍙凤細{order.order_no} / 鍗栧锛歿order.seller_label || '鏍″洯鍗栧'}</div>
                     </div>
                     <Badge variant={ORDER_VARIANTS[order.status as keyof typeof ORDER_VARIANTS] || 'outline'}>{BOOK_ORDER_STATUS_LABELS[order.status as keyof typeof BOOK_ORDER_STATUS_LABELS] || order.status}</Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-3 text-sm text-slate-600">
-                    <div>支付金额：<span className="font-semibold text-slate-900">￥{Number(order.sale_price).toFixed(2)}</span></div>
-                    <div>支付方式：{order.pay_type ? PAY_TYPE_LABELS[order.pay_type as keyof typeof PAY_TYPE_LABELS] : '未支付'}</div>
-                    <div>楼栋 / 楼层：{order.delivery_building}</div>
-                    <div>状态：{BOOK_ORDER_STATUS_LABELS[order.status as keyof typeof BOOK_ORDER_STATUS_LABELS] || order.status}</div>
+                    <div>鏀粯閲戦锛?span className="font-semibold text-slate-900">锟Number(order.sale_price).toFixed(2)}</span></div>
+                    <div>鏀粯鏂瑰紡锛歿order.pay_type ? PAY_TYPE_LABELS[order.pay_type as keyof typeof PAY_TYPE_LABELS] : '鏈敮浠?}</div>
+                    <div>妤兼爧 / 妤煎眰锛歿order.delivery_building}</div>
+                    <div>鐘舵€侊細{BOOK_ORDER_STATUS_LABELS[order.status as keyof typeof BOOK_ORDER_STATUS_LABELS] || order.status}</div>
                   </div>
                   {order.status === 'PENDING_PAYMENT' && (
                     <div className="flex flex-wrap gap-3">
                       <form action={paymentAction}>
                         <input type="hidden" name="orderId" value={order.id} />
                         <input type="hidden" name="payType" value="wxpay" />
-                        <Button type="submit" size="sm">微信支付</Button>
+                        <Button type="submit" size="sm">寰俊鏀粯</Button>
                       </form>
                       <form action={paymentAction}>
                         <input type="hidden" name="orderId" value={order.id} />
                         <input type="hidden" name="payType" value="alipay" />
-                        <Button type="submit" size="sm" variant="secondary">支付宝支付</Button>
+                        <Button type="submit" size="sm" variant="secondary">鏀粯瀹濇敮浠?/Button>
                       </form>
                     </div>
                   )}
                   {(order.status === 'PENDING_PAYMENT' || order.status === 'WAITING_SELLER') && (
                     <form action={syncAction}>
                       <input type="hidden" name="orderId" value={order.id} />
-                      <Button type="submit" size="sm" variant="outline">同步支付状态</Button>
+                      <Button type="submit" size="sm" variant="outline">鍚屾鏀粯鐘舵€?/Button>
                     </form>
                   )}
                   {order.status === 'DELIVERED' && (
                     <form action={orderAction}>
                       <input type="hidden" name="orderId" value={order.id} />
                       <input type="hidden" name="intent" value="confirm" />
-                      <Button type="submit" size="sm">确认收货</Button>
+                      <Button type="submit" size="sm">纭鏀惰揣</Button>
                     </form>
                   )}
                 </div>
@@ -387,31 +403,31 @@ export default async function CampusBooksPage({
 
         <Card className="border-none shadow-lg">
           <CardHeader>
-            <CardTitle>我卖出的旧书订单</CardTitle>
-            <CardDescription>买家支付后，卖家送到买家楼栋 / 楼层；确认收货后余额增加到手价。</CardDescription>
+            <CardTitle>鎴戝崠鍑虹殑鏃т功璁㈠崟</CardTitle>
+            <CardDescription>涔板鏀粯鍚庯紝鍗栧閫佸埌涔板妤兼爧 / 妤煎眰锛涚‘璁ゆ敹璐у悗浣欓澧炲姞鍒版墜浠枫€?/CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {sellerOrders.length === 0 && <div className="rounded-2xl bg-slate-50 px-4 py-5 text-sm text-slate-500">你还没有卖出中的旧书订单。</div>}
+            {sellerOrders.length === 0 && <div className="rounded-2xl bg-slate-50 px-4 py-5 text-sm text-slate-500">浣犺繕娌℃湁鍗栧嚭涓殑鏃т功璁㈠崟銆?/div>}
             {sellerOrders.map((order) => (
               <div key={order.id} className="space-y-4 rounded-2xl border border-slate-100 bg-white p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <div className="font-semibold text-slate-900">{order.book_title}</div>
-                    <div className="mt-1 text-sm text-slate-500">订单号：{order.order_no} / 买家：{order.buyer_label || '校园买家'}</div>
+                    <div className="mt-1 text-sm text-slate-500">璁㈠崟鍙凤細{order.order_no} / 涔板锛歿order.buyer_label || '鏍″洯涔板'}</div>
                   </div>
                   <Badge variant={ORDER_VARIANTS[order.status as keyof typeof ORDER_VARIANTS] || 'outline'}>{BOOK_ORDER_STATUS_LABELS[order.status as keyof typeof BOOK_ORDER_STATUS_LABELS] || order.status}</Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-sm text-slate-600">
-                  <div>买家支付：<span className="font-semibold text-slate-900">￥{Number(order.sale_price).toFixed(2)}</span></div>
-                  <div>你到手：<span className="font-semibold text-emerald-700">￥{Number(order.seller_income).toFixed(2)}</span></div>
-                  <div>送达楼栋 / 楼层：{order.delivery_building}</div>
-                  <div>支付方式：{order.pay_type ? PAY_TYPE_LABELS[order.pay_type as keyof typeof PAY_TYPE_LABELS] : '未支付'}</div>
+                  <div>涔板鏀粯锛?span className="font-semibold text-slate-900">锟Number(order.sale_price).toFixed(2)}</span></div>
+                  <div>浣犲埌鎵嬶細<span className="font-semibold text-emerald-700">锟Number(order.seller_income).toFixed(2)}</span></div>
+                  <div>閫佽揪妤兼爧 / 妤煎眰锛歿order.delivery_building}</div>
+                  <div>鏀粯鏂瑰紡锛歿order.pay_type ? PAY_TYPE_LABELS[order.pay_type as keyof typeof PAY_TYPE_LABELS] : '鏈敮浠?}</div>
                 </div>
                 {order.status === 'WAITING_SELLER' && (
                   <form action={orderAction}>
                     <input type="hidden" name="orderId" value={order.id} />
                     <input type="hidden" name="intent" value="deliver" />
-                    <Button type="submit" size="sm">标记已送达</Button>
+                    <Button type="submit" size="sm">鏍囪宸查€佽揪</Button>
                   </form>
                 )}
               </div>
