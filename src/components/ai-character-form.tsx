@@ -3,6 +3,7 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { Check, Sparkles } from 'lucide-react'
 import { Avatar } from '@/components/UI/Avatar'
 import { Badge } from '@/components/UI/Badge'
 import { Button } from '@/components/UI/Button'
@@ -12,6 +13,8 @@ import { Select } from '@/components/UI/Select'
 import type { AiCharacter, AiCharacterDraft, AiCharacterTemplate } from '@/lib/ai-companion'
 
 const MODEL_OPTIONS = ['glm-4.7-flash']
+const RELATIONSHIP_OPTIONS = ['女朋友', '男朋友', '暧昧对象', '好朋友', '搭子', '知己', '学伴', '虚拟恋人', '自定义']
+const QUICK_RELATIONSHIP_OPTIONS = ['女朋友', '男朋友', '暧昧对象', '好朋友']
 
 const EMPTY_DRAFT: AiCharacterDraft = {
   avatarUrl: '',
@@ -35,6 +38,7 @@ function buildInitials(name: string) {
   if (!normalized) {
     return 'AI'
   }
+
   return Array.from(normalized).slice(0, 2).join('').toUpperCase()
 }
 
@@ -61,7 +65,7 @@ function buildSummary(form: AiCharacterDraft) {
   const background = form.background.trim() || '待补充'
   const interactionStyle = form.interactionStyle.trim() || '待补充'
 
-  return `${name}是一个${relationship}向角色。核心性格：${personality}。说话风格：${speechStyle}。背景：${background}。相处方式：${interactionStyle}。`
+  return `${name}是一个偏${relationship}向的角色。核心性格：${personality}。说话风格：${speechStyle}。背景：${background}。相处方式：${interactionStyle}。`
 }
 
 export function AiCharacterForm({
@@ -175,15 +179,17 @@ export function AiCharacterForm({
   }
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-[1.08fr_0.92fr] gap-6">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.08fr_0.92fr]">
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="border-none shadow-xl">
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <Badge variant="secondary">{mode === 'create' ? '创建角色' : '编辑角色'}</Badge>
-                <CardTitle className="mt-3">{mode === 'create' ? '先把 TA 捏出来' : '继续调整这个角色'}</CardTitle>
-                <CardDescription className="mt-2">这里填的是角色信息，不是 Prompt。系统会自动整理成结构化人设。</CardDescription>
+                <CardTitle className="mt-3">{mode === 'create' ? '先把 TA 的基础轮廓定下来' : '继续调整这个角色'}</CardTitle>
+                <CardDescription className="mt-2">
+                  这里填写的是角色设定本身，不是模型提示词。保存后系统会自动整理成稳定的人设摘要，并且同一个角色只保留一个持续聊天窗口。
+                </CardDescription>
               </div>
               <Link href="/ai-companion"><Button type="button" variant="outline">返回 AI 陪伴</Button></Link>
             </div>
@@ -192,63 +198,23 @@ export function AiCharacterForm({
             {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
             {success && <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{success}</div>}
 
-            <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-4 flex flex-wrap items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4 rounded-3xl border border-dashed border-gray-200 bg-gray-50 p-5">
               <Avatar className="h-16 w-16 rounded-2xl" src={form.avatarUrl || undefined} fallback={buildInitials(form.name)} />
               <div className="flex flex-wrap gap-3">
                 <label className="cursor-pointer">
                   <input type="file" accept="image/*" className="hidden" onChange={(event) => handleAvatarFile(event.target.files?.[0] ?? null)} />
-                  <span className="inline-flex h-11 items-center justify-center rounded-full bg-gradient-to-r from-rose-400 to-rose-600 px-6 text-sm font-medium text-white shadow-lg shadow-rose-200">上传头像</span>
+                  <span className="inline-flex h-11 items-center justify-center rounded-2xl bg-slate-950 px-5 text-sm font-medium text-white transition hover:bg-slate-900">上传头像</span>
                 </label>
                 <Button type="button" variant="outline" onClick={() => updateField('avatarUrl', '')}>清空头像</Button>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">角色名字</label>
-                <Input value={form.name} maxLength={10} onChange={(event) => updateField('name', event.target.value)} placeholder="例如：鱼小妹、阿澈、林夏" />
+                <Input value={form.name} maxLength={10} onChange={(event) => updateField('name', event.target.value)} placeholder="例如：星野、阿湫、林深" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">你们的关系</label>
-                <Select value={form.relationship} onChange={(event) => updateField('relationship', event.target.value)}>
-                  <option value="">请选择</option>
-                  {['女朋友 / 男朋友', '暧昧对象', '好朋友', '搭子', '知己', '学习伙伴', '虚拟恋人', '自定义'].map((item) => (
-                    <option key={item} value={item}>{item}</option>
-                  ))}
-                </Select>
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
-                <label className="flex items-center justify-between text-sm font-medium text-gray-700"><span>性格</span><span className="text-xs text-gray-400">{form.personality.length}/80</span></label>
-                <textarea value={form.personality} maxLength={80} onChange={(event) => updateField('personality', event.target.value)} rows={3} className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm leading-7 text-gray-900 outline-none focus:border-rose-400" placeholder="例如：嘴硬心软、黏人、轻微毒舌、会撒娇" />
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
-                <label className="flex items-center justify-between text-sm font-medium text-gray-700"><span>说话风格</span><span className="text-xs text-gray-400">{form.speechStyle.length}/80</span></label>
-                <textarea value={form.speechStyle} maxLength={80} onChange={(event) => updateField('speechStyle', event.target.value)} rows={3} className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm leading-7 text-gray-900 outline-none focus:border-rose-400" placeholder="例如：短句为主，像微信聊天，偶尔嘴硬" />
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
-                <label className="flex items-center justify-between text-sm font-medium text-gray-700"><span>背景设定</span><span className="text-xs text-gray-400">{form.background.length}/150</span></label>
-                <textarea value={form.background} maxLength={150} onChange={(event) => updateField('background', event.target.value)} rows={4} className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm leading-7 text-gray-900 outline-none focus:border-rose-400" placeholder="例如：在上海读设计，喜欢猫和甜品，最近在学代码" />
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
-                <label className="flex items-center justify-between text-sm font-medium text-gray-700"><span>相处方式</span><span className="text-xs text-gray-400">{form.interactionStyle.length}/100</span></label>
-                <textarea value={form.interactionStyle} maxLength={100} onChange={(event) => updateField('interactionStyle', event.target.value)} rows={4} className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm leading-7 text-gray-900 outline-none focus:border-rose-400" placeholder="例如：平时爱怼我，但其实很在乎我；回得慢会来找我" />
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
-                <label className="flex items-center justify-between text-sm font-medium text-gray-700"><span>聊天边界</span><span className="text-xs text-gray-400">{form.boundaries.length}/80</span></label>
-                <textarea value={form.boundaries} maxLength={80} onChange={(event) => updateField('boundaries', event.target.value)} rows={3} className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm leading-7 text-gray-900 outline-none focus:border-rose-400" placeholder="例如：不要太油，不要像客服，不要长篇大论" />
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
-                <label className="flex items-center justify-between text-sm font-medium text-gray-700"><span>开场白</span><span className="text-xs text-gray-400">{form.firstMessage.length}/60</span></label>
-                <textarea value={form.firstMessage} maxLength={60} onChange={(event) => updateField('firstMessage', event.target.value)} rows={3} className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm leading-7 text-gray-900 outline-none focus:border-rose-400" placeholder="例如：你终于来了？今天有没有想我？" />
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
                 <label className="text-sm font-medium text-gray-700">默认模型</label>
                 <Select value={form.modelName} onChange={(event) => updateField('modelName', event.target.value)}>
                   {MODEL_OPTIONS.map((item) => (
@@ -256,10 +222,68 @@ export function AiCharacterForm({
                   ))}
                 </Select>
               </div>
+
+              <div className="md:col-span-2 space-y-3">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">你们的关系</label>
+                  <Select value={form.relationship} onChange={(event) => updateField('relationship', event.target.value)}>
+                    <option value="">请选择</option>
+                    {RELATIONSHIP_OPTIONS.map((item) => (
+                      <option key={item} value={item}>{item}</option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {QUICK_RELATIONSHIP_OPTIONS.map((item) => {
+                    const active = form.relationship === item
+                    return (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => updateField('relationship', item)}
+                        className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${active ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100' : 'border border-gray-200 bg-white text-gray-600 hover:border-emerald-300 hover:text-emerald-700'}`}
+                      >
+                        {active && <Check className="h-4 w-4" />}
+                        {item}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="md:col-span-2 space-y-2">
+                <label className="flex items-center justify-between text-sm font-medium text-gray-700"><span>核心性格</span><span className="text-xs text-gray-400">{form.personality.length}/80</span></label>
+                <textarea value={form.personality} maxLength={80} onChange={(event) => updateField('personality', event.target.value)} rows={3} className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm leading-7 text-gray-900 outline-none focus:border-emerald-400" placeholder="例如：嘴硬心软、会吃醋、情绪细腻、认真又有点黏人" />
+              </div>
+
+              <div className="md:col-span-2 space-y-2">
+                <label className="flex items-center justify-between text-sm font-medium text-gray-700"><span>说话风格</span><span className="text-xs text-gray-400">{form.speechStyle.length}/80</span></label>
+                <textarea value={form.speechStyle} maxLength={80} onChange={(event) => updateField('speechStyle', event.target.value)} rows={3} className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm leading-7 text-gray-900 outline-none focus:border-emerald-400" placeholder="例如：像微信聊天，短句为主，偶尔会撒娇或嘴硬，不要太像客服" />
+              </div>
+
+              <div className="md:col-span-2 space-y-2">
+                <label className="flex items-center justify-between text-sm font-medium text-gray-700"><span>背景设定</span><span className="text-xs text-gray-400">{form.background.length}/150</span></label>
+                <textarea value={form.background} maxLength={150} onChange={(event) => updateField('background', event.target.value)} rows={4} className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm leading-7 text-gray-900 outline-none focus:border-emerald-400" placeholder="例如：在上海读设计，喜欢甜品和散步，最近在学摄影。" />
+              </div>
+
+              <div className="md:col-span-2 space-y-2">
+                <label className="flex items-center justify-between text-sm font-medium text-gray-700"><span>相处方式</span><span className="text-xs text-gray-400">{form.interactionStyle.length}/100</span></label>
+                <textarea value={form.interactionStyle} maxLength={100} onChange={(event) => updateField('interactionStyle', event.target.value)} rows={4} className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm leading-7 text-gray-900 outline-none focus:border-emerald-400" placeholder="例如：平时会主动找话题，回得慢时会来问你是不是在忙，但不会咄咄逼人。" />
+              </div>
+
+              <div className="md:col-span-2 space-y-2">
+                <label className="flex items-center justify-between text-sm font-medium text-gray-700"><span>聊天边界</span><span className="text-xs text-gray-400">{form.boundaries.length}/80</span></label>
+                <textarea value={form.boundaries} maxLength={80} onChange={(event) => updateField('boundaries', event.target.value)} rows={3} className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm leading-7 text-gray-900 outline-none focus:border-emerald-400" placeholder="例如：不要过度油腻，不要突然变成说教口吻，不要长篇大论。" />
+              </div>
+
+              <div className="md:col-span-2 space-y-2">
+                <label className="flex items-center justify-between text-sm font-medium text-gray-700"><span>开场白</span><span className="text-xs text-gray-400">{form.firstMessage.length}/60</span></label>
+                <textarea value={form.firstMessage} maxLength={60} onChange={(event) => updateField('firstMessage', event.target.value)} rows={3} className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm leading-7 text-gray-900 outline-none focus:border-emerald-400" placeholder="例如：你终于来了，今天想先聊聊日常，还是让我陪你说说心事？" />
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Button type="submit" isLoading={saving}>{mode === 'create' ? '保存并进入详情' : '保存修改'}</Button>
+              <Button type="submit" isLoading={saving}>{mode === 'create' ? '保存并进入角色页' : '保存修改'}</Button>
               <Link href="/ai-companion"><Button type="button" variant="ghost">取消</Button></Link>
             </div>
           </CardContent>
@@ -270,8 +294,8 @@ export function AiCharacterForm({
         <Card className="border-none shadow-xl">
           <CardHeader>
             <Badge variant="warning">实时预览</Badge>
-            <CardTitle className="mt-3">角色卡预览</CardTitle>
-            <CardDescription>保存前先看一下角色整体感觉是否对。</CardDescription>
+            <CardTitle className="mt-3">角色卡片预览</CardTitle>
+            <CardDescription>保存前先看一下整体气质、关系和开场白是否顺眼。</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="flex items-center gap-4">
@@ -281,29 +305,43 @@ export function AiCharacterForm({
                 <div className="text-sm text-gray-500">{form.relationship.trim() || '自定义关系'} · {form.modelName}</div>
               </div>
             </div>
-            <div className="rounded-2xl bg-gray-50 p-4 text-sm text-gray-600 leading-7">{buildSummary(form)}</div>
-            <div className="rounded-2xl bg-slate-900 p-4 text-sm text-white/85 leading-7">
-              预览开场白：{form.firstMessage.trim() || '这里会显示角色第一次主动对你说的话。'}
+            <div className="rounded-2xl bg-gray-50 p-4 text-sm leading-7 text-gray-700">{buildSummary(form)}</div>
+            <div className="rounded-2xl bg-slate-950 p-4 text-sm leading-7 text-white/85">
+              开场白预览：{form.firstMessage.trim() || '这里会显示角色第一次主动对你说的话。'}
+            </div>
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-7 text-emerald-800">
+              保存后，这个角色只会保留一个持续对话窗口，后续所有聊天内容都会沿着这一条历史继续保存。
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-none shadow-xl">
           <CardHeader>
-            <Badge>快速模板</Badge>
-            <CardTitle className="mt-3">一键套用现成角色骨架</CardTitle>
+            <Badge><Sparkles className="mr-1 h-3.5 w-3.5" />快速模板</Badge>
+            <CardTitle className="mt-3">先用一个现成骨架</CardTitle>
+            <CardDescription>点击后会直接把人设字段填进表单，你还可以继续手动修改。</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {templates.map((template) => (
-              <button key={template.id} type="button" onClick={() => applyTemplate(template)} className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-4 text-left transition hover:border-rose-300 hover:bg-rose-50">
-                <div className="font-semibold text-gray-900">{template.name}</div>
-                <div className="text-sm text-gray-500 mt-1">{template.blurb}</div>
-              </button>
-            ))}
+          <CardContent className="grid gap-3 sm:grid-cols-2">
+            {templates.map((template) => {
+              const active = appliedTemplateId === template.id
+              return (
+                <button
+                  key={template.id}
+                  type="button"
+                  onClick={() => applyTemplate(template)}
+                  className={`rounded-3xl border px-4 py-4 text-left transition ${active ? 'border-emerald-300 bg-emerald-50 shadow-sm' : 'border-gray-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/60'}`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="font-semibold text-gray-900">{template.name}</div>
+                    <span className="rounded-full bg-white px-2 py-1 text-xs text-gray-500 shadow-sm">{template.relationship || '自定义'}</span>
+                  </div>
+                  <div className="mt-2 text-sm leading-6 text-gray-500">{template.blurb}</div>
+                </button>
+              )
+            })}
           </CardContent>
         </Card>
       </div>
     </div>
   )
 }
-

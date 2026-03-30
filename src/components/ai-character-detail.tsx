@@ -1,8 +1,9 @@
-﻿"use client"
+"use client"
 
 import * as React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { MessageCircle, PencilLine, Trash2 } from 'lucide-react'
 import { Avatar } from '@/components/UI/Avatar'
 import { Badge } from '@/components/UI/Badge'
 import { Button } from '@/components/UI/Button'
@@ -12,10 +13,6 @@ import type { AiCharacter, AiCharacterDraft, AiCharacterTemplate, AiConversation
 
 interface CharacterResponse {
   character: AiCharacter
-}
-
-interface ConversationListResponse {
-  conversations: AiConversation[]
 }
 
 interface MemoryResponse {
@@ -67,7 +64,6 @@ export function AiCharacterDetailClient({
 }) {
   const router = useRouter()
   const [character, setCharacter] = React.useState<AiCharacter | null>(null)
-  const [conversations, setConversations] = React.useState<AiConversation[]>([])
   const [memory, setMemory] = React.useState<AiMemory | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
@@ -78,15 +74,13 @@ export function AiCharacterDetailClient({
     setError(null)
 
     try {
-      const [characterResponse, conversationsResponse, memoryResponse] = await Promise.all([
+      const [characterResponse, memoryResponse] = await Promise.all([
         fetch(`/api/ai/characters/${characterId}`, { cache: 'no-store' }),
-        fetch(`/api/ai/conversations?characterId=${characterId}`, { cache: 'no-store' }),
         fetch(`/api/ai/memories/${characterId}`, { cache: 'no-store' }),
       ])
 
-      const [characterData, conversationsData, memoryData] = await Promise.all([
+      const [characterData, memoryData] = await Promise.all([
         characterResponse.json() as Promise<CharacterResponse & { error?: string }>,
-        conversationsResponse.json() as Promise<ConversationListResponse & { error?: string }>,
         memoryResponse.json() as Promise<MemoryResponse & { error?: string }>,
       ])
 
@@ -95,7 +89,6 @@ export function AiCharacterDetailClient({
       }
 
       setCharacter(characterData.character)
-      setConversations(conversationsData.conversations || [])
       setMemory(memoryData.memory || null)
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : '加载角色详情失败。')
@@ -123,19 +116,19 @@ export function AiCharacterDetailClient({
       const data = (await response.json()) as ConversationCreateResponse & { error?: string }
 
       if (!response.ok) {
-        throw new Error(data.error || '创建会话失败。')
+        throw new Error(data.error || '进入对话失败。')
       }
 
       router.push(`/ai-companion/conversations/${data.conversation.id}`)
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : '创建会话失败。')
+      setError(nextError instanceof Error ? nextError.message : '进入对话失败。')
     } finally {
       setPending(false)
     }
   }
 
   async function deleteCharacter() {
-    if (!window.confirm('确认删除这个角色吗？关联会话和记忆也会一起删除。')) {
+    if (!window.confirm('确认删除这个角色吗？关联聊天记录和长期记忆也会一起删除。')) {
       return
     }
 
@@ -169,35 +162,39 @@ export function AiCharacterDetailClient({
 
   return (
     <div className="space-y-6">
-      <section className="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-6">
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.08fr_0.92fr]">
         <Card className="border-none shadow-xl">
-          <CardContent className="p-8 space-y-6">
+          <CardContent className="space-y-6 p-8">
             <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="flex items-center gap-4 min-w-0">
+              <div className="flex min-w-0 items-center gap-4">
                 <Avatar className="h-20 w-20 rounded-3xl" src={character.avatarUrl || undefined} fallback={buildInitials(character.name)} />
                 <div className="min-w-0">
                   <Badge variant="secondary">角色详情</Badge>
-                  <h1 className="text-4xl font-bold text-gray-900 mt-3 truncate">{character.name}</h1>
-                  <p className="text-sm text-gray-500 mt-2">{character.relationship} · {character.modelName}</p>
+                  <h1 className="mt-3 truncate text-4xl font-bold text-gray-900">{character.name}</h1>
+                  <p className="mt-2 text-sm text-gray-500">{character.relationship} · {character.modelName}</p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Button isLoading={pending} onClick={() => void startChat()}>新建聊天</Button>
-                <Button variant="outline" onClick={() => void deleteCharacter()}>删除角色</Button>
+                <Button isLoading={pending} onClick={() => void startChat()}>
+                  <MessageCircle className="mr-2 h-4 w-4" />进入对话
+                </Button>
+                <Button variant="outline" onClick={() => void deleteCharacter()}>
+                  <Trash2 className="mr-2 h-4 w-4" />删除角色
+                </Button>
               </div>
             </div>
 
             {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-2xl bg-gray-50 p-5">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="rounded-3xl bg-gray-50 p-5">
                 <div className="text-xs uppercase tracking-[0.2em] text-gray-400">角色摘要</div>
-                <p className="text-sm text-gray-600 leading-7 mt-3">{character.summary}</p>
+                <p className="mt-3 text-sm leading-7 text-gray-600">{character.summary}</p>
               </div>
-              <div className="rounded-2xl bg-gray-50 p-5">
-                <div className="text-xs uppercase tracking-[0.2em] text-gray-400">更新时间</div>
-                <p className="text-sm text-gray-600 leading-7 mt-3">{formatTime(character.updatedAt)}</p>
-                <p className="text-xs text-gray-400 mt-3">创建于 {formatTime(character.createdAt)}</p>
+              <div className="rounded-3xl bg-gray-50 p-5">
+                <div className="text-xs uppercase tracking-[0.2em] text-gray-400">单一会话模式</div>
+                <p className="mt-3 text-sm leading-7 text-gray-600">这个角色始终只有一个持续聊天窗口。再次点击“进入对话”时，会直接回到原来的聊天历史，不会再新建第二条会话。</p>
+                <p className="mt-3 text-xs text-gray-400">最近更新于 {formatTime(character.updatedAt)}</p>
               </div>
             </div>
           </CardContent>
@@ -208,31 +205,32 @@ export function AiCharacterDetailClient({
             <CardHeader>
               <Badge variant="warning">长期记忆</Badge>
               <CardTitle className="mt-3">角色会慢慢记住你</CardTitle>
-              <CardDescription>聊天越多，这里的摘要越稳定。</CardDescription>
+              <CardDescription>聊天越多，这里的长期摘要越稳定。</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="rounded-2xl bg-amber-50 p-4 text-sm text-gray-700 leading-7">
-                {memory?.summary || '还没有长期记忆。等你们持续聊几轮后，系统会自动整理摘要。'}
+              <div className="rounded-2xl bg-amber-50 p-4 text-sm leading-7 text-gray-700">
+                {memory?.summary || '还没有长期记忆。等你们持续聊一段时间后，系统会自动把互动轨迹整理成长期摘要。'}
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-none shadow-xl">
             <CardHeader>
-              <CardTitle>历史会话</CardTitle>
-              <CardDescription>{conversations.length} 条会话</CardDescription>
+              <Badge>使用提示</Badge>
+              <CardTitle className="mt-3">现在更适合长期陪伴</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {conversations.length === 0 ? (
-                <div className="rounded-2xl bg-gray-50 p-4 text-sm text-gray-500">还没有会话，先点击上面的“新建聊天”。</div>
-              ) : (
-                conversations.map((conversation) => (
-                  <Link key={conversation.id} href={`/ai-companion/conversations/${conversation.id}`} className="block rounded-2xl border border-gray-200 bg-white px-4 py-4 transition hover:border-cyan-300 hover:bg-cyan-50">
-                    <div className="font-semibold text-gray-900">{conversation.title}</div>
-                    <div className="text-xs text-gray-500 mt-2">更新于 {formatTime(conversation.lastMessageAt)}</div>
-                  </Link>
-                ))
-              )}
+            <CardContent className="space-y-3 text-sm leading-7 text-gray-600">
+              <div className="rounded-2xl bg-sky-50 p-4">不再区分“新建聊天”和“历史会话”。同一个角色只有一条持续消息流，回来时会接着上次的状态继续。</div>
+              <div className="rounded-2xl bg-emerald-50 p-4">想改名字、关系、语气或开场白，直接在下方编辑；保存后不会丢失历史消息。</div>
+              <div className="rounded-2xl bg-gray-50 p-4 flex items-center justify-between gap-3">
+                <div>
+                  <div className="font-medium text-gray-900">直接回到聊天</div>
+                  <div className="text-xs text-gray-500 mt-1">继续当前唯一对话窗口</div>
+                </div>
+                <Button onClick={() => void startChat()} isLoading={pending}>
+                  <PencilLine className="mr-2 h-4 w-4" />继续聊天
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
