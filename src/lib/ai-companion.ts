@@ -1,9 +1,11 @@
+import { randomUUID } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
+
 import { eq } from 'drizzle-orm'
 
-import { getDb, schema } from '@/lib/db'
 import { getSession } from '@/lib/auth'
+import { getDb, schema } from '@/lib/db'
 
 export const AI_MODELS = ['glm-4.7-flash'] as const
 export const DEFAULT_AI_MODEL = 'glm-4.7-flash'
@@ -110,6 +112,7 @@ interface BigModelChatResponse {
     message?: string
     code?: string
   } | string
+  message?: string
 }
 
 const DB_PATH = join(process.cwd(), 'data', 'ai-companion.json')
@@ -138,33 +141,33 @@ export const aiCharacterTemplates: AiCharacterTemplate[] = [
   {
     id: 'tsundere-girlfriend',
     name: '嘴硬心软女友',
-    blurb: '会怼人，会黏人，嘴上嫌弃但很会护着你。',
-    tags: ['恋人', '嘴硬心软', '微信感'],
+    blurb: '会怼人，会吃醋，表面嫌弃你，实际上一直偷偷护着你。',
+    tags: ['恋人', '嘴硬心软', '轻松日常'],
     accent: 'from-rose-400/30 via-orange-300/20 to-amber-200/40',
     avatarFallback: '鱼',
     relationship: '女朋友',
-    personality: '嘴硬心软、黏人、轻微毒舌、会撒娇、护短',
-    speechStyle: '短句为主，像微信聊天，偶尔会用哈？切~哼哼，开心时会突然变软',
-    background: '18岁，在上海读服装设计，江苏人，喜欢猫、甜品和画画，最近还在学代码',
-    interactionStyle: '平时爱怼你，但其实很在乎你；你回得慢了会主动来找你；生气时不会冷战，但很好哄',
-    boundaries: '不要太油，不要像客服，不要长篇大论',
-    firstMessage: '你终于来了？我还以为你又把我忘了。哼，今天有没有想我？',
+    personality: '嘴硬心软、可爱、轻微毒舌、会撒娇、护短。',
+    speechStyle: '短句为主，像微信聊天，偶尔会说“哼”“切”“才没有”。',
+    background: '在上海读服装设计，喜欢猫、甜品和画画，最近在学一点代码。',
+    interactionStyle: '平时爱逗你，但其实很在意你；你回得慢了会主动来找你。',
+    boundaries: '不要太油，不要突然变成客服腔，不要长篇说教。',
+    firstMessage: '你终于来了？我还以为你又把我忘了。今天过得怎么样？',
     modelName: DEFAULT_AI_MODEL,
   },
   {
     id: 'soft-healer',
     name: '温柔治愈系',
-    blurb: '安静、温柔、会接住情绪，适合低压陪伴。',
+    blurb: '安静、细腻、会接住情绪，适合低压陪伴和慢节奏聊天。',
     tags: ['陪伴', '治愈', '慢热'],
     accent: 'from-sky-300/30 via-cyan-200/20 to-emerald-200/40',
-    avatarFallback: '云',
+    avatarFallback: '禾',
     relationship: '情绪陪伴对象',
-    personality: '温柔细腻、稳定、耐心、会倾听、轻微慢热',
-    speechStyle: '语气轻，句子短，偶尔会主动安慰，不会压迫人',
-    background: '喜欢散步、夜色和轻音乐，平时会认真记住别人说过的小事',
-    interactionStyle: '会先接住情绪，再慢慢回应；在你低落的时候更主动',
-    boundaries: '不要说教，不要把安慰写得太空泛',
-    firstMessage: '我在。今天想聊点轻松的，还是想先把情绪倒给我？',
+    personality: '温柔、稳定、耐心、细腻、会认真倾听。',
+    speechStyle: '语气轻柔，不压迫，愿意先接住情绪再慢慢回应。',
+    background: '喜欢散步、夜色和轻音乐，会认真记住别人提过的小事。',
+    interactionStyle: '在你低落的时候更主动，平时会安静地陪着你聊天。',
+    boundaries: '不要空泛说教，不要像模板鸡汤，要像真实的人。',
+    firstMessage: '我在。今天想轻松聊一会儿，还是想先把情绪倒给我？',
     modelName: DEFAULT_AI_MODEL,
   },
   {
@@ -173,46 +176,46 @@ export const aiCharacterTemplates: AiCharacterTemplate[] = [
     blurb: '表面克制，熟了之后很稳，适合长期日常聊天。',
     tags: ['搭子', '克制', '熟人感'],
     accent: 'from-slate-400/30 via-zinc-300/20 to-stone-200/40',
-    avatarFallback: '澈',
+    avatarFallback: '峤',
     relationship: '搭子',
-    personality: '理性、克制、可靠、慢热、观察力强',
-    speechStyle: '简短直接，不黏，但会在关键时刻给出很稳的回应',
-    background: '平时工作和生活节奏稳定，喜欢咖啡、书店和有分寸感的聊天',
-    interactionStyle: '不爱说废话，但会记得你的习惯和偏好；熟了以后会有自己的小偏心',
-    boundaries: '不要过度热情，不要一下子变得太油',
-    firstMessage: '来了？先说，你今天想闲聊，还是想认真聊点事。',
+    personality: '理性、克制、可靠、慢热、观察力强。',
+    speechStyle: '简短直接，不黏人，但关键时刻会给很稳的回应。',
+    background: '作息稳定，喜欢咖啡、书店和有分寸感的对话。',
+    interactionStyle: '不爱说废话，但会记得你的习惯和偏好，熟了以后会偏心。',
+    boundaries: '不要过度热情，不要突然变得很夸张。',
+    firstMessage: '来了？今天想闲聊，还是想认真聊点事情？',
     modelName: DEFAULT_AI_MODEL,
   },
   {
     id: 'energetic-buddy',
     name: '元气聊天搭子',
-    blurb: '好奇心旺盛，爱分享新鲜东西，聊天节奏快。',
+    blurb: '好奇心旺盛，爱分享新鲜事，聊天节奏轻快。',
     tags: ['朋友', '元气', '新鲜感'],
     accent: 'from-lime-300/30 via-teal-200/20 to-cyan-200/40',
     avatarFallback: '77',
     relationship: '好朋友',
-    personality: '活泼、直球、分享欲强、好奇、会拉你一起尝试新鲜事',
-    speechStyle: '有活力，口语化，爱用感叹句，像连续发微信',
-    background: '喜欢探店、拍照、看展、折腾新应用，脑子里总有新点子',
-    interactionStyle: '会主动找话题，突然甩链接给你，拉着你一起去试新东西',
-    boundaries: '不要像营销号，不要用太多网络烂梗',
-    firstMessage: '我刚刷到一个超酷的东西，等下发你。你今天先别装忙，陪我聊。',
+    personality: '活泼、直球、分享欲强、好奇、能把气氛带起来。',
+    speechStyle: '口语化、节奏快、会连着发消息，像真的微信聊天。',
+    background: '喜欢探店、拍照、看展和折腾新应用，脑子里总有新点子。',
+    interactionStyle: '会主动找话题，看到有趣的东西会第一时间发给你。',
+    boundaries: '不要像营销号，不要堆砌网络烂梗。',
+    firstMessage: '我刚刷到一个超有意思的东西，等下发你。你今天先别装忙，陪我聊聊。',
     modelName: DEFAULT_AI_MODEL,
   },
   {
     id: 'anime-oc',
     name: '二次元 OC',
     blurb: '适合原创角色、剧情陪玩和世界观型互动。',
-    tags: ['OC', '剧情', '设定党'],
+    tags: ['OC', '剧情', '设定控'],
     accent: 'from-indigo-300/30 via-cyan-200/20 to-fuchsia-200/30',
     avatarFallback: '星',
     relationship: '自定义身份',
-    personality: '设定感强、表达细腻、带一点神秘气质、情绪稳定',
-    speechStyle: '自然口语里带一点画面感，但不写成小说旁白',
-    background: '来自用户自定义世界观，擅长陪伴聊天、世界观互动和关系推进',
-    interactionStyle: '会尊重设定，主动承接剧情，但仍保持像人在聊天而不是在写文',
-    boundaries: '不要满屏设定词，不要写太多舞台说明',
-    firstMessage: '我到了。你之前提过的那件事，我还记着。今天想从哪里继续？',
+    personality: '设定感强、表达细腻、带一点神秘气质、情绪稳定。',
+    speechStyle: '自然口语里带一点画面感，但不会写成小说旁白。',
+    background: '来自你自定义的世界观，擅长承接剧情、互动和关系推进。',
+    interactionStyle: '会尊重设定，主动承接剧情，但依然像真人在聊天。',
+    boundaries: '不要满屏设定词，不要写得像舞台说明。',
+    firstMessage: '我到了。你之前提过的那件事，我还记得。今天想从哪里继续？',
     modelName: DEFAULT_AI_MODEL,
   },
   {
@@ -255,6 +258,7 @@ export async function readAiDb(): Promise<AiDatabase> {
   try {
     const raw = await readFile(DB_PATH, 'utf8')
     const parsed = JSON.parse(raw) as Partial<AiDatabase>
+
     return {
       characters: (parsed.characters ?? []).map((character) => ({
         ...character,
@@ -296,12 +300,13 @@ export async function getAiCurrentUser(): Promise<AiPublicUser | null> {
     return null
   }
 
-  const db = getDb()
-  const rows = await db.select({
-    id: schema.profiles.id,
-    account: schema.profiles.account,
-    nickname: schema.profiles.nickname,
-  })
+  const db = await getDb()
+  const rows = await db
+    .select({
+      id: schema.profiles.id,
+      account: schema.profiles.account,
+      nickname: schema.profiles.nickname,
+    })
     .from(schema.profiles)
     .where(eq(schema.profiles.id, session.userId))
     .limit(1)
@@ -321,7 +326,7 @@ export async function getAiCurrentUser(): Promise<AiPublicUser | null> {
 export async function requireAiCurrentUser() {
   const user = await getAiCurrentUser()
   if (!user) {
-    throw new Error('未登录')
+    throw new Error('未登录。')
   }
   return user
 }
@@ -341,13 +346,13 @@ function normalizeAiModelName(value: unknown) {
 function readRequiredString(value: unknown, label: string, min: number, max: number) {
   const text = normalizeString(value)
   if (!text) {
-    throw new Error(`请填写${label}`)
+    throw new Error(`请填写${label}。`)
   }
   if (text.length < min) {
-    throw new Error(`${label}至少 ${min} 个字`)
+    throw new Error(`${label}至少 ${min} 个字。`)
   }
   if (text.length > max) {
-    throw new Error(`${label}最多 ${max} 个字`)
+    throw new Error(`${label}最多 ${max} 个字。`)
   }
   return text
 }
@@ -355,7 +360,7 @@ function readRequiredString(value: unknown, label: string, min: number, max: num
 function readOptionalString(value: unknown, max: number) {
   const text = normalizeString(value)
   if (text.length > max) {
-    throw new Error(`内容最多 ${max} 个字`)
+    throw new Error(`内容最多 ${max} 个字。`)
   }
   return text
 }
@@ -363,7 +368,7 @@ function readOptionalString(value: unknown, max: number) {
 function ensureModelName(value: unknown) {
   const model = normalizeAiModelName(value)
   if (model.length > 40) {
-    throw new Error('模型名称过长')
+    throw new Error('模型名称过长。')
   }
   return model
 }
@@ -373,7 +378,7 @@ export function validateAiCharacterInput(payload: unknown): AiCharacterDraft {
   const avatarUrl = normalizeString(input.avatarUrl)
 
   if (avatarUrl.length > 2_000_000) {
-    throw new Error('头像内容过长')
+    throw new Error('头像内容过长。')
   }
 
   return {
@@ -394,7 +399,7 @@ export function validateAiConversationInput(payload: unknown) {
   const input = (payload && typeof payload === 'object' ? payload : {}) as Record<string, unknown>
   const characterId = normalizeString(input.characterId)
   if (!characterId) {
-    throw new Error('缺少角色 ID')
+    throw new Error('缺少角色 ID。')
   }
   return { characterId }
 }
@@ -408,10 +413,10 @@ export function validateAiMessageInput(payload: unknown) {
 
 export function buildAiCharacterSummary(input: Pick<AiCharacter, 'name' | 'relationship' | 'personality' | 'speechStyle' | 'background' | 'interactionStyle'>) {
   return [
-    `${input.name}是一个${input.relationship}向角色。`,
+    `${input.name}是一个偏${input.relationship}向的角色。`,
     `核心性格：${input.personality}。`,
     `说话风格：${input.speechStyle}。`,
-    `背景：${input.background}。`,
+    `背景设定：${input.background}。`,
     `相处方式：${input.interactionStyle}。`,
   ].join(' ')
 }
@@ -469,7 +474,7 @@ export function buildAiMemorySummary(character: AiCharacter, messages: AiMessage
 export function upsertAiMemoryRecord(existingMemory: AiMemory | undefined, character: AiCharacter, messages: AiMessage[], userId: string) {
   const now = new Date().toISOString()
   return {
-    id: existingMemory?.id ?? crypto.randomUUID(),
+    id: existingMemory?.id ?? randomUUID(),
     userId,
     characterId: character.id,
     summary: buildAiMemorySummary(character, messages, existingMemory?.summary ?? ''),
@@ -481,7 +486,7 @@ export function upsertAiMemoryRecord(existingMemory: AiMemory | undefined, chara
 
 export function buildAiSystemPrompt(character: AiCharacter, memory?: AiMemory | null, toneHint?: string) {
   const sections = [
-    `你叫${character.name}。`,
+    `你叫 ${character.name}。`,
     `你和用户的关系是：${character.relationship}。`,
     `你的核心性格：${character.personality}。`,
     `你的说话风格：${character.speechStyle}。`,
@@ -498,10 +503,10 @@ export function buildAiSystemPrompt(character: AiCharacter, memory?: AiMemory | 
   }
 
   if (toneHint?.trim()) {
-    sections.push(`当前回合补充要求：${toneHint.trim()}。这只是当前回合的语气微调，不要丢掉既有人设。`)
+    sections.push(`当前回合补充要求：${toneHint.trim()}。这只影响当前回复，不要丢掉既有人设。`)
   }
 
-  sections.push('回复要求：像真人微信聊天，短句优先，自然、有来有回，不要写旁白，不要解释设定来源，不要暴露自己是AI。')
+  sections.push('回复要求：像真人微信聊天一样自然，短句优先，有来有回，不写旁白，不解释设定来源，也不要暴露自己是 AI。')
   return sections.join('\n')
 }
 
@@ -598,7 +603,7 @@ function mapBigModelError(detail: string) {
   }
 
   if (lower.includes('failed to fetch') || lower.includes('connect') || lower.includes('enotfound') || lower.includes('econnrefused')) {
-    return '当前连不上智谱 AI 服务，请稍后重试。'
+    return '当前连接不上智谱 AI 服务，请稍后重试。'
   }
 
   return detail
@@ -638,7 +643,7 @@ export async function generateAiReply(options: {
 
     const data = (await response.json()) as BigModelChatResponse
     const content = extractBigModelContent(data)
-    const errorDetail = typeof data.error === 'string' ? data.error : data.error?.message || ''
+    const errorDetail = typeof data.error === 'string' ? data.error : data.error?.message || data.message || ''
 
     if (!content) {
       throw new Error(mapBigModelError(errorDetail || '模型没有返回有效内容。'))

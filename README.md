@@ -1,4 +1,4 @@
-﻿# 轻创 Qintra
+# 轻创 Qintra
 
 轻创是一个面向校园生活的综合站点，当前包含校园服务、晴窗、AI 陪伴、账户中心和管理员后台。
 
@@ -27,7 +27,7 @@
 - Next.js 16（App Router）
 - React 19
 - Tailwind CSS 4
-- SQLite + Drizzle ORM
+- MySQL + Drizzle ORM
 - JWT + httpOnly Cookie 会话
 - Brevo 邮件发送
 - BigModel `glm-4.7-flash`
@@ -77,7 +77,7 @@
 npm install
 ```
 
-初始化数据库：
+准备 MySQL 数据库后初始化 schema：
 
 ```bash
 npm run db:migrate
@@ -104,6 +104,14 @@ npm run start
 AUTH_JWT_SECRET=
 APP_BASE_URL=
 NEXT_PUBLIC_APP_URL=
+
+DATABASE_URL=mysql://user:password@127.0.0.1:3306/qingchuang
+# 或拆分写法
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_USER=
+MYSQL_PASSWORD=
+MYSQL_DATABASE=qingchuang
 
 BREVO_API_KEY=
 BREVO_SENDER_EMAIL=
@@ -132,16 +140,16 @@ TURNSTILE_SECRET_KEY=
 
 ## 数据与上传目录
 
-- SQLite 数据库：`data/qingchuang.db`
 - AI 数据：`data/ai-companion.json`
 - 用户头像：`public/uploads/avatars/`
-- 结算收款码：`public/uploads/payee-qrcodes/`
+- 结算收款码：`public/uploads/qr-codes/`
 
 ## 当前约定
 
 - 校园钱包和订单中心已经统一收入口径到“我的”页面。
 - 结算申请必须附带收款码。
 - 管理员处理结算后，用户状态会从“结算申请中”变为“已结算”。
+- 数据库已切换为 MySQL；如果你此前在旧 SQLite 文件里有数据，需要自行导出并导入 MySQL。
 
 ## 部署建议
 
@@ -151,8 +159,9 @@ TURNSTILE_SECRET_KEY=
 git fetch origin
 git checkout main
 git reset --hard origin/main
-rm -rf .next
 npm install
+npm run db:migrate
+rm -rf .next
 npm run build
 pm2 restart qingchuang --update-env || pm2 start npm --name qingchuang --cwd /opt/qingchuang -- start
 pm2 save

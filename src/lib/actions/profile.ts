@@ -50,7 +50,7 @@ export async function uploadAvatar(formData: FormData) {
 
   const publicUrl = `/uploads/avatars/${fileName}`
 
-  const db = getDb()
+  const db = await getDb()
   await db
     .update(schema.profiles)
     .set({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
@@ -65,7 +65,7 @@ export async function updateProfile(data: ProfileData) {
     return { error: "请先登录。" }
   }
 
-  const db = getDb()
+  const db = await getDb()
   const now = new Date().toISOString()
   const defaultLocation = data.location?.trim() || "本校"
 
@@ -135,7 +135,7 @@ export async function getProfile() {
     return { error: "请先登录。" }
   }
 
-  const db = getDb()
+  const db = await getDb()
   const rows = await db
     .select()
     .from(schema.profiles)
@@ -164,7 +164,7 @@ export async function updateNickname(nickname: string) {
     return { error: "名称最多 20 个字。" }
   }
 
-  const db = getDb()
+  const db = await getDb()
   await db
     .update(schema.profiles)
     .set({ nickname: trimmed, updated_at: new Date().toISOString() })
@@ -211,7 +211,7 @@ export async function getProfileStats() {
     return { error: "请先登录。" }
   }
 
-  const db = getDb()
+  const db = await getDb()
   const likedRows = await db
     .select({ id: schema.drawHistory.id })
     .from(schema.drawHistory)
@@ -227,3 +227,4 @@ export async function getProfileStats() {
     matched: matchedRows.length,
   }
 }
+

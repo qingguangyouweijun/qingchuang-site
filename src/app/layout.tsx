@@ -1,9 +1,14 @@
-﻿import type { Metadata } from "next"
-import "./globals.css"
+import type { Metadata } from 'next'
+import './globals.css'
 
 export const metadata: Metadata = {
-  title: "轻创 Qintra",
-  description: "让便捷融入生活",
+  title: '轻创 Qintra',
+  description: '让便捷融入生活',
+  icons: {
+    icon: '/qintra-logo.svg',
+    shortcut: '/qintra-logo.svg',
+    apple: '/qintra-logo.svg',
+  },
 }
 
 export default function RootLayout({
@@ -13,9 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body className="antialiased min-h-screen">
-        {children}
-      </body>
+      <body className="antialiased min-h-screen">{children}</body>
     </html>
   )
 }

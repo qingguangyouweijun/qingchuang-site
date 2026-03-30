@@ -21,7 +21,7 @@ async function getAuthContext() {
     throw new Error("请先登录。");
   }
 
-  const db = getDb();
+  const db = await getDb();
   const rows = await db
     .select()
     .from(schema.profiles)
@@ -237,3 +237,4 @@ export async function getDrawDetail(drawId: string) {
     },
   };
 }
+

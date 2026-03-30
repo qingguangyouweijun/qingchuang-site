@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+﻿import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { getDb, schema } from '@/lib/db'
 import { eq } from 'drizzle-orm'
@@ -10,7 +10,7 @@ export async function GET() {
     return NextResponse.json({ user: null, profile: null })
   }
 
-  const db = getDb()
+  const db = await getDb()
   const rows = await db
     .select()
     .from(schema.profiles)
@@ -24,3 +24,4 @@ export async function GET() {
     profile,
   })
 }
+

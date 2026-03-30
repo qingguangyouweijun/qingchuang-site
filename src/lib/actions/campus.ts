@@ -94,7 +94,7 @@ async function getAuthContext() {
     throw new Error('请先登录。')
   }
 
-  const db = getDb()
+  const db = await getDb()
   const rows = await db
     .select()
     .from(schema.profiles)
@@ -123,7 +123,7 @@ async function getProfileLabelMap(ids: string[]) {
     return {} as Record<string, string>
   }
 
-  const db = getDb()
+  const db = await getDb()
   const rows = await db
     .select({
       id: schema.profiles.id,
@@ -137,7 +137,7 @@ async function getProfileLabelMap(ids: string[]) {
 }
 
 async function getProfileById(userId: string) {
-  const db = getDb()
+  const db = await getDb()
   const rows = await db
     .select()
     .from(schema.profiles)
@@ -161,7 +161,7 @@ async function updateCampusBalance(
     settled?: number
   }
 ) {
-  const db = getDb()
+  const db = await getDb()
   const profile = await getProfileById(userId)
   const next = {
     campus_available_balance: roundMoney(Number(profile.campus_available_balance || 0) + Number(delta.available || 0)),
@@ -193,7 +193,7 @@ async function addBalanceLog(input: {
   afterPending: number
   remark: string
 }) {
-  const db = getDb()
+  const db = await getDb()
   await db.insert(schema.campusBalanceLogs).values({
     id: crypto.randomUUID(),
     user_id: input.userId,
@@ -211,7 +211,7 @@ async function addBalanceLog(input: {
 }
 
 async function findPaymentRecord(outTradeNo: string) {
-  const db = getDb()
+  const db = await getDb()
   const rows = await db
     .select()
     .from(schema.campusPaymentRecords)
@@ -234,7 +234,7 @@ async function markPaymentSuccess(
     return payment
   }
 
-  const db = getDb()
+  const db = await getDb()
   const now = new Date().toISOString()
 
   await db
@@ -1275,5 +1275,6 @@ export async function handleCampusPaymentNotify(params: Record<string, string>) 
 
   return { success: true }
 }
+
 
 
