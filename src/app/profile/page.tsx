@@ -22,16 +22,16 @@ export default function ProfilePage() {
   const [editError, setEditError] = React.useState("")
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
-  React.useEffect(() => {
-    void loadData()
-  }, [])
-
-  async function loadData() {
+  const loadData = React.useCallback(async () => {
     setIsLoading(true)
     const { profile: profileData } = await getProfile()
     setProfile(profileData || null)
     setIsLoading(false)
-  }
+  }, [])
+
+  React.useEffect(() => {
+    void loadData()
+  }, [loadData])
 
   function handleAvatarClick() {
     fileInputRef.current?.click()
@@ -186,30 +186,34 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Link href="/profile/wallet" className="block">
-            <div className="group rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-50 p-6 shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl">
+        <div className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2">
+          <Link href="/profile/wallet" className="block h-full">
+            <div className="group flex h-full min-h-[220px] flex-col rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-50 p-6 shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-md">
                 <Wallet className="h-6 w-6" />
               </div>
-              <h2 className="text-lg font-bold text-slate-900">校园钱包</h2>
-              <p className="mt-1.5 text-sm leading-6 text-slate-600">
-                查看可结算余额、结算申请记录与余额流水。提交结算时需附带收款码。
-              </p>
-              <div className="mt-4 text-sm font-medium text-emerald-700 group-hover:underline">进入校园钱包</div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">校园钱包</h2>
+                <p className="mt-1.5 text-sm leading-6 text-slate-600">
+                  查看可结算余额、结算申请记录与余额流水。提交结算时需附带收款码。
+                </p>
+              </div>
+              <div className="mt-auto pt-6 text-sm font-medium text-emerald-700 group-hover:underline">进入校园钱包</div>
             </div>
           </Link>
 
-          <Link href="/profile/orders" className="block">
-            <div className="group rounded-3xl bg-gradient-to-br from-amber-50 to-orange-50 p-6 shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl">
+          <Link href="/profile/orders" className="block h-full">
+            <div className="group flex h-full min-h-[220px] flex-col rounded-3xl bg-gradient-to-br from-amber-50 to-orange-50 p-6 shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-600 text-white shadow-md">
                 <Package className="h-6 w-6" />
               </div>
-              <h2 className="text-lg font-bold text-slate-900">订单中心</h2>
-              <p className="mt-1.5 text-sm leading-6 text-slate-600">
-                统一查看快递代取和旧书交易的下单、接单、购买与卖出记录。
-              </p>
-              <div className="mt-4 text-sm font-medium text-amber-700 group-hover:underline">查看订单中心</div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">订单中心</h2>
+                <p className="mt-1.5 text-sm leading-6 text-slate-600">
+                  统一查看快递代取和旧书交易的下单、接单、购买与卖出记录。
+                </p>
+              </div>
+              <div className="mt-auto pt-6 text-sm font-medium text-amber-700 group-hover:underline">查看订单中心</div>
             </div>
           </Link>
         </div>
@@ -284,4 +288,3 @@ export default function ProfilePage() {
     </MainLayout>
   )
 }
-
