@@ -177,7 +177,7 @@ export default async function CampusExpressRunnerPage({
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <div className="font-semibold text-slate-900">{order.order_no}</div>
-                    <div className="mt-1 text-sm text-slate-500">{order.pickup_station} → {order.delivery_building}</div>
+                    <div className="mt-1 text-sm text-slate-500">快递类型：{order.pickup_station} / 楼栋：{order.delivery_building}</div>
                   </div>
                   <Badge variant={STATUS_VARIANTS[order.status as keyof typeof STATUS_VARIANTS] || 'outline'}>
                     {EXPRESS_STATUS_LABELS[order.status as keyof typeof EXPRESS_STATUS_LABELS] || order.status}
@@ -186,12 +186,11 @@ export default async function CampusExpressRunnerPage({
                 <div className="grid grid-cols-2 gap-3 text-sm text-slate-600">
                   <div>件数：<span className="font-semibold text-slate-900">{order.total_count} 件</span></div>
                   <div>跑腿收入：<span className="font-semibold text-emerald-700">¥{Number(order.runner_income).toFixed(2)}</span></div>
-                  <div>送达时间：{order.expected_time}</div>
-                  <div>取件码：{order.pickup_codes.length} 个</div>
+                  <div>详细地址：{order.delivery_address}</div>
+                  <div>取件信息：{order.pickup_codes.length} 条</div>
                 </div>
                 <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                  {order.delivery_address}
-                  {order.remark ? ` · 备注：${order.remark}` : ''}
+                  {order.remark ? `备注：${order.remark}` : '提交人未填写额外备注。'}
                 </div>
                 <form action={acceptAction}>
                   <input type="hidden" name="orderId" value={order.id} />
@@ -218,17 +217,17 @@ export default async function CampusExpressRunnerPage({
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <div className="font-semibold text-slate-900">{order.order_no}</div>
-                    <div className="mt-1 text-sm text-slate-500">{order.pickup_station} → {order.delivery_building} / {order.delivery_address}</div>
+                    <div className="mt-1 text-sm text-slate-500">快递类型：{order.pickup_station} / {order.delivery_building} / {order.delivery_address}</div>
                   </div>
                   <Badge variant={STATUS_VARIANTS[order.status as keyof typeof STATUS_VARIANTS] || 'outline'}>
                     {EXPRESS_STATUS_LABELS[order.status as keyof typeof EXPRESS_STATUS_LABELS] || order.status}
                   </Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-sm text-slate-600">
-                  <div>取件码：{order.pickup_codes.join('、')}</div>
+                  <div>取件信息：{order.pickup_codes.join('、')}</div>
                   <div>跑腿收入：<span className="font-semibold text-emerald-700">¥{Number(order.runner_income).toFixed(2)}</span></div>
                   <div>件数：{order.total_count} 件</div>
-                  <div>送达时间：{order.expected_time}</div>
+                  <div>详细地址：{order.delivery_address}</div>
                 </div>
                 {order.remark && (
                   <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
@@ -267,4 +266,3 @@ export default async function CampusExpressRunnerPage({
     </div>
   )
 }
-

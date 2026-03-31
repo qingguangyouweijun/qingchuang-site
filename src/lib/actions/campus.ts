@@ -370,7 +370,7 @@ export async function createExpressOrder(input: {
   pickupCodes: string[]
   deliveryBuilding: string
   deliveryAddress: string
-  expectedTime: string
+  expectedTime?: string
   remark?: string
   smallCount?: number
   mediumCount?: number
@@ -381,11 +381,11 @@ export async function createExpressOrder(input: {
   const quote = computeExpressQuote(input)
 
   assert(quote.totalCount > 0, '至少选择 1 件快递。')
-  assert(input.pickupStation, '请填写取件点。')
-  assert(input.pickupCodes?.length, '请填写取件码。')
+  assert(input.pickupStation, '请选择快递类型。')
+  assert(input.pickupCodes?.length, '请填写取件信息。')
   assert(input.deliveryBuilding, '请填写楼栋。')
   assert(input.deliveryAddress, '请填写详细地址。')
-  assert(input.expectedTime, '请填写期望送达时间。')
+  const normalizedExpectedTime = input.expectedTime?.trim() || '尽快送达'
 
   const id = crypto.randomUUID()
   const now = new Date().toISOString()
@@ -404,7 +404,7 @@ export async function createExpressOrder(input: {
     pickup_codes: JSON.stringify(input.pickupCodes),
     delivery_building: input.deliveryBuilding,
     delivery_address: input.deliveryAddress,
-    expected_time: input.expectedTime,
+    expected_time: normalizedExpectedTime,
     remark: input.remark || '',
     order_amount: quote.orderAmount,
     platform_fee: quote.platformFee,
@@ -1275,6 +1275,7 @@ export async function handleCampusPaymentNotify(params: Record<string, string>) 
 
   return { success: true }
 }
+
 
 
 

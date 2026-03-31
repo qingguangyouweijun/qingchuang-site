@@ -25,6 +25,8 @@ const STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'warning' | 'suc
   COMPLETED: 'success',
 }
 
+const COURIER_OPTIONS = ['顺丰', '京东', '其他'] as const
+
 function getParam(value: string | string[] | undefined) {
   return typeof value === 'string' ? value : ''
 }
@@ -66,7 +68,7 @@ export default async function CampusExpressOrderPage({
         pickupCodes: parseCodes(String(formData.get('pickupCodes') || '')),
         deliveryBuilding: String(formData.get('deliveryBuilding') || ''),
         deliveryAddress: String(formData.get('deliveryAddress') || ''),
-        expectedTime: String(formData.get('expectedTime') || ''),
+        expectedTime: '尽快送达',
         remark: String(formData.get('remark') || ''),
         smallCount: Number(formData.get('smallCount') || 0),
         mediumCount: Number(formData.get('mediumCount') || 0),
@@ -200,13 +202,17 @@ export default async function CampusExpressOrderPage({
           <CardContent>
             <form action={createOrderAction} className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <label className="space-y-2 text-sm text-slate-600">
-                <span>取件点</span>
-                <input name="pickupStation" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" placeholder="例如：菜鸟驿站、南门快递点" required />
+                <span>快递类型</span>
+                <select name="pickupStation" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" defaultValue="" required>
+                  <option value="" disabled>请选择快递类型</option>
+                  {COURIER_OPTIONS.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
               </label>
-              <label className="space-y-2 text-sm text-slate-600">
-                <span>送达时间</span>
-                <input name="expectedTime" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" placeholder="例如：今晚 21:00 前" required />
-              </label>
+              <div className="rounded-2xl bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-600">
+                请先选择顺丰、京东或其他，再填写楼栋和取件信息。系统会默认按“尽快送达”处理，不再单独填写送达时间。
+              </div>
               <label className="space-y-2 text-sm text-slate-600">
                 <span>楼栋</span>
                 <input name="deliveryBuilding" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" placeholder="例如：3 号楼" required />
@@ -216,8 +222,16 @@ export default async function CampusExpressOrderPage({
                 <input name="deliveryAddress" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" placeholder="例如：3 号楼 402" required />
               </label>
               <label className="space-y-2 text-sm text-slate-600 md:col-span-2">
-                <span>取件码</span>
-                <textarea name="pickupCodes" className="min-h-28 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3" placeholder="支持一行一个，也支持逗号分隔" required />
+                <span>取件信息</span>
+                <textarea
+                  name="pickupCodes"
+                  className="min-h-28 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3"
+                  placeholder="例如：1388 / A123456 / 张三"
+                  required
+                />
+                <p className="text-xs leading-5 text-slate-500">
+                  顺丰、京东、其他都请按“手机后四位 / 取件码 / 收件人”填写，支持一行一条，也支持逗号分隔多条信息。
+                </p>
               </label>
               <label className="space-y-2 text-sm text-slate-600">
                 <span>小件数量</span>
@@ -269,7 +283,7 @@ export default async function CampusExpressOrderPage({
                   <div>应付金额：<span className="font-semibold text-slate-900">¥{Number(order.order_amount).toFixed(2)}</span></div>
                   <div>支付方式：{order.pay_type ? PAY_TYPE_LABELS[order.pay_type as keyof typeof PAY_TYPE_LABELS] : '未支付'}</div>
                   <div>件数：{order.total_count} 件</div>
-                  <div>送达时间：{order.expected_time}</div>
+                  <div>快递类型：{order.pickup_station}</div>
                 </div>
                 {order.status === 'PENDING_PAYMENT' && (
                   <div className="flex flex-wrap gap-3">
@@ -300,6 +314,3 @@ export default async function CampusExpressOrderPage({
     </div>
   )
 }
-
-
-
