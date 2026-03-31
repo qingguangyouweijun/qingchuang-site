@@ -5,9 +5,9 @@ export const metadata: Metadata = {
   title: '轻创 Qintra',
   description: '让便捷融入生活',
   icons: {
-    icon: '/qingchuang-mark.jpg',
-    shortcut: '/qingchuang-mark.jpg',
-    apple: '/qingchuang-mark.jpg',
+    icon: '/qingchuang-mark.png',
+    shortcut: '/qingchuang-mark.png',
+    apple: '/qingchuang-mark.png',
   },
 }
 

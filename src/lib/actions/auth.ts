@@ -127,7 +127,7 @@ async function verifyTurnstileToken(token: string): Promise<{ success: boolean; 
 
 function buildRegisterCodeEmail(code: string) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_BASE_URL || 'https://qingchuang.site'
-  const logoUrl = `${appUrl.replace(/\/$/, '')}/qingchuang-mark.jpg`
+  const logoUrl = `${appUrl.replace(/\/$/, '')}/qingchuang-mark.png`
 
   return {
     subject: '轻创注册验证码',
@@ -136,7 +136,7 @@ function buildRegisterCodeEmail(code: string) {
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;padding:32px;color:#0f172a;">
         <div style="max-width:560px;margin:0 auto;">
           <div style="text-align:center;padding:24px 0 20px;">
-            <img src="${logoUrl}" alt="轻创 Qintra" width="180" style="height:auto;max-width:180px;display:inline-block;" />
+            <img src="${logoUrl}" alt="轻创 Qintra" width="96" style="height:auto;max-width:96px;display:inline-block;" />
           </div>
           <div style="background:#ffffff;border-radius:24px;padding:32px;border:1px solid #e2e8f0;box-shadow:0 20px 60px rgba(15,23,42,0.08);">
             <div style="font-size:30px;font-weight:800;margin-bottom:14px;line-height:1.3;">轻创注册验证码</div>
