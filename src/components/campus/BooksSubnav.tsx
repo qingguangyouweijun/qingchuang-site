@@ -2,19 +2,19 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ClipboardList, Users } from 'lucide-react'
+import { BookOpen, ShoppingCart } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const items = [
-  { name: '快递代取下单', href: '/campus/express/order', icon: ClipboardList },
-  { name: '快递代取接单', href: '/campus/express/runner', icon: Users },
+  { name: '旧书售卖', href: '/campus/books/sell', icon: BookOpen },
+  { name: '旧书下单', href: '/campus/books/order', icon: ShoppingCart },
 ]
 
 function isItemActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
-export function ExpressSubnav({ className }: { className?: string }) {
+export function BooksSubnav({ className }: { className?: string }) {
   const pathname = usePathname()
 
   return (
