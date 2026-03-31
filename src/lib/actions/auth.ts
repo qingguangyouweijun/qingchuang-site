@@ -1,4 +1,4 @@
-"use server"
+﻿"use server"
 
 import {
   createHash,
@@ -127,7 +127,7 @@ async function verifyTurnstileToken(token: string): Promise<{ success: boolean; 
 
 function buildRegisterCodeEmail(code: string) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_BASE_URL || 'https://qingchuang.site'
-  const logoUrl = `${appUrl.replace(/\/$/, '')}/qingchuang.jpg`
+  const logoUrl = `${appUrl.replace(/\/$/, '')}/qingchuang-mark.jpg`
 
   return {
     subject: '轻创注册验证码',

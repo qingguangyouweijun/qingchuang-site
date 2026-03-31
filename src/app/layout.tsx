@@ -1,13 +1,13 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
   title: '轻创 Qintra',
   description: '让便捷融入生活',
   icons: {
-    icon: '/qintra-logo.svg',
-    shortcut: '/qintra-logo.svg',
-    apple: '/qintra-logo.svg',
+    icon: '/qingchuang-mark.jpg',
+    shortcut: '/qingchuang-mark.jpg',
+    apple: '/qingchuang-mark.jpg',
   },
 }
 
