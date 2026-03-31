@@ -111,7 +111,7 @@ export default async function CampusExpressOverviewPage() {
                   <Badge variant="outline">创建面单 + 我下的快递单</Badge>
                 </div>
                 <p className="text-sm leading-6 text-slate-600">
-                  在一个页面里完成创建快递面单、选择支付方式、同步支付状态，以及查看和确认你自己发起的快递订单。
+                  {"\u5728\u4E00\u4E2A\u9875\u9762\u91CC\u5B8C\u6210\u521B\u5EFA\u5FEB\u9012\u9762\u5355\u3001\u53D1\u8D77\u652F\u4ED8\u5B9D\u652F\u4ED8\u3001\u540C\u6B65\u652F\u4ED8\u72B6\u6001\uFF0C\u4EE5\u53CA\u67E5\u770B\u548C\u786E\u8BA4\u4F60\u81EA\u5DF1\u53D1\u8D77\u7684\u5FEB\u9012\u8BA2\u5355\u3002"}
                 </p>
               </div>
             </CardContent>

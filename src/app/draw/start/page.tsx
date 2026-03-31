@@ -83,7 +83,7 @@ function DrawStartPageContent() {
   const [error, setError] = React.useState("");
   const [drawResult, setDrawResult] = React.useState<DrawResultState | null>(null);
   const [pricing, setPricing] = React.useState<PricingData | null>(null);
-  const [payType, setPayType] = React.useState<PayType>("wxpay");
+  const [payType] = React.useState<PayType>("alipay");
   const [payment, setPayment] = React.useState<PaymentState | null>(null);
   const [detail, setDetail] = React.useState<DrawDetail | null>(null);
   const [syncing, setSyncing] = React.useState(false);
@@ -364,30 +364,16 @@ function DrawStartPageContent() {
               </div>
 
               <div className="space-y-3">
-                <label className="text-sm font-medium text-slate-700">选择支付方式</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setPayType("wxpay")}
-                    className={`rounded-2xl border-2 p-4 text-center transition-all ${payType === "wxpay" ? "border-emerald-500 bg-emerald-50" : "border-slate-200 bg-white hover:border-slate-300"}`}
-                  >
-                    <div className="text-lg font-bold text-emerald-700">微信支付</div>
-                    <div className="mt-1 text-xs text-slate-400">推荐微信完成付款</div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPayType("alipay")}
-                    className={`rounded-2xl border-2 p-4 text-center transition-all ${payType === "alipay" ? "border-blue-500 bg-blue-50" : "border-slate-200 bg-white hover:border-slate-300"}`}
-                  >
-                    <div className="text-lg font-bold text-blue-700">支付宝</div>
-                    <div className="mt-1 text-xs text-slate-400">使用支付宝完成付款</div>
-                  </button>
+                <label className="text-sm font-medium text-slate-700">支付方式</label>
+                <div className="rounded-2xl border-2 border-blue-500 bg-blue-50 p-4 text-center">
+                  <div className="text-lg font-bold text-blue-700">支付宝</div>
+                  <div className="mt-1 text-xs text-slate-500">当前仅支持使用支付宝完成付款</div>
                 </div>
               </div>
 
               <Button onClick={handlePay} size="lg" className="w-full">
                 <CreditCard className="mr-2 h-4 w-4" />
-                确认支付 ¥{drawResult.amount.toFixed(2)}
+                {"\u524D\u5F80\u652F\u4ED8\u5B9D\u652F\u4ED8 \u00A5"}{drawResult.amount.toFixed(2)}
               </Button>
             </CardContent>
           </Card>
@@ -399,7 +385,7 @@ function DrawStartPageContent() {
               <Loader2 className="mx-auto h-10 w-10 animate-spin text-emerald-600" />
               <div className="space-y-2">
                 <p className="text-xl font-semibold text-slate-900">等待支付完成</p>
-                <p className="text-sm leading-7 text-slate-500">支付页面已在新窗口打开。完成支付后，回到这里同步状态并开启礼盒。</p>
+                <p className="text-sm leading-7 text-slate-500">支付宝支付页面已在新窗口打开。完成支付后，回到这里同步状态并开启礼盒。</p>
               </div>
 
               {error && <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">{error}</div>}
@@ -532,3 +518,6 @@ export default function DrawStartPage() {
     </React.Suspense>
   );
 }
+
+
+

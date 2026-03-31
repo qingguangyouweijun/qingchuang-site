@@ -91,7 +91,7 @@ export default async function CampusExpressOrderPage({
       const { payment } = await createCampusPayment({
         bizType: 'EXPRESS_ORDER',
         bizId: String(formData.get('orderId') || ''),
-        payType: String(formData.get('payType') || 'wxpay') as 'wxpay' | 'alipay',
+        payType: String(formData.get('payType') || 'alipay') as 'wxpay' | 'alipay',
       })
       revalidateExpressPaths()
       if (payment.pay_url) {
@@ -240,7 +240,7 @@ export default async function CampusExpressOrderPage({
                 <textarea name="remark" className="min-h-24 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3" placeholder="例如：到楼下电话联系、包含易碎件等" />
               </label>
               <div className="md:col-span-2 flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-600">
-                <div>提交后会先生成订单，再由你选择微信支付或支付宝完成付款。</div>
+                <div>提交后会先生成订单，再由你使用支付宝完成付款。</div>
                 <Button type="submit">提交订单</Button>
               </div>
             </form>
@@ -275,13 +275,8 @@ export default async function CampusExpressOrderPage({
                   <div className="flex flex-wrap gap-3">
                     <form action={paymentAction}>
                       <input type="hidden" name="orderId" value={order.id} />
-                      <input type="hidden" name="payType" value="wxpay" />
-                      <Button type="submit" size="sm">微信支付</Button>
-                    </form>
-                    <form action={paymentAction}>
-                      <input type="hidden" name="orderId" value={order.id} />
                       <input type="hidden" name="payType" value="alipay" />
-                      <Button type="submit" size="sm" variant="secondary">支付宝支付</Button>
+                      <Button type="submit" size="sm">支付宝支付</Button>
                     </form>
                   </div>
                 )}
@@ -305,5 +300,6 @@ export default async function CampusExpressOrderPage({
     </div>
   )
 }
+
 
 

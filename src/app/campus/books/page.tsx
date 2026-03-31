@@ -128,7 +128,7 @@ export default async function CampusBooksPage({
       const { payment } = await createCampusPayment({
         bizType: 'BOOK_ORDER',
         bizId: String(formData.get('orderId') || ''),
-        payType: String(formData.get('payType') || 'wxpay') as 'wxpay' | 'alipay',
+        payType: String(formData.get('payType') || 'alipay') as 'wxpay' | 'alipay',
       })
       revalidatePath('/campus/books')
       if (payment.pay_url) {
@@ -294,7 +294,7 @@ export default async function CampusBooksPage({
                   <textarea name="description" rows={4} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3" placeholder="例如：无缺页、无水渍，附带课堂笔记。" />
                 </label>
                 <div className="md:col-span-2 rounded-2xl bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-600">
-                  发布后价格会直接同步展示到旧书广场。买家支付支持微信支付和支付宝；平台统一收取 2 元 / 本手续费。
+                  发布后价格会直接同步展示到旧书广场。买家统一使用支付宝完成付款；平台统一收取 2 元 / 本手续费。
                 </div>
                 <div className="md:col-span-2">
                   <Button type="submit">发布到旧书广场</Button>
@@ -394,16 +394,11 @@ export default async function CampusBooksPage({
                   </div>
                   <div className="grid gap-2 text-sm text-slate-600 md:grid-cols-2">
                     <div>支付金额：<span className="font-semibold text-slate-900">¥{Number(order.sale_price).toFixed(2)}</span></div>
-                    <div>支付方式：{PAY_LABELS[(order.pay_type || 'wxpay') as keyof typeof PAY_LABELS] || order.pay_type || '未选择'}</div>
+                    <div>支付方式：{PAY_LABELS[(order.pay_type || 'alipay') as keyof typeof PAY_LABELS] || order.pay_type || '未选择'}</div>
                   </div>
                   <div className="flex flex-wrap gap-3">
                     {order.status === 'PENDING_PAYMENT' && (
                       <>
-                        <form action={paymentAction}>
-                          <input type="hidden" name="orderId" value={order.id} />
-                          <input type="hidden" name="payType" value="wxpay" />
-                          <Button type="submit" variant="outline">微信支付</Button>
-                        </form>
                         <form action={paymentAction}>
                           <input type="hidden" name="orderId" value={order.id} />
                           <input type="hidden" name="payType" value="alipay" />
@@ -470,3 +465,5 @@ export default async function CampusBooksPage({
     </MainLayout>
   )
 }
+
+
