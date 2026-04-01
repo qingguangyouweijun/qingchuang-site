@@ -5,20 +5,28 @@
   "appid": "wxc59e4f32b2e1bf2c",
   "compileType": "miniprogram",
   "setting": {
-    "urlCheck": false,
-    "es6": true,
-    "postcss": true,
-    "minified": true,
+    "es6": false,
+    "postcss": false,
+    "compileWorklet": false,
+    "minified": false,
     "uglifyFileName": false,
-    "enhance": true,
+    "uploadWithSourceMap": true,
+    "enhance": false,
+    "packNpmManually": false,
     "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "condition": false,
+    "swc": false,
+    "disableSWC": true,
     "babelSetting": {
       "ignore": [],
       "disablePlugins": [],
       "outputPath": ""
-    },
-    "useCompilerPlugins": false,
-    "minifyWXML": true
+    }
   },
   "simulatorPluginLibVersion": {},
   "packOptions": {
