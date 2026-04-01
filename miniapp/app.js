@@ -1,4 +1,4 @@
-﻿App({
+App({
   globalData: {
     brandName: '轻创 Qintra',
     authMode: 'wechat-planned'

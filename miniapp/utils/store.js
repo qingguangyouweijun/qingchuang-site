@@ -1,4 +1,4 @@
-﻿const STORAGE_KEY = 'qingchuang-mini-state-v1'
+const STORAGE_KEY = 'qingchuang-mini-state-v1'
 
 function createDefaultState() {
   return {

@@ -1,4 +1,4 @@
-﻿<view class="container">
+<view class="container">
   <view class="card">
     <view class="section-title">零食快递</view>
     <view class="section-desc">宿舍即时零食和饮料入口，适合直接做成原生小程序货架。</view>

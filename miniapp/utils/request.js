@@ -1,4 +1,4 @@
-﻿const { baseUrl, requestTimeout } = require('./config')
+const { baseUrl, requestTimeout } = require('./config')
 const SESSION_KEY = 'qingchuang-mini-session-token'
 
 function getSessionToken() {
