@@ -5,8 +5,15 @@ import { Badge } from "@/components/UI/Badge"
 import { Button } from "@/components/UI/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/UI/Card"
 import { getSession } from "@/lib/actions/auth"
-import { listBookOrders, listExpressOrders } from "@/lib/actions/campus"
-import type { BookOrderStatus, CampusBookOrder, CampusExpressOrder, ExpressOrderStatus } from "@/lib/types"
+import { listBookOrders, listExpressOrders, listSnackOrders } from "@/lib/actions/campus"
+import type {
+  BookOrderStatus,
+  CampusBookOrder,
+  CampusExpressOrder,
+  CampusSnackOrder,
+  ExpressOrderStatus,
+  SnackOrderStatus,
+} from "@/lib/types"
 
 const EXPRESS_STATUS_LABELS: Record<ExpressOrderStatus, string> = {
   PENDING_PAYMENT: "待支付",
@@ -24,6 +31,12 @@ const BOOK_ORDER_STATUS_LABELS: Record<BookOrderStatus, string> = {
   COMPLETED: "已完成",
 }
 
+const SNACK_ORDER_STATUS_LABELS: Record<SnackOrderStatus, string> = {
+  PENDING_PAYMENT: "待支付",
+  PAID: "已支付",
+  COMPLETED: "已完成",
+}
+
 const STATUS_VARIANTS: Record<string, "default" | "secondary" | "warning" | "success" | "outline"> = {
   PENDING_PAYMENT: "warning",
   OPEN: "default",
@@ -32,6 +45,7 @@ const STATUS_VARIANTS: Record<string, "default" | "secondary" | "warning" | "suc
   DELIVERED: "warning",
   COMPLETED: "success",
   WAITING_SELLER: "secondary",
+  PAID: "secondary",
 }
 
 function resolveCollection<T>(
@@ -56,13 +70,17 @@ function getBookOrderStatusLabel(status: string) {
   return BOOK_ORDER_STATUS_LABELS[status as BookOrderStatus] || status
 }
 
+function getSnackOrderStatusLabel(status: string) {
+  return SNACK_ORDER_STATUS_LABELS[status as SnackOrderStatus] || status
+}
+
 export default async function CampusOrdersPage() {
   const session = await getSession()
 
   if (!session) {
     return (
       <MainLayout>
-        <div className="mx-auto max-w-5xl py-8 space-y-6">
+        <div className="mx-auto max-w-5xl space-y-6 py-8">
           <Link
             href="/profile"
             className="inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-900"
@@ -73,7 +91,7 @@ export default async function CampusOrdersPage() {
           <Card>
             <CardContent className="space-y-4 p-10 text-center">
               <h1 className="text-3xl font-bold text-slate-900">请先登录后查看订单中心</h1>
-              <p className="text-slate-600">订单中心会汇总快递代取和旧书交易的全部订单视角。</p>
+              <p className="text-slate-600">订单中心会汇总快递代取、旧书交易和零食快递的全部订单视角。</p>
               <div className="flex justify-center gap-4">
                 <Link href="/auth/login">
                   <Button>去登录</Button>
@@ -90,17 +108,19 @@ export default async function CampusOrdersPage() {
   }
 
   const warnings: string[] = []
-  const [myExpressResult, runnerExpressResult, buyerOrdersResult, sellerOrdersResult] = await Promise.allSettled([
+  const [myExpressResult, runnerExpressResult, buyerOrdersResult, sellerOrdersResult, snackOrdersResult] = await Promise.allSettled([
     listExpressOrders("mine"),
     listExpressOrders("runner"),
     listBookOrders("buyer"),
     listBookOrders("seller"),
+    listSnackOrders(),
   ])
 
   const myExpress = resolveCollection(myExpressResult, warnings, "我下的快递单", (value) => value.orders) as CampusExpressOrder[]
   const runnerExpress = resolveCollection(runnerExpressResult, warnings, "我接的快递单", (value) => value.orders) as CampusExpressOrder[]
   const buyerOrders = resolveCollection(buyerOrdersResult, warnings, "我买到的旧书", (value) => value.orders) as CampusBookOrder[]
   const sellerOrders = resolveCollection(sellerOrdersResult, warnings, "我卖出的旧书", (value) => value.orders) as CampusBookOrder[]
+  const snackOrders = resolveCollection(snackOrdersResult, warnings, "我的零食订单", (value) => value.orders) as CampusSnackOrder[]
 
   return (
     <MainLayout>
@@ -117,7 +137,7 @@ export default async function CampusOrdersPage() {
           <div>
             <h1 className="text-4xl font-bold text-slate-900">订单中心</h1>
             <p className="mt-3 text-slate-600 leading-7">
-              订单中心已经收进“我的”页面。这里统一查看快递代取和旧书交易的下单、接单、购买与卖出记录。
+              订单中心已经收进“我的”页面。这里统一查看快递代取、旧书交易和零食快递的下单、接单、购买与卖出记录。
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -125,7 +145,10 @@ export default async function CampusOrdersPage() {
               <Button variant="outline">去快递代取</Button>
             </Link>
             <Link href="/campus/books">
-              <Button>去旧书广场</Button>
+              <Button variant="outline">去旧书广场</Button>
+            </Link>
+            <Link href="/campus/snacks">
+              <Button>去零食快递</Button>
             </Link>
           </div>
         </div>
@@ -239,7 +262,35 @@ export default async function CampusOrdersPage() {
             </CardContent>
           </Card>
         </section>
+
+        <section>
+          <Card className="border-none shadow-lg">
+            <CardHeader>
+              <CardTitle>我的零食订单</CardTitle>
+              <CardDescription>零食快递的购买记录也会统一沉淀在这里，方便你回看支付与完成状态。</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {snackOrders.length === 0 && (
+                <div className="rounded-2xl bg-slate-50 px-4 py-5 text-sm text-slate-500">暂时没有零食订单。</div>
+              )}
+              {snackOrders.map((order) => (
+                <div key={order.id} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-white p-4">
+                  <div>
+                    <div className="font-semibold text-slate-900">{order.product_name}</div>
+                    <div className="mt-1 text-sm text-slate-500">
+                      订单号：{order.order_no} / {order.quantity} 份 / ¥{Number(order.total_amount).toFixed(2)} / 送达：{order.delivery_location}
+                    </div>
+                  </div>
+                  <Badge variant={STATUS_VARIANTS[order.status] || "outline"}>
+                    {getSnackOrderStatusLabel(order.status)}
+                  </Badge>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </section>
       </div>
     </MainLayout>
   )
 }
+

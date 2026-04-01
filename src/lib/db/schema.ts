@@ -197,6 +197,60 @@ export const campusBookOrders = mysqlTable(
   ],
 )
 
+export const campusSnackProducts = mysqlTable(
+  'campus_snack_products',
+  {
+    id: varchar('id', { length: 191 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
+    sku: varchar('sku', { length: 64 }).notNull(),
+    name: varchar('name', { length: 255 }).notNull(),
+    subtitle: varchar('subtitle', { length: 255 }),
+    category: varchar('category', { length: 64 }).notNull(),
+    cover_emoji: varchar('cover_emoji', { length: 32 }),
+    sale_price: double('sale_price').notNull(),
+    original_price: double('original_price'),
+    stock_count: int('stock_count').notNull().default(0),
+    description: text('description'),
+    shelf_status: varchar('shelf_status', { length: 64 }).notNull().default('ON_SALE'),
+    sort_order: int('sort_order').notNull().default(0),
+    created_at: varchar('created_at', { length: 64 }).notNull().$defaultFn(() => new Date().toISOString()),
+    updated_at: varchar('updated_at', { length: 64 }).notNull().$defaultFn(() => new Date().toISOString()),
+  },
+  (table) => [
+    uniqueIndex('idx_snack_products_sku').on(table.sku),
+    index('idx_snack_products_category').on(table.category),
+    index('idx_snack_products_shelf_status').on(table.shelf_status),
+  ],
+)
+
+export const campusSnackOrders = mysqlTable(
+  'campus_snack_orders',
+  {
+    id: varchar('id', { length: 191 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
+    order_no: varchar('order_no', { length: 64 }).notNull(),
+    product_id: varchar('product_id', { length: 191 }).notNull().references(() => campusSnackProducts.id, { onDelete: 'cascade' }),
+    product_name: varchar('product_name', { length: 255 }).notNull(),
+    buyer_id: varchar('buyer_id', { length: 191 }).notNull().references(() => profiles.id, { onDelete: 'cascade' }),
+    quantity: int('quantity').notNull().default(1),
+    unit_price: double('unit_price').notNull(),
+    total_amount: double('total_amount').notNull(),
+    pay_type: varchar('pay_type', { length: 32 }),
+    status: varchar('status', { length: 64 }).notNull().default('PENDING_PAYMENT'),
+    contact_name: varchar('contact_name', { length: 80 }).notNull(),
+    contact_phone: varchar('contact_phone', { length: 64 }).notNull(),
+    delivery_location: varchar('delivery_location', { length: 255 }).notNull(),
+    remark: text('remark'),
+    paid_at: varchar('paid_at', { length: 64 }),
+    completed_at: varchar('completed_at', { length: 64 }),
+    created_at: varchar('created_at', { length: 64 }).notNull().$defaultFn(() => new Date().toISOString()),
+    updated_at: varchar('updated_at', { length: 64 }).notNull().$defaultFn(() => new Date().toISOString()),
+  },
+  (table) => [
+    uniqueIndex('idx_snack_order_no').on(table.order_no),
+    index('idx_snack_orders_buyer_id').on(table.buyer_id),
+    index('idx_snack_orders_status').on(table.status),
+  ],
+)
+
 export const campusPaymentRecords = mysqlTable(
   'campus_payment_records',
   {
@@ -264,3 +318,4 @@ export const campusBalanceLogs = mysqlTable(
     index('idx_balance_logs_user_id').on(table.user_id),
   ],
 )
+

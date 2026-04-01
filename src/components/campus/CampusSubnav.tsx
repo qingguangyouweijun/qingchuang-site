@@ -2,13 +2,14 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BookOpen, LayoutDashboard, Package } from "lucide-react"
+import { BookOpen, LayoutDashboard, Package, ShoppingBag } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const items = [
   { name: "总览", href: "/campus", icon: LayoutDashboard },
   { name: "快递代取", href: "/campus/express", icon: Package },
   { name: "旧书广场", href: "/campus/books", icon: BookOpen },
+  { name: "零食快递", href: "/campus/snacks", icon: ShoppingBag },
 ]
 
 function isItemActive(pathname: string, href: string) {
@@ -48,3 +49,4 @@ export function CampusSubnav({ className }: { className?: string }) {
     </div>
   )
 }
+

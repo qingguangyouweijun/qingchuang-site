@@ -1,4 +1,4 @@
-export type Gender = "male" | "female";
+﻿export type Gender = "male" | "female";
 export type Appearance = "normal" | "good" | "stunning";
 export type Identity = "student" | "non_student";
 
@@ -18,8 +18,10 @@ export type BookOrderStatus =
   | "WAITING_SELLER"
   | "DELIVERED"
   | "COMPLETED";
+export type SnackProductStatus = "ON_SALE" | "SOLD_OUT" | "OFF_SHELF";
+export type SnackOrderStatus = "PENDING_PAYMENT" | "PAID" | "COMPLETED";
 export type SettlementStatus = "PENDING" | "APPROVED" | "REJECTED";
-export type CampusBizType = "EXPRESS_ORDER" | "BOOK_ORDER" | "DRAW_ORDER";
+export type CampusBizType = "EXPRESS_ORDER" | "BOOK_ORDER" | "DRAW_ORDER" | "SNACK_ORDER";
 
 export interface Profile {
   id: string;
@@ -199,6 +201,44 @@ export interface CampusBookOrder {
   updated_at: string;
 }
 
+export interface CampusSnackProduct {
+  id: string;
+  sku: string;
+  name: string;
+  subtitle: string | null;
+  category: string;
+  cover_emoji: string | null;
+  sale_price: number;
+  original_price: number | null;
+  stock_count: number;
+  description: string | null;
+  shelf_status: SnackProductStatus;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CampusSnackOrder {
+  id: string;
+  order_no: string;
+  product_id: string;
+  product_name: string;
+  buyer_id: string;
+  quantity: number;
+  unit_price: number;
+  total_amount: number;
+  pay_type: PayType | null;
+  status: SnackOrderStatus;
+  contact_name: string;
+  contact_phone: string;
+  delivery_location: string;
+  remark: string | null;
+  paid_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface CampusSettlementApplication {
   id: string;
   application_no: string;
@@ -260,7 +300,7 @@ export interface CampusDashboardData {
 export const APPEARANCE_LABELS: Record<Appearance, string> = {
   normal: "自然",
   good: "出众",
-  stunning: "超级哇塞",
+  stunning: "惊艳",
 };
 
 export const GRADE_OPTIONS = [
@@ -281,45 +321,58 @@ export const IDENTITY_LABELS: Record<Identity, string> = {
 };
 
 export const GENDER_LABELS: Record<Gender, string> = {
-  male: "男",
-  female: "女",
+  male: '男',
+  female: '女',
 };
 
 export const APP_ROLE_LABELS: Record<AppRole, string> = {
-  user: "普通用户",
-  admin: "管理员",
+  user: '普通用户',
+  admin: '管理员',
 };
 
 export const PAY_TYPE_LABELS: Record<PayType, string> = {
-  wxpay: "微信支付",
-  alipay: "支付宝",
+  wxpay: '微信支付',
+  alipay: '支付宝',
 };
 
 export const EXPRESS_STATUS_LABELS: Record<ExpressOrderStatus, string> = {
-  PENDING_PAYMENT: "待支付",
-  OPEN: "待接单",
-  ACCEPTED: "已接单",
-  PICKED_UP: "已取件",
-  DELIVERED: "已送达",
-  COMPLETED: "已完成",
+  PENDING_PAYMENT: '待支付',
+  OPEN: '待接单',
+  ACCEPTED: '已接单',
+  PICKED_UP: '已取件',
+  DELIVERED: '已送达',
+  COMPLETED: '已完成',
 };
 
 export const BOOK_POST_STATUS_LABELS: Record<BookPostStatus, string> = {
-  ON_SALE: "在售",
-  LOCKED: "锁定中",
-  SOLD: "已售出",
-  OFF_SHELF: "已下架",
+  ON_SALE: '在售',
+  LOCKED: '已锁定',
+  SOLD: '已售出',
+  OFF_SHELF: '已下架',
 };
 
 export const BOOK_ORDER_STATUS_LABELS: Record<BookOrderStatus, string> = {
-  PENDING_PAYMENT: "待支付",
-  WAITING_SELLER: "待卖家送达",
-  DELIVERED: "待确认收货",
-  COMPLETED: "已完成",
+  PENDING_PAYMENT: '待支付',
+  WAITING_SELLER: '待卖家送达',
+  DELIVERED: '待确认收货',
+  COMPLETED: '已完成',
+};
+
+export const SNACK_PRODUCT_STATUS_LABELS: Record<SnackProductStatus, string> = {
+  ON_SALE: '在售',
+  SOLD_OUT: '售罄',
+  OFF_SHELF: '已下架',
+};
+
+export const SNACK_ORDER_STATUS_LABELS: Record<SnackOrderStatus, string> = {
+  PENDING_PAYMENT: '待支付',
+  PAID: '已支付',
+  COMPLETED: '已完成',
 };
 
 export const SETTLEMENT_STATUS_LABELS: Record<SettlementStatus, string> = {
-  PENDING: "结算申请中",
-  APPROVED: "已结算",
-  REJECTED: "已驳回",
+  PENDING: '结算申请中',
+  APPROVED: '已结算',
+  REJECTED: '已驳回',
 };
+

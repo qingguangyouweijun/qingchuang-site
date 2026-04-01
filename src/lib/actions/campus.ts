@@ -11,6 +11,8 @@ import type {
   CampusBizType,
   CampusBookOrder,
   CampusBookPost,
+  CampusSnackOrder,
+  CampusSnackProduct,
   CampusDashboardData,
   CampusExpressOrder,
   CampusPaymentRecord,
@@ -39,6 +41,18 @@ const BOOK_ORDER_STATUS = {
   PENDING_PAYMENT: 'PENDING_PAYMENT',
   WAITING_SELLER: 'WAITING_SELLER',
   DELIVERED: 'DELIVERED',
+  COMPLETED: 'COMPLETED',
+} as const
+
+const SNACK_PRODUCT_STATUS = {
+  ON_SALE: 'ON_SALE',
+  SOLD_OUT: 'SOLD_OUT',
+  OFF_SHELF: 'OFF_SHELF',
+} as const
+
+const SNACK_ORDER_STATUS = {
+  PENDING_PAYMENT: 'PENDING_PAYMENT',
+  PAID: 'PAID',
   COMPLETED: 'COMPLETED',
 } as const
 
@@ -275,6 +289,22 @@ async function markPaymentSuccess(
         and(
           eq(schema.campusBookOrders.id, payment.biz_id),
           eq(schema.campusBookOrders.status, BOOK_ORDER_STATUS.PENDING_PAYMENT),
+        ),
+      )
+  }
+
+  if (payment.biz_type === 'SNACK_ORDER') {
+    await db
+      .update(schema.campusSnackOrders)
+      .set({
+        status: SNACK_ORDER_STATUS.PAID,
+        paid_at: now,
+        updated_at: now,
+      })
+      .where(
+        and(
+          eq(schema.campusSnackOrders.id, payment.biz_id),
+          eq(schema.campusSnackOrders.status, SNACK_ORDER_STATUS.PENDING_PAYMENT),
         ),
       )
   }
@@ -748,6 +778,155 @@ export async function listBookOrders(view: 'buyer' | 'seller' = 'buyer') {
   return { orders: orders as (CampusBookOrder & { buyer_label?: string; seller_label?: string })[] }
 }
 
+export async function listSnackProducts() {
+  const db = await getDb()
+
+  const rows = await db
+    .select()
+    .from(schema.campusSnackProducts)
+    .where(ne(schema.campusSnackProducts.shelf_status, SNACK_PRODUCT_STATUS.OFF_SHELF))
+    .orderBy(schema.campusSnackProducts.sort_order, desc(schema.campusSnackProducts.created_at))
+
+  return { products: rows as CampusSnackProduct[] }
+}
+
+export async function getSnackProductById(productId: string) {
+  const db = await getDb()
+  const rows = await db
+    .select()
+    .from(schema.campusSnackProducts)
+    .where(eq(schema.campusSnackProducts.id, productId))
+    .limit(1)
+
+  const product = rows[0]
+  if (!product) {
+    throw new Error('零食商品不存在。')
+  }
+
+  return { product: product as CampusSnackProduct }
+}
+
+export async function createSnackOrder(input: {
+  productId: string
+  quantity: number
+  contactName: string
+  contactPhone: string
+  deliveryLocation: string
+  remark?: string
+}) {
+  const { db, userId } = await getAuthContext()
+
+  assert(input.productId, '请选择零食商品。')
+  assert(input.quantity > 0, '购买数量至少为 1。')
+  assert(input.contactName.trim(), '请填写联系人。')
+  assert(input.contactPhone.trim(), '请填写联系电话。')
+  assert(input.deliveryLocation.trim(), '请填写送达位置。')
+
+  const productRows = await db
+    .select()
+    .from(schema.campusSnackProducts)
+    .where(eq(schema.campusSnackProducts.id, input.productId))
+    .limit(1)
+
+  const product = productRows[0]
+  if (!product) {
+    throw new Error('零食商品不存在。')
+  }
+
+  assert(product.shelf_status === SNACK_PRODUCT_STATUS.ON_SALE, '该零食当前暂不可下单。')
+  assert(Number(product.stock_count) >= input.quantity, '库存不足，请减少数量后重试。')
+
+  const now = new Date().toISOString()
+  const nextStock = Number(product.stock_count) - input.quantity
+  const id = crypto.randomUUID()
+
+  await db.insert(schema.campusSnackOrders).values({
+    id,
+    order_no: createNo('SNK'),
+    product_id: product.id,
+    product_name: product.name,
+    buyer_id: userId,
+    quantity: input.quantity,
+    unit_price: Number(product.sale_price),
+    total_amount: roundMoney(Number(product.sale_price) * input.quantity),
+    pay_type: null,
+    status: SNACK_ORDER_STATUS.PENDING_PAYMENT,
+    contact_name: input.contactName.trim(),
+    contact_phone: input.contactPhone.trim(),
+    delivery_location: input.deliveryLocation.trim(),
+    remark: input.remark?.trim() || '',
+    paid_at: null,
+    completed_at: null,
+    created_at: now,
+    updated_at: now,
+  })
+
+  await db
+    .update(schema.campusSnackProducts)
+    .set({
+      stock_count: nextStock,
+      shelf_status: nextStock > 0 ? SNACK_PRODUCT_STATUS.ON_SALE : SNACK_PRODUCT_STATUS.SOLD_OUT,
+      updated_at: now,
+    })
+    .where(eq(schema.campusSnackProducts.id, product.id))
+
+  const rows = await db
+    .select()
+    .from(schema.campusSnackOrders)
+    .where(eq(schema.campusSnackOrders.id, id))
+    .limit(1)
+
+  const order = rows[0]
+  if (!order) {
+    throw new Error('创建零食订单失败。')
+  }
+
+  return { order: order as CampusSnackOrder }
+}
+
+export async function listSnackOrders() {
+  const { db, userId } = await getAuthContext()
+  const rows = await db
+    .select()
+    .from(schema.campusSnackOrders)
+    .where(eq(schema.campusSnackOrders.buyer_id, userId))
+    .orderBy(desc(schema.campusSnackOrders.created_at))
+
+  return { orders: rows as CampusSnackOrder[] }
+}
+
+export async function completeSnackOrder(orderId: string) {
+  const { db, userId } = await getAuthContext()
+  const rows = await db
+    .select()
+    .from(schema.campusSnackOrders)
+    .where(
+      and(
+        eq(schema.campusSnackOrders.id, orderId),
+        eq(schema.campusSnackOrders.buyer_id, userId),
+      ),
+    )
+    .limit(1)
+
+  const order = rows[0]
+  if (!order) {
+    throw new Error('零食订单不存在。')
+  }
+
+  assert(order.status === SNACK_ORDER_STATUS.PAID, '当前订单还不能确认完成。')
+
+  await db
+    .update(schema.campusSnackOrders)
+    .set({
+      status: SNACK_ORDER_STATUS.COMPLETED,
+      completed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .where(eq(schema.campusSnackOrders.id, orderId))
+
+  return { success: true }
+}
+
 export async function deliverBookOrder(orderId: string) {
   const { db, userId } = await getAuthContext()
   await db
@@ -862,6 +1041,22 @@ export async function createCampusPayment(input: { bizType: CampusBizType; bizId
     assert(draw.status === 'PENDING_PAYMENT', '当前抽取已支付或状态已变更。')
     amount = Number(draw.amount)
     orderName = `晴窗抽取-${draw.id.slice(0, 8)}`
+  } else if (input.bizType === 'SNACK_ORDER') {
+    const rows = await db
+      .select()
+      .from(schema.campusSnackOrders)
+      .where(eq(schema.campusSnackOrders.id, input.bizId))
+      .limit(1)
+
+    const order = rows[0]
+    if (!order) {
+      throw new Error('零食订单不存在。')
+    }
+
+    assert(order.buyer_id === userId, '只有下单人可以支付。')
+    assert(order.status === SNACK_ORDER_STATUS.PENDING_PAYMENT, '当前订单已支付或状态已变更。')
+    amount = Number(order.total_amount)
+    orderName = `零食快递-${order.order_no}`
   } else {
     const rows = await db
       .select()
@@ -961,7 +1156,17 @@ export async function createCampusPayment(input: { bizType: CampusBizType; bizId
           eq(schema.campusExpressOrders.user_id, userId),
         ),
       )
-  } else {
+  } else if (input.bizType === 'SNACK_ORDER') {
+    await db
+      .update(schema.campusSnackOrders)
+      .set({ pay_type: input.payType, updated_at: now })
+      .where(
+        and(
+          eq(schema.campusSnackOrders.id, input.bizId),
+          eq(schema.campusSnackOrders.buyer_id, userId),
+        ),
+      )
+  } else if (input.bizType === 'BOOK_ORDER') {
     await db
       .update(schema.campusBookOrders)
       .set({ pay_type: input.payType, updated_at: now })
@@ -1275,6 +1480,14 @@ export async function handleCampusPaymentNotify(params: Record<string, string>) 
 
   return { success: true }
 }
+
+
+
+
+
+
+
+
 
 
 

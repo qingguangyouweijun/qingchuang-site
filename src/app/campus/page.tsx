@@ -1,5 +1,5 @@
 ﻿import Link from "next/link"
-import { BookOpen, Bot, HeartHandshake, Package } from "lucide-react"
+import { BookOpen, Bot, HeartHandshake, Package, ShoppingBag } from "lucide-react"
 import { MainLayout } from "@/components/Layout/MainLayout"
 import { CampusSubnav } from "@/components/campus/CampusSubnav"
 import { Button } from "@/components/UI/Button"
@@ -20,6 +20,13 @@ const campusEntries = [
     description: "在这里发布旧书、浏览书单、下单购买和确认送达。",
     icon: BookOpen,
     tone: "bg-amber-50 text-amber-700",
+  },
+  {
+    href: "/campus/snacks",
+    title: "零食快递",
+    description: "宿舍零食和饮料在这里下单，继续复用轻创账号和支付宝支付。",
+    icon: ShoppingBag,
+    tone: "bg-sky-50 text-sky-700",
   },
 ]
 
@@ -60,7 +67,7 @@ export default async function CampusPage() {
                   {session ? `${displayName}，校园服务从这里进入` : "校园服务是轻创的主线入口"}
                 </h1>
                 <p className="max-w-3xl text-base leading-7 text-slate-600">
-                  校园服务主线现在只保留快递代取和旧书广场。订单中心与校园钱包已经收进“我的”页面，
+                  校园服务主线现在包含快递代取、旧书广场和零食快递。订单中心与校园钱包已经收进“我的”页面，
                   方便你统一查看自己的收入、订单和结算状态。
                 </p>
               </div>
@@ -72,6 +79,9 @@ export default async function CampusPage() {
                     </Button>
                     <Button asChild variant="outline">
                       <Link href="/campus/books">进入旧书广场</Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <Link href="/campus/snacks">进入零食快递</Link>
                     </Button>
                   </>
                 ) : (
@@ -116,7 +126,7 @@ export default async function CampusPage() {
           </Card>
         </section>
 
-        <section className="grid grid-cols-1 gap-5 md:grid-cols-2">
+        <section className="grid grid-cols-1 gap-5 md:grid-cols-3">
           {campusEntries.map((item) => (
             <Link key={item.href} href={item.href}>
               <Card className="h-full border-none shadow-[0_12px_30px_rgba(15,23,42,0.05)] transition-transform duration-300 hover:-translate-y-1">
@@ -155,3 +165,4 @@ export default async function CampusPage() {
     </MainLayout>
   )
 }
+
