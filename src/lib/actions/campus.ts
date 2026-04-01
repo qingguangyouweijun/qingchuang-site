@@ -309,36 +309,6 @@ async function markPaymentSuccess(
       )
   }
 
-  if (payment.biz_type === 'DRAW_ORDER') {
-    // 获取抽取记录的 target_id
-    const drawRows = await db
-      .select({ target_id: schema.drawHistory.target_id })
-      .from(schema.drawHistory)
-      .where(eq(schema.drawHistory.id, payment.biz_id))
-      .limit(1)
-
-    await db
-      .update(schema.drawHistory)
-      .set({ status: 'PAID' })
-      .where(
-        and(
-          eq(schema.drawHistory.id, payment.biz_id),
-          eq(schema.drawHistory.status, 'PENDING_PAYMENT'),
-        ),
-      )
-
-    // 閫掑 target 鐨?drawn_count
-    if (drawRows[0]) {
-      await db
-        .update(schema.contactPool)
-        .set({
-          drawn_count: sql`${schema.contactPool.drawn_count} + 1`,
-          updated_at: now,
-        })
-        .where(eq(schema.contactPool.user_id, drawRows[0].target_id))
-    }
-  }
-
   return {
     ...payment,
     status: 'SUCCESS' as const,
@@ -1025,22 +995,6 @@ export async function createCampusPayment(input: { bizType: CampusBizType; bizId
     assert(order.status === EXPRESS_STATUS.PENDING_PAYMENT, '当前订单已支付或状态已变更。')
     amount = Number(order.order_amount)
     orderName = `校园快递代取 ${order.order_no}`
-  } else if (input.bizType === 'DRAW_ORDER') {
-    const rows = await db
-      .select()
-      .from(schema.drawHistory)
-      .where(eq(schema.drawHistory.id, input.bizId))
-      .limit(1)
-
-    const draw = rows[0]
-    if (!draw) {
-      throw new Error('抽取记录不存在。')
-    }
-
-    assert(draw.drawer_id === userId, '只有抽取人可以支付。')
-    assert(draw.status === 'PENDING_PAYMENT', '当前抽取已支付或状态已变更。')
-    amount = Number(draw.amount)
-    orderName = `晴窗抽取-${draw.id.slice(0, 8)}`
   } else if (input.bizType === 'SNACK_ORDER') {
     const rows = await db
       .select()
@@ -1480,6 +1434,7 @@ export async function handleCampusPaymentNotify(params: Record<string, string>) 
 
   return { success: true }
 }
+
 
 
 

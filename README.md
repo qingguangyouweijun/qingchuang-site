@@ -1,19 +1,13 @@
-# 轻创 Qintra
+﻿# 轻创 Qintra
 
-轻创是一个面向校园生活的综合站点，当前包含校园服务、晴窗、AI 陪伴、账户中心和管理员后台。
+轻创是一个面向校园生活的综合站点，当前主线包含校园服务、账户中心与管理员后台。
 
 ## 当前功能
 
 - 校园服务
   - 快递代取
   - 旧书广场
-- 晴窗
-  - 资料完善
-  - 条件设置
-  - 随机抽取与历史记录
-- AI 陪伴
-  - 角色创建
-  - 对话与长期记忆
+  - 零食快递
 - 我的
   - 账户基础资料
   - 校园钱包
@@ -30,7 +24,6 @@
 - MySQL + Drizzle ORM
 - JWT + httpOnly Cookie 会话
 - Brevo 邮件发送
-- BigModel `glm-4.7-flash`
 - ZPay 支付
 
 ## 认证方式
@@ -56,16 +49,11 @@
 | `/campus/express` | 快递代取概览 |
 | `/campus/express/order` | 快递代取下单 |
 | `/campus/express/runner` | 快递代取接单 |
-| `/campus/books` | 旧书广场 |
-| `/draw` | 晴窗首页 |
-| `/draw/start` | 晴窗抽取 |
-| `/draw/history` | 晴窗抽取历史 |
-| `/ai-companion` | AI 陪伴首页 |
-| `/ai-companion/characters/new` | 新建 AI 角色 |
-| `/ai-companion/characters/[id]` | AI 角色详情 |
-| `/ai-companion/conversations/[id]` | AI 对话 |
+| `/campus/books` | 旧书广场入口 |
+| `/campus/books/sell` | 旧书售卖 |
+| `/campus/books/orders` | 旧书下单 |
+| `/campus/snacks` | 零食快递 |
 | `/profile` | 我的 |
-| `/profile/setup` | 资料完善 |
 | `/profile/wallet` | 校园钱包 |
 | `/profile/orders` | 订单中心 |
 
@@ -105,21 +93,18 @@ AUTH_JWT_SECRET=
 APP_BASE_URL=
 NEXT_PUBLIC_APP_URL=
 
-DATABASE_URL=mysql://user:password@127.0.0.1:3306/qingchuang
-# 或拆分写法
 MYSQL_HOST=127.0.0.1
 MYSQL_PORT=3306
 MYSQL_USER=
 MYSQL_PASSWORD=
 MYSQL_DATABASE=qingchuang
 
+# 或者改用单条连接串
+DATABASE_URL=mysql://user:password@127.0.0.1:3306/qingchuang
+
 BREVO_API_KEY=
 BREVO_SENDER_EMAIL=
 BREVO_SENDER_NAME=
-
-BIGMODEL_API_KEY=
-BIGMODEL_BASE_URL=https://open.bigmodel.cn/api/paas/v4
-BIGMODEL_MODEL=glm-4.7-flash
 
 ZPAY_PID=
 ZPAY_PKEY=
@@ -140,16 +125,15 @@ TURNSTILE_SECRET_KEY=
 
 ## 数据与上传目录
 
-- AI 数据：`data/ai-companion.json`
 - 用户头像：`public/uploads/avatars/`
 - 结算收款码：`public/uploads/qr-codes/`
 
 ## 当前约定
 
-- 校园钱包和订单中心已经统一收入口径到“我的”页面。
+- 校园钱包和订单中心统一收入口径到“我的”页面。
 - 结算申请必须附带收款码。
 - 管理员处理结算后，用户状态会从“结算申请中”变为“已结算”。
-- 数据库已切换为 MySQL；如果你此前在旧 SQLite 文件里有数据，需要自行导出并导入 MySQL。
+- 数据库已切换为 MySQL；如需迁移旧数据，请自行导出并导入 MySQL。
 
 ## 部署建议
 

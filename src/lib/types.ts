@@ -21,7 +21,7 @@ export type BookOrderStatus =
 export type SnackProductStatus = "ON_SALE" | "SOLD_OUT" | "OFF_SHELF";
 export type SnackOrderStatus = "PENDING_PAYMENT" | "PAID" | "COMPLETED";
 export type SettlementStatus = "PENDING" | "APPROVED" | "REJECTED";
-export type CampusBizType = "EXPRESS_ORDER" | "BOOK_ORDER" | "DRAW_ORDER" | "SNACK_ORDER";
+export type CampusBizType = "EXPRESS_ORDER" | "BOOK_ORDER" | "SNACK_ORDER";
 
 export interface Profile {
   id: string;
@@ -375,4 +375,5 @@ export const SETTLEMENT_STATUS_LABELS: Record<SettlementStatus, string> = {
   APPROVED: '已结算',
   REJECTED: '已驳回',
 };
+
 

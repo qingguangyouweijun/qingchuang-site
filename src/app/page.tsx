@@ -1,5 +1,5 @@
 ﻿import Link from "next/link"
-import { ArrowRight, Bot, Gift, LayoutGrid, Package, ReceiptText, UserRound, Wallet } from "lucide-react"
+import { ArrowRight, LayoutGrid, Package, ReceiptText, UserRound, Wallet } from "lucide-react"
 import { MainLayout } from "@/components/Layout/MainLayout"
 import { Button } from "@/components/UI/Button"
 import { Card, CardContent } from "@/components/UI/Card"
@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/UI/Card"
 const mainFeatures = [
   {
     title: "校园服务",
-    description: "快递代取和旧书广场统一收进校园服务主线入口。",
+    description: "快递代取、旧书广场和零食快递统一收进校园服务主线入口。",
     href: "/campus",
     icon: LayoutGrid,
     tone: "bg-emerald-50 text-emerald-700",
@@ -19,26 +19,12 @@ const mainFeatures = [
     icon: Package,
     tone: "bg-teal-50 text-teal-700",
   },
-  {
-    title: "晴窗",
-    description: "完善资料后参与随机抽取，在校园里认识一位本校异性朋友。",
-    href: "/draw",
-    icon: Gift,
-    tone: "bg-rose-50 text-rose-700",
-  },
-  {
-    title: "AI 陪伴",
-    description: "创建角色、持续聊天，并把对话记忆留在自己的账号里。",
-    href: "/ai-companion",
-    icon: Bot,
-    tone: "bg-sky-50 text-sky-700",
-  },
 ]
 
 const personalEntries = [
   {
     title: "订单中心",
-    description: "统一查看我下的快递单、我接的快递单，以及旧书买卖记录。",
+    description: "统一查看我下的快递单、我接的快递单，以及旧书和零食订单记录。",
     href: "/profile/orders",
     icon: ReceiptText,
     tone: "bg-amber-50 text-amber-700",
@@ -68,8 +54,7 @@ export default function Home() {
                 <span className="block text-emerald-700">“我的”专门承接订单中心和校园钱包。</span>
               </h1>
               <p className="max-w-3xl text-base leading-8 text-slate-600 md:text-lg">
-                想下快递代取、逛旧书广场、查看订单中心、管理校园钱包、体验晴窗或 AI 陪伴，
-                现在都能在更清晰的结构里找到入口。
+                想下快递代取、逛旧书广场、购买零食快递、查看订单中心或管理校园钱包，现在都能在更清晰的结构里找到入口。
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -116,7 +101,7 @@ export default function Home() {
           </Card>
         </div>
 
-        <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <section className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {mainFeatures.map((item) => (
             <Link key={item.href} href={item.href}>
               <Card className="h-full border-none shadow-[0_14px_30px_rgba(15,23,42,0.05)] transition-transform duration-200 hover:-translate-y-1">

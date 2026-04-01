@@ -1,5 +1,5 @@
 ﻿import Link from "next/link"
-import { BookOpen, Bot, HeartHandshake, Package, ShoppingBag } from "lucide-react"
+import { BookOpen, Package, ShoppingBag } from "lucide-react"
 import { MainLayout } from "@/components/Layout/MainLayout"
 import { CampusSubnav } from "@/components/campus/CampusSubnav"
 import { Button } from "@/components/UI/Button"
@@ -27,23 +27,6 @@ const campusEntries = [
     description: "宿舍零食和饮料在这里下单，继续复用轻创账号和支付宝支付。",
     icon: ShoppingBag,
     tone: "bg-sky-50 text-sky-700",
-  },
-]
-
-const extensionEntries = [
-  {
-    href: "/draw",
-    title: "晴窗",
-    description: "校园互动功能，继续复用轻创账号。",
-    icon: HeartHandshake,
-    tone: "bg-rose-50 text-rose-700",
-  },
-  {
-    href: "/ai-companion",
-    title: "AI 陪伴",
-    description: "创建角色、持续聊天和保存长期记忆。",
-    icon: Bot,
-    tone: "bg-cyan-50 text-cyan-700",
   },
 ]
 
@@ -143,26 +126,7 @@ export default async function CampusPage() {
             </Link>
           ))}
         </section>
-
-        <section className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          {extensionEntries.map((item) => (
-            <Link key={item.href} href={item.href}>
-              <Card className="border-none shadow-[0_12px_30px_rgba(15,23,42,0.05)] transition-transform duration-300 hover:-translate-y-1">
-                <CardContent className="flex items-center justify-between gap-4 p-6">
-                  <div className="space-y-2">
-                    <div className="text-xl font-bold text-slate-900">{item.title}</div>
-                    <p className="text-sm leading-6 text-slate-600">{item.description}</p>
-                  </div>
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${item.tone}`}>
-                    <item.icon className="h-6 w-6" />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </section>
       </div>
     </MainLayout>
   )
 }
-
