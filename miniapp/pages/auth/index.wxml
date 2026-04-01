@@ -1,0 +1,22 @@
+﻿<view class="container">
+  <view class="hero">
+    <view class="badge-row">
+      <view class="badge">微信登录下一步</view>
+    </view>
+    <view class="hero-title">先把微信授权链路预留好</view>
+    <view class="hero-desc">
+      当前先在小程序侧获取 `wx.login` 的 code 与微信头像昵称。下一步会把 code 发送到轻创服务端，换成正式的微信登录会话。
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">当前授权状态</view>
+    <view class="section-desc">{{session.loggedIn ? '已经获得微信头像与昵称，后续只差服务端换会话。' : '还没有进行微信授权。'}}</view>
+    <view class="notice" wx:if="{{wxCode}}">
+      最近一次 wx.login code 已生成，当前仅作预留展示：{{wxCode}}
+    </view>
+    <view class="button-row">
+      <button class="button" loading="{{loading}}" bindtap="handleWechatProfile">获取微信头像与昵称</button>
+    </view>
+  </view>
+</view>

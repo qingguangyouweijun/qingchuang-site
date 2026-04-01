@@ -1,0 +1,21 @@
+﻿<view class="container">
+  <view class="card">
+    <view class="section-title">校园服务</view>
+    <view class="section-desc">小程序版只保留校园主线，适合移动端快速下单、查看与处理。</view>
+    <view class="notice" wx:if="{{!session.loggedIn}}">
+      当前还没接入正式微信登录，会先以原生界面和本地演示数据跑通流程。后续切微信登录后再替换成真实用户数据。
+    </view>
+  </view>
+
+  <view class="stack">
+    <block wx:for="{{modules}}" wx:key="title">
+      <view class="module-card">
+        <view class="module-card__title">{{item.title}}</view>
+        <view class="module-card__desc">{{item.desc}}</view>
+        <view class="button-row">
+          <button class="button" data-url="{{item.url}}" bindtap="openModule">进入{{item.title}}</button>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>

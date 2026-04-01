@@ -1,0 +1,73 @@
+﻿<view class="container">
+  <view class="card">
+    <view class="tab-row">
+      <view class="tab-chip {{tab === 'sell' ? 'tab-chip--active' : ''}}" data-tab="sell" bindtap="switchTab">旧书售卖</view>
+      <view class="tab-chip {{tab === 'orders' ? 'tab-chip--active' : ''}}" data-tab="orders" bindtap="switchTab">旧书下单</view>
+    </view>
+
+    <block wx:if="{{tab === 'sell'}}">
+      <view class="section-title">发布旧书</view>
+      <view class="section-desc">和主站一样，平台按每本 2 元计算服务费，并实时展示卖家到手价。</view>
+      <view class="stack" style="margin-top: 20rpx;">
+        <view class="grid-2">
+          <view>
+            <view class="field-label">书名</view>
+            <input class="input" placeholder="例如 高等数学（第七版）" data-key="title" value="{{form.title}}" bindinput="handleInput" />
+          </view>
+          <view>
+            <view class="field-label">分类</view>
+            <input class="input" placeholder="例如 专业课 / 考研" data-key="category" value="{{form.category}}" bindinput="handleInput" />
+          </view>
+          <view>
+            <view class="field-label">售价</view>
+            <input class="input" type="digit" placeholder="买家看到的价格" data-key="price" value="{{form.price}}" bindinput="handleInput" />
+          </view>
+          <view>
+            <view class="field-label">成色</view>
+            <input class="input" placeholder="例如 九成新" data-key="condition" value="{{form.condition}}" bindinput="handleInput" />
+          </view>
+        </view>
+        <view>
+          <view class="field-label">描述</view>
+          <textarea class="textarea" placeholder="例如：无缺页、附带课堂笔记。" data-key="description" value="{{form.description}}" bindinput="handleInput"></textarea>
+        </view>
+        <view class="notice">预计卖家到手价：¥{{sellerIncome}}。当前先完成原生表单和流程，正式支付和配送状态后续接主站接口。</view>
+        <button class="button" bindtap="publishBook">发布旧书</button>
+      </view>
+    </block>
+
+    <block wx:else>
+      <view class="section-title">旧书下单</view>
+      <view class="section-desc">这里展示旧书货架和你生成的订单。</view>
+      <view class="stack" style="margin-top: 20rpx;">
+        <block wx:for="{{posts}}" wx:key="id">
+          <view class="order-card">
+            <view class="row">
+              <view class="order-title">{{item.title}}</view>
+              <view class="price">¥{{item.price}}</view>
+            </view>
+            <view class="order-meta">分类：{{item.category}} · 成色：{{item.condition}}</view>
+            <view class="order-meta">卖家到手：¥{{item.sellerIncome}} · 发布时间：{{item.createdAt}}</view>
+            <view class="order-meta">{{item.description}}</view>
+            <view class="button-row">
+              <button class="button button--light" data-id="{{item.id}}" bindtap="createOrder">立即下单</button>
+            </view>
+          </view>
+        </block>
+        <view wx:if="{{!posts.length}}" class="empty">还没有旧书，先在“旧书售卖”里发布一本。</view>
+
+        <view class="section-title" style="margin-top: 20rpx;">我的旧书订单</view>
+        <block wx:for="{{orders}}" wx:key="id">
+          <view class="order-card">
+            <view class="row">
+              <view class="order-title">{{item.title}}</view>
+              <view class="order-badge">{{item.status}}</view>
+            </view>
+            <view class="order-meta">订单号：{{item.id}} · 金额：¥{{item.price}}</view>
+            <view class="order-meta">卖家到手：¥{{item.sellerIncome}} · 创建时间：{{item.createdAt}}</view>
+          </view>
+        </block>
+      </view>
+    </block>
+  </view>
+</view>

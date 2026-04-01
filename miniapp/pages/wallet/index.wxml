@@ -1,0 +1,60 @@
+﻿<view class="container">
+  <view class="hero">
+    <view class="badge-row">
+      <view class="badge">校园钱包</view>
+      <view class="badge">微信提现后续接入</view>
+    </view>
+    <view class="hero-title">先把余额、结算和状态流转做成原生页</view>
+    <view class="hero-desc">当前先保留申请流程和状态展示，后续再接入微信收款与后台审核回写。</view>
+  </view>
+
+  <view class="card">
+    <view class="stat-grid">
+      <view class="stat-card">
+        <view class="stat-label">可结算</view>
+        <view class="stat-value">¥{{wallet.available}}</view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-label">待结算</view>
+        <view class="stat-value">¥{{wallet.pending}}</view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-label">申请中</view>
+        <view class="stat-value">¥{{wallet.applying}}</view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-label">已结算</view>
+        <view class="stat-value">¥{{wallet.settled}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">发起结算申请</view>
+    <view class="section-desc">当前先保留原生表单。正式版会接入收款码上传或微信支付商户侧打款。</view>
+    <view style="margin-top: 20rpx;">
+      <view class="field-label">申请金额</view>
+      <input class="input" type="digit" value="{{amount}}" bindinput="handleInput" placeholder="请输入不大于可结算余额的金额" />
+      <view class="help">当前只是小程序原生流程版本，后续再把结算结果与主站后台联动。</view>
+    </view>
+    <view class="button-row">
+      <button class="button" bindtap="submitSettlement">提交结算申请</button>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">结算申请记录</view>
+    <view class="stack" style="margin-top: 18rpx;">
+      <block wx:for="{{wallet.settlements}}" wx:key="id">
+        <view class="order-card">
+          <view class="row">
+            <view class="order-title">{{item.id}}</view>
+            <view class="order-badge">{{item.status}}</view>
+          </view>
+          <view class="order-meta">申请金额：¥{{item.amount}} · {{item.createdAt}}</view>
+        </view>
+      </block>
+      <view wx:if="{{!wallet.settlements.length}}" class="empty">还没有结算申请记录。</view>
+    </view>
+  </view>
+</view>

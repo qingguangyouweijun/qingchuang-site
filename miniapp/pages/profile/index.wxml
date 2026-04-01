@@ -1,0 +1,33 @@
+﻿<view class="container">
+  <view class="card">
+    <view class="profile-row">
+      <image wx:if="{{session.avatarUrl}}" class="avatar" src="{{session.avatarUrl}}" mode="aspectFill"></image>
+      <view wx:else class="avatar"></view>
+      <view>
+        <view class="section-title">{{session.loggedIn ? session.nickname : '微信登录预留'}}</view>
+        <view class="section-desc">{{session.loggedIn ? '当前已拿到昵称和头像，后续只差服务端微信会话。' : '当前还没接入正式微信登录，先保留原生授权入口。'}}</view>
+      </view>
+    </view>
+    <view class="button-row">
+      <button class="button" bindtap="goAuth">{{session.loggedIn ? '重新微信授权' : '去微信授权'}}</button>
+      <button wx:if="{{session.loggedIn}}" class="button button--light" bindtap="handleLogout">清除当前状态</button>
+    </view>
+  </view>
+
+  <view class="grid-2">
+    <view class="module-card">
+      <view class="module-card__title">校园钱包</view>
+      <view class="module-card__desc">查看可结算余额、结算申请和流水状态。</view>
+      <view class="button-row">
+        <button class="button button--light" bindtap="goWallet">进入钱包</button>
+      </view>
+    </view>
+    <view class="module-card">
+      <view class="module-card__title">订单中心</view>
+      <view class="module-card__desc">统一查看快递、旧书和零食订单。</view>
+      <view class="button-row">
+        <button class="button button--light" bindtap="goOrders">进入订单</button>
+      </view>
+    </view>
+  </view>
+</view>

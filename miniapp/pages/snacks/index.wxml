@@ -1,0 +1,48 @@
+﻿<view class="container">
+  <view class="card">
+    <view class="section-title">零食快递</view>
+    <view class="section-desc">宿舍即时零食和饮料入口，适合直接做成原生小程序货架。</view>
+    <view class="stack" style="margin-top: 20rpx;">
+      <view>
+        <view class="field-label">送达位置</view>
+        <input class="input" placeholder="例如 3 号楼 402" data-key="deliveryLocation" value="{{deliveryLocation}}" bindinput="handleInput" />
+      </view>
+      <view>
+        <view class="field-label">备注</view>
+        <textarea class="textarea" placeholder="例如 放门口，到了联系我。" data-key="note" value="{{note}}" bindinput="handleInput"></textarea>
+      </view>
+    </view>
+  </view>
+
+  <view class="stack">
+    <block wx:for="{{products}}" wx:key="id">
+      <view class="order-card">
+        <view class="row">
+          <view class="order-title">{{item.emoji}} {{item.name}}</view>
+          <view class="price">¥{{item.price}}</view>
+        </view>
+        <view class="order-meta">{{item.subtitle}} · 当前库存 {{item.stock}}</view>
+        <view class="button-row">
+          <button class="button button--light" data-id="{{item.id}}" bindtap="buyNow">立即下单</button>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view class="card">
+    <view class="section-title">我的零食订单</view>
+    <view class="stack" style="margin-top: 18rpx;">
+      <block wx:for="{{orders}}" wx:key="id">
+        <view class="order-card">
+          <view class="row">
+            <view class="order-title">{{item.name}}</view>
+            <view class="order-badge">{{item.status}}</view>
+          </view>
+          <view class="order-meta">数量：{{item.quantity}} · 合计：¥{{item.total}}</view>
+          <view class="order-meta">送达：{{item.location}} · {{item.createdAt}}</view>
+        </view>
+      </block>
+      <view wx:if="{{!orders.length}}" class="empty">还没有零食订单，先从上面的货架里下单。</view>
+    </view>
+  </view>
+</view>

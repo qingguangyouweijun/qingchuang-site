@@ -1,0 +1,51 @@
+﻿<view class="container">
+  <view class="hero">
+    <view class="badge-row">
+      <view class="badge">轻创 Qintra</view>
+      <view class="badge">微信小程序原生版</view>
+    </view>
+    <view class="hero-title">把轻创主站做成更贴近微信体验的小程序</view>
+    <view class="hero-desc">
+      校园服务、钱包、订单和“我的”已经收进原生页面。当前先完成小程序界面和微信登录预留，后续再把正式微信会话接入服务端。
+    </view>
+    <view class="button-row">
+      <button class="button" bindtap="goCampus">进入校园服务</button>
+      <button class="button button--light" bindtap="goProfile">进入我的</button>
+      <button wx:if="{{!session.loggedIn}}" class="button button--outline" bindtap="goAuth">去微信授权</button>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">当前状态</view>
+    <view class="section-desc">这版以原生小程序交互为主，账号侧已经预留给微信登录。</view>
+    <view class="stat-grid">
+      <view class="stat-card">
+        <view class="stat-label">快递单</view>
+        <view class="stat-value">{{counts.express}}</view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-label">旧书发布</view>
+        <view class="stat-value">{{counts.books}}</view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-label">零食商品</view>
+        <view class="stat-value">{{counts.snacks}}</view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-label">登录状态</view>
+        <view class="stat-value">{{session.loggedIn ? '已预留' : '未授权'}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="grid-2">
+    <view class="module-card">
+      <view class="module-card__title">校园服务</view>
+      <view class="module-card__desc">快递代取、旧书广场、零食快递已经拆成原生页面。</view>
+    </view>
+    <view class="module-card">
+      <view class="module-card__title">微信登录预留</view>
+      <view class="module-card__desc">当前先获取小程序 code、头像和昵称，后续直接换成正式微信会话。</view>
+    </view>
+  </view>
+</view>

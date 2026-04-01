@@ -1,0 +1,83 @@
+﻿<view class="container">
+  <view class="card">
+    <view class="tab-row">
+      <view class="tab-chip {{tab === 'order' ? 'tab-chip--active' : ''}}" data-tab="order" bindtap="switchTab">快递代取下单</view>
+      <view class="tab-chip {{tab === 'runner' ? 'tab-chip--active' : ''}}" data-tab="runner" bindtap="switchTab">快递代取接单</view>
+    </view>
+
+    <block wx:if="{{tab === 'order'}}">
+      <view class="section-title">创建快递代取单</view>
+      <view class="section-desc">取件信息按“手机后四位 / 取件码 / 收件人”填写，后面正式接入小程序支付。</view>
+      <view class="stack" style="margin-top: 20rpx;">
+        <view>
+          <view class="field-label">快递类型</view>
+          <picker mode="selector" range="{{courierTypes}}" value="{{courierIndex}}" bindchange="handleCourierChange">
+            <view class="picker">{{courierTypes[courierIndex]}}</view>
+          </picker>
+        </view>
+        <view>
+          <view class="field-label">取件信息</view>
+          <textarea class="textarea" placeholder="例如：尾号 2231 / 取件码 7788 / 收件人 小陈" data-key="pickupInfo" value="{{form.pickupInfo}}" bindinput="handleInput"></textarea>
+          <view class="help">支持一条一行，也支持逗号分隔；推荐顺丰、京东、其他都按同一格式填写。</view>
+        </view>
+        <view class="grid-2">
+          <view>
+            <view class="field-label">楼栋</view>
+            <input class="input" placeholder="例如 3 号楼" data-key="building" value="{{form.building}}" bindinput="handleInput" />
+          </view>
+          <view>
+            <view class="field-label">详细地址</view>
+            <input class="input" placeholder="例如 402" data-key="address" value="{{form.address}}" bindinput="handleInput" />
+          </view>
+        </view>
+        <view class="grid-2">
+          <view>
+            <view class="field-label">小件数量</view>
+            <input class="input" type="number" data-key="smallCount" value="{{form.smallCount}}" bindinput="handleInput" />
+          </view>
+          <view>
+            <view class="field-label">中件数量</view>
+            <input class="input" type="number" data-key="mediumCount" value="{{form.mediumCount}}" bindinput="handleInput" />
+          </view>
+          <view>
+            <view class="field-label">大件数量</view>
+            <input class="input" type="number" data-key="largeCount" value="{{form.largeCount}}" bindinput="handleInput" />
+          </view>
+          <view>
+            <view class="field-label">超大件数量</view>
+            <input class="input" type="number" data-key="xlargeCount" value="{{form.xlargeCount}}" bindinput="handleInput" />
+          </view>
+        </view>
+        <view>
+          <view class="field-label">备注</view>
+          <textarea class="textarea" placeholder="例如到楼下联系，或宿舍门口放置说明" data-key="note" value="{{form.note}}" bindinput="handleInput"></textarea>
+        </view>
+        <view class="notice">当前预估金额：¥{{amount}}。小程序原生版先跑通下单流程，正式支付宝/微信支付会在后续接入。</view>
+        <button class="button" bindtap="submitOrder">提交快递单</button>
+      </view>
+    </block>
+
+    <block wx:else>
+      <view class="section-title">接单与配送</view>
+      <view class="section-desc">这里展示可以接手的快递单。正式版会接入真实支付和状态同步。</view>
+      <view class="stack" style="margin-top: 20rpx;">
+        <block wx:for="{{orders}}" wx:key="id">
+          <view class="order-card">
+            <view class="row">
+              <view class="order-title">{{item.courierType}} · {{item.id}}</view>
+              <view class="order-badge">{{item.status}}</view>
+            </view>
+            <view class="order-meta">取件信息：{{item.pickupInfo}}</view>
+            <view class="order-meta">送达位置：{{item.building}} {{item.address}}</view>
+            <view class="order-meta">预估金额：¥{{item.amount}} · 备注：{{item.note || '无'}}</view>
+            <view class="button-row">
+              <button wx:if="{{item.status === '待接单'}}" class="button button--light" data-id="{{item.id}}" bindtap="acceptOrder">接单</button>
+              <button wx:if="{{item.status === '配送中'}}" class="button button--light" data-id="{{item.id}}" bindtap="completeOrder">完成</button>
+            </view>
+          </view>
+        </block>
+        <view wx:if="{{!orders.length}}" class="empty">还没有快递单，先在“快递代取下单”里生成一单看看。</view>
+      </view>
+    </block>
+  </view>
+</view>

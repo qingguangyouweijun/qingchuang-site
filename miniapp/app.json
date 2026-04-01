@@ -1,0 +1,50 @@
+﻿{
+  "pages": [
+    "pages/home/index",
+    "pages/campus/index",
+    "pages/express/index",
+    "pages/books/index",
+    "pages/snacks/index",
+    "pages/wallet/index",
+    "pages/orders/index",
+    "pages/profile/index",
+    "pages/auth/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "轻创 Qintra",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f6f8fb",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#64748b",
+    "selectedColor": "#0f766e",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/campus/index",
+        "text": "校园服务"
+      },
+      {
+        "pagePath": "pages/wallet/index",
+        "text": "钱包"
+      },
+      {
+        "pagePath": "pages/orders/index",
+        "text": "订单"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

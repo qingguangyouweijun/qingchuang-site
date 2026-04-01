@@ -1,0 +1,56 @@
+﻿<view class="container">
+  <view class="card">
+    <view class="section-title">订单中心</view>
+    <view class="section-desc">把快递、旧书和零食订单收进一个原生页面里，后续再接入真实状态同步。</view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">快递代取</view>
+    <view class="stack" style="margin-top: 18rpx;">
+      <block wx:for="{{expressOrders}}" wx:key="id">
+        <view class="order-card">
+          <view class="row">
+            <view class="order-title">{{item.courierType}} · {{item.id}}</view>
+            <view class="order-badge">{{item.status}}</view>
+          </view>
+          <view class="order-meta">取件信息：{{item.pickupInfo}}</view>
+          <view class="order-meta">金额：¥{{item.amount}} · {{item.building}} {{item.address}}</view>
+        </view>
+      </block>
+      <view wx:if="{{!expressOrders.length}}" class="empty">还没有快递订单。</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">旧书订单</view>
+    <view class="stack" style="margin-top: 18rpx;">
+      <block wx:for="{{bookOrders}}" wx:key="id">
+        <view class="order-card">
+          <view class="row">
+            <view class="order-title">{{item.title}}</view>
+            <view class="order-badge">{{item.status}}</view>
+          </view>
+          <view class="order-meta">订单号：{{item.id}} · 金额：¥{{item.price}}</view>
+        </view>
+      </block>
+      <view wx:if="{{!bookOrders.length}}" class="empty">还没有旧书订单。</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">零食订单</view>
+    <view class="stack" style="margin-top: 18rpx;">
+      <block wx:for="{{snackOrders}}" wx:key="id">
+        <view class="order-card">
+          <view class="row">
+            <view class="order-title">{{item.name}}</view>
+            <view class="order-badge">{{item.status}}</view>
+          </view>
+          <view class="order-meta">数量：{{item.quantity}} · 合计：¥{{item.total}}</view>
+          <view class="order-meta">送达：{{item.location}}</view>
+        </view>
+      </block>
+      <view wx:if="{{!snackOrders.length}}" class="empty">还没有零食订单。</view>
+    </view>
+  </view>
+</view>
