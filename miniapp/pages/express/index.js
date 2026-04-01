@@ -1,4 +1,4 @@
-const COURIER_TYPES = ['顺丰', '京东', '其他']
+﻿const COURIER_TYPES = ['顺丰', '京东', '其他']
 
 function computeAmount(form) {
   const small = Number(form.smallCount || 0)

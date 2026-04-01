@@ -1,4 +1,4 @@
-Page({
+﻿Page({
   data: {
     tab: 'sell',
     form: {

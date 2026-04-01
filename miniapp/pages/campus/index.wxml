@@ -1,4 +1,4 @@
-<view class="container">
+﻿<view class="container">
   <view class="card">
     <view class="section-title">校园服务</view>
     <view class="section-desc">小程序版只保留校园主线，适合移动端快速下单、查看与处理。</view>
