@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, LayoutGrid, LogOut, Menu, UserRound, X } from "lucide-react";
+import { Building2, Home, LogOut, Menu, ScrollText, UserRound, X } from "lucide-react";
 import { Button } from "@/components/UI/Button";
 import type { Profile } from "@/lib/types";
 
@@ -37,12 +37,7 @@ export function Header() {
 
       setUser(data.profile);
       setAccountLabel(
-        String(
-          data.profile.nickname ||
-            data.profile.account ||
-            data.user.email.split("@")[0] ||
-            "我的",
-        ),
+        String(data.profile.nickname || data.profile.account || data.user.email.split("@")[0] || "我的"),
       );
     } catch {
       setUser(null);
@@ -59,18 +54,16 @@ export function Header() {
 
   const navItems = [
     { name: "首页", href: "/", icon: Home },
-    { name: "校园服务", href: "/campus", icon: LayoutGrid },
-    { name: "我的", href: user ? "/profile" : "/auth/login", icon: UserRound },
+    { name: "服务能力", href: "/#services", icon: Building2 },
+    { name: "合作流程", href: "/#process", icon: ScrollText },
+    { name: "联系说明", href: "/#contact", icon: UserRound },
   ];
 
   function isActive(href: string) {
     if (href === "/") return pathname === "/";
-    if (href === "/campus")
-      return pathname === "/campus" || pathname.startsWith("/campus/");
-    if (href === "/profile")
-      return pathname === "/profile" || pathname.startsWith("/profile/");
+    if (href === "/profile") return pathname === "/profile" || pathname.startsWith("/profile/");
     if (href === "/auth/login") return pathname.startsWith("/auth/");
-    return pathname === href || pathname.startsWith(`${href}/`);
+    return false;
   }
 
   return (
@@ -109,10 +102,9 @@ export function Header() {
               </button>
             </>
           ) : (
-            <>
-              <Button asChild variant="ghost" size="sm"><Link href="/auth/login">邮箱登录</Link></Button>
-              <Button asChild size="sm"><Link href="/auth/register">邮箱注册</Link></Button>
-            </>
+            <Button asChild size="sm">
+              <Link href="/auth/login">用户登录</Link>
+            </Button>
           )}
         </div>
 
@@ -142,12 +134,22 @@ export function Header() {
             ))}
             <div className="mt-3 flex flex-col gap-2 border-t border-slate-200 pt-3">
               {user ? (
-                <Button variant="ghost" className="w-full" onClick={() => void handleLogout()}>退出登录</Button>
-              ) : (
                 <>
-                  <Button asChild variant="ghost" className="w-full"><Link href="/auth/login" onClick={() => setIsMenuOpen(false)}>邮箱登录</Link></Button>
-                  <Button asChild className="w-full"><Link href="/auth/register" onClick={() => setIsMenuOpen(false)}>邮箱注册</Link></Button>
+                  <Button asChild variant="ghost" className="w-full">
+                    <Link href="/profile" onClick={() => setIsMenuOpen(false)}>
+                      进入我的
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" className="w-full" onClick={() => void handleLogout()}>
+                    退出登录
+                  </Button>
                 </>
+              ) : (
+                <Button asChild className="w-full">
+                  <Link href="/auth/login" onClick={() => setIsMenuOpen(false)}>
+                    用户登录
+                  </Link>
+                </Button>
               )}
             </div>
           </nav>
